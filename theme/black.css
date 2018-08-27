@@ -1,0 +1,75 @@
+ng-docker  {
+    background-color: rgb(14, 14, 14);
+}
+
+.ng-docker-tab-nav {
+    background-color: rgb(28, 28, 28);
+}
+
+.ng-docker-title-container {
+    height: 30px;
+    font-size: 16px;
+}
+
+.ng-docker-title {
+    top: 6px;
+    left: 6px;
+    right: 30px;
+}
+
+.ng-docker-icon {
+    padding-right: 6px;
+}
+
+.ng-docker-header {
+    height: 30px;
+}
+
+.ng-docker-contents {
+    top: 30px;
+}
+
+.ng-docker-tab-nav {
+    height: 30px;
+}
+
+.ng-docker-drop-visual-tab-on-panel {
+    height: 30px;
+}
+
+.ng-docker-tab {
+    background-color: #272727;
+}
+
+.ng-docker-header {
+    background: linear-gradient(#373737, #272727);
+}
+
+.ng-docker-tab-active {
+    background: linear-gradient(#273F5E, #262E38);
+}
+
+.ng-docker-close {
+    background-image: url('black/X.png');
+    top: 7px;
+    right: 6px;
+    bottom: 7px;
+    width: 16px;
+}
+
+.ng-docker-close::after {
+    content: "";
+}
+
+.ng-docker-contents {
+    border-right-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+    border-width: 1px;
+    border-color: #373737;
+}
+
+.ng-docker-tab-nav-border {
+    background-color: #373737;
+    height: 2px;
+}

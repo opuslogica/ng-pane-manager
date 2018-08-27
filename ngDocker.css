@@ -1,0 +1,228 @@
+ng-docker {
+    overflow: hidden;
+    background-color: rgb(227, 227, 227);
+}
+
+ng-docker,
+.ng-docker-panel-container, 
+.ng-docker-vsplit, 
+.ng-docker-hsplit,
+.ng-docker-tabsplit {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+}
+
+.ng-docker-all-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    bottom: 20px;
+    left: 20px;
+}
+
+.ng-docker-floating-container {
+    position: absolute;
+    opacity: 0.5;
+    z-index: 3;
+    width: 300px;
+    height: 200px;
+}
+
+.ng-docker-hidden {
+    display: none;
+}
+
+.ng-docker-title-container {
+    color: white;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    background-color: black;
+    user-select: none;
+    cursor: default;
+}
+
+.ng-docker-header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 20px;
+}
+
+.ng-docker-title {
+    position: absolute;
+    top: 2px;
+    right: 12px;
+    bottom: 2px;
+    left: 2px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.ng-docker-icon {
+    display: inline-block;
+    vertical-align: top;
+    padding-right: 2px;
+}
+
+.ng-docker-close {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    width: 12px;
+    overflow: hidden;
+}
+
+.ng-docker-close::after {
+    content: "\2716";
+}
+
+.ng-docker-contents {
+    position: absolute;
+    top: 20px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+}
+
+.ng-docker-separator {
+    position: absolute;
+    opacity: 0;
+    z-index: 1;
+}
+
+.ng-docker-vsplit-separator {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    cursor: col-resize;
+}
+
+.ng-docker-hsplit-separator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    cursor: row-resize;
+}
+
+.ng-docker-left {
+    position: absolute;
+    left: 0;
+    height: 100%;
+}
+
+.ng-docker-right {
+    position: absolute;
+    right: 0;
+    height: 100%;
+}
+
+.ng-docker-top {
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.ng-docker-bottom {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.ng-docker-tab-nav {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 20px;
+    background-color: rgb(200, 200, 200);
+}
+
+.ng-docker-tab-nav-border {
+    position: absolute;
+    bottom: 0;
+    height: 1px;
+    z-index: 1;
+}
+
+.ng-docker-tab-nav-border-left {
+    left: 0px;
+}
+
+.ng-docker-tab-nav-border-right {
+    right: 0px;
+}
+
+.ng-docker-tab {
+    position: relative;
+    display: inline-block;
+    background-color: gray;
+    height: 100%;
+}
+
+.ng-docker-tab-active {
+    background-color: black;
+}
+
+.ng-docker-drop-visual {
+    z-index: 2;
+    background-color: rgba(0, 200, 255, 0.5);
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(0, 200, 255);
+    box-sizing: border-box;
+}
+
+.ng-docker-abs-drop-visual {
+    position: absolute;
+}
+
+.ng-docker-drop-visual-top {
+    top: 0;
+    right: 0;
+    left: 0;
+}
+
+.ng-docker-drop-visual-right {
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.ng-docker-drop-visual-bottom {
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.ng-docker-drop-visual-left {
+    top: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.ng-docker-drop-visual-whole {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.ng-docker-drop-visual-tab {
+    display: inline-block;
+    height: 100%;
+}
+
+.ng-docker-drop-visual-tab-on-panel {
+    position: absolute;
+    height: 20px;
+}
