@@ -3,34 +3,34 @@ angular.module('ngDocker', [])
     var that = this;
 
     this.findPanelLayouts = function(layout) {
-		return ngDockerInternal.findPanelLayouts(layout);
-	};
+        return ngDockerInternal.findPanelLayouts(layout);
+    };
 
     this.validateLayout = function(layout) {
-		return ngDockerInternal.validateLayout(layout);
-	};
+        return ngDockerInternal.validateLayout(layout);
+    };
 
     this.cloneLayout = function(layout) {
-		return ngDockerInternal.cloneLayout(layout);
-	};
+        return ngDockerInternal.cloneLayout(layout);
+    };
 
     this.layoutsEqual = function(a, b) {
-		return ngDockerInternal.layoutsEqual(a, b);
-	};
+        return ngDockerInternal.layoutsEqual(a, b);
+    };
 
     this.findLayoutParentAndIndex = function(rootLayout, layout) {
-		return ngDockerInternal.findLayoutParentAndIndex(rootLayout, layout);
+        return ngDockerInternal.findLayoutParentAndIndex(rootLayout, layout);
     };
 
     this.findPanelLayoutWithId = function(layout, id) {
-		return ngDockerInternal.findPanelLayoutWithId(layout, id);
+        return ngDockerInternal.findPanelLayoutWithId(layout, id);
     };
 
     // returns the new root layout
     this.removeSplitChild = function(rootLayout, layout, index) {
         if(layout.split === undefined) {
             throw new Error('removeSplitChild only valid on splits');
-        }	
+        }
         layout.children.splice(index, 1);
         if(layout.split === 'tabs' && layout.activeTabIndex >= layout.children.length) {
             --layout.activeTabIndex;
@@ -79,11 +79,11 @@ angular.module('ngDocker', [])
         return rootLayout;
     };
 
-	this.revealLayout = function(rootLayout, layout) {
+    this.revealLayout = function(rootLayout, layout) {
         var p = this.findLayoutParentAndIndex(rootLayout, layout);
-        while(p !== null) {    
-            if(p[0].split === 'tabs') {     
-                p[0].activeTabIndex = p[1];     
+        while(p !== null) {
+            if(p[0].split === 'tabs') {
+                p[0].activeTabIndex = p[1];
             }
             p = this.findLayoutParentAndIndex(rootLayout, p[0]);
         }
@@ -93,7 +93,7 @@ angular.module('ngDocker', [])
     // Layout must have gravity defined.
     // Layout may optionally have group defined.
     this.insertPanelLayout = function(rootLayout, panelLayout, ratio) {
-		var that = this;
+        var that = this;
         if(panelLayout.gravity === undefined) {
             throw new Error('Layout gravity must be defined');
         }
@@ -209,11 +209,11 @@ angular.module('ngDocker', [])
             };
             var initialTabWidth = 200;
             var defaultDropSplitRatio = 0.3333333;
-            var allContainerHTML = 
+            var allContainerHTML =
                 '<div class="ng-docker-all-container"></div>';
             var floatingContainerHTML =
                 '<div class="ng-docker-floating-container"></div>';
-            var panelContainerHTML = 
+            var panelContainerHTML =
                 '<div class="ng-docker-panel-container">' +
                 '<div class="ng-docker-header ng-docker-title-container">' +
                 '<div class="ng-docker-title">' +
@@ -221,21 +221,21 @@ angular.module('ngDocker', [])
                 '</div>' +
                 '<div class="ng-docker-close"></div>' +
                 '</div>' +
-                '<div class="ng-docker-contents"></div>' +	
+                '<div class="ng-docker-contents"></div>' +
                 '</div>';
-            var vsplitHTML = 
+            var vsplitHTML =
                 '<div class="ng-docker-vsplit">' +
                 '<div class="ng-docker-left"></div>' +
                 '<div class="ng-docker-separator ng-docker-vsplit-separator"></div>' +
                 '<div class="ng-docker-right"></div>' +
                 '</div>';
-            var hsplitHTML = 
+            var hsplitHTML =
                 '<div class="ng-docker-hsplit">' +
                 '<div class="ng-docker-top"></div>' +
                 '<div class="ng-docker-separator ng-docker-hsplit-separator"></div>' +
                 '<div class="ng-docker-bottom"></div>' +
                 '</div>';
-            var tabsplitHTML = 
+            var tabsplitHTML =
                 '<div class="ng-docker-tabsplit">' +
                 '<div class="ng-docker-tab-nav">' +
                 '<div class="ng-docker-tab-nav-border ng-docker-tab-nav-border-left"></div>' +
@@ -254,17 +254,17 @@ angular.module('ngDocker', [])
                 '<div class="ng-docker-hidden"></div>';
             var dropVisualTopHTML =
                 '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-top"></div>';
-            var dropVisualRightHTML = 
+            var dropVisualRightHTML =
                 '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-right"></div>';
             var dropVisualBottomHTML =
                 '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-bottom"></div>';
-            var dropVisualLeftHTML = 
+            var dropVisualLeftHTML =
                 '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-left"></div>';
             var dropVisualWholeHTML =
-                '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-whole"><div>'; 
+                '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-whole"><div>';
             var dropVisualTabHTML =
                 '<div class="ng-docker-drop-visual ng-docker-drop-visual-tab"></div>';
-            var dropVisualTabOnPanelHTML = 
+            var dropVisualTabOnPanelHTML =
                 '<div class="ng-docker-drop-visual ng-docker-drop-visual-tab-on-panel"></div>';
             var icons = {};
             var panels = {};
@@ -388,7 +388,7 @@ angular.module('ngDocker', [])
                     return $element;
                 } else if(layout.split !== undefined) {
                     return findElementWithLayout(layout);
-                } else { 
+                } else {
                     var panel = panels[layout.id];
                     if(panel !== undefined && panel.parent().length > 0) {
                         var p = findLayoutParentAndIndex(layout);
@@ -397,7 +397,7 @@ angular.module('ngDocker', [])
                             return panel.parent().parent();
                         } else {
                             // panel is wrapped inside a tabsplitHTML, provide .ng-docker-contents
-                            return panel.parent(); 
+                            return panel.parent();
                         }
                     } else {
                         return null;
@@ -505,7 +505,7 @@ angular.module('ngDocker', [])
                 }
             };
 
-            var computeDropTarget = function() { 
+            var computeDropTarget = function() {
                 if(floatingState === null) {
                     throw new Error('A floating state must exist to compute a drop target');
                 }
@@ -608,7 +608,7 @@ angular.module('ngDocker', [])
                             layout: allLayout
                         };
                     }
-                    return null; 
+                    return null;
                 }
             };
 
@@ -828,7 +828,7 @@ angular.module('ngDocker', [])
                                 }
                                 e.preventDefault();
                             }
-                        }  
+                        }
                     } else {
                         release(e);
                     }
@@ -954,7 +954,7 @@ angular.module('ngDocker', [])
                     // clear drag listeners
                     dragListeners = {};
 
-                    // clear the constructed DOM 
+                    // clear the constructed DOM
                     jQuery($element[0]).children('.ng-docker-all-container, .ng-docker-floating-container, .ng-docker-drop-visual').remove();
 
                     // construct the new DOM
@@ -1031,7 +1031,7 @@ angular.module('ngDocker', [])
                                             for(var i = 0; i !== layout.children.length; ++i) (function(i) {
                                                 var tabLayout = layout.children[i];
                                                 // note: the width for this tab is calculated after the entire DOM is built: see updateContainerTabWidths
-                                                var tab = jQuery(tabHTML); 
+                                                var tab = jQuery(tabHTML);
                                                 tab.click(function() {
                                                     layout.activeTabIndex = i;
                                                     $scope.$digest();
@@ -1207,7 +1207,7 @@ angular.module('ngDocker', [])
                                     if(visual !== null) {
                                         visual.prependTo(element);
                                     }
-                                } 
+                                }
                             }
                         }
                     }
@@ -1225,8 +1225,8 @@ angular.module('ngDocker', [])
             var lastFloatingState = undefined;
             $scope.$watch(function() {
                 var layout = layoutGet(layoutScope);
-                if(lastLayout !== undefined 
-                    && lastFloatingState !== undefined  
+                if(lastLayout !== undefined
+                    && lastFloatingState !== undefined
                     && (!ngDockerUtil.layoutsEqual(lastLayout, layout)) || !floatingStatesEqual(lastFloatingState, floatingState))
                 {
                     flipflop = !flipflop;
@@ -1245,885 +1245,885 @@ angular.module('ngDocker', [])
     };
 }])
 .service('ngDockerInternal', [function() {
-	// keep in order: most precise to least precise
-	this.patterns = [
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				{
-					split: 'vertical',
-					children: [
-						{
-							split: 'horizontal',
-							children: [
-								[[null, 'left', 'right', 'bottom', 'center'], 'center'],
-								[['bottom'], 'bottom']
-							]
-						},
-						[['left', 'right'], 'right']
-					]
-				}
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				{
-					split: 'vertical',
-					children: [
-						[['left', 'right'], 'left'],
-						{
-							split: 'horizontal',
-							children: [
-								[[null, 'left', 'right', 'bottom', 'center'], 'center'],
-								[['bottom'], 'bottom']
-							]
-						}
-					]
-				},
-				[['left', 'right'], 'right']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				{
-					split: 'horizontal',
-					children: [
-						{
-							split: 'vertical',
-							children: [
-								[[null, 'left', 'right', 'bottom', 'center'], 'center'],
-								[['left', 'right'], 'right']
-							]
-						},
-						[['bottom'], 'bottom']
-					]
-				}
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				{
-					split: 'horizontal',
-					children: [
-						{
-							split: 'vertical',
-							children: [
-								[['left', 'right'], 'left'],
-								[[null, 'left', 'right', 'bottom', 'center'], 'center']
-							]
-						},
-						[['bottom'], 'bottom']
-					]
-				},
-				[['left', 'right'], 'right']
-			]
-		},
-		{
-			split: 'horizontal',
-			children: [
-				{
-					split: 'vertical',
-					children: [
-						[['left', 'right'], 'left'],
-						{
-							split: 'vertical',
-							children: [
-								[[null, 'left', 'right', 'bottom', 'center'], 'center'],
-								[['left', 'right'], 'right']
-							]
-						}
-					]
-				},
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'horizontal',
-			children: [
-				{
-					split: 'vertical',
-					children: [
-						{
-							split: 'vertical',
-							children: [
-								[['left', 'right'], 'left'],
-								[[null, 'left', 'right', 'bottom', 'center'], 'center']
-							]
-						},
-						[['left', 'right'], 'right']
-					]
-				},
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				{
-					split: 'horizontal',
-					children: [
-						[[null, 'bottom', 'center'], 'center'],
-						[['bottom'], 'bottom']
-					]
-				}
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				{
-					split: 'horizontal',
-					children: [
-						[[null, 'bottom', 'center'], 'center'],
-						[['bottom'], 'bottom']
-					]
-				},
-				[['left', 'right'], 'right']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				{
-					split: 'vertical',
-					children: [
-						[[null, 'left', 'right', 'center'], 'center'],
-						[['left', 'right'], 'right']
-					]
-				}
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				{
-					split: 'vertical',
-					children: [
-						[['left', 'right'], 'left'],
-						[[null, 'left', 'right', 'center'], 'center']
-					]
-				},
-				[['left', 'right'], 'right']
-			]
-		},
-		{
-			split: 'horizontal',
-			children: [
-				{
-					split: 'vertical',
-					children: [
-						[[null, 'bottom', 'center'], 'center'],
-						[['left', 'right'], 'right']
-					]
-				},
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'horizontal',
-			children: [
-				{
-					split: 'vertical',
-					children: [
-						[['left', 'right'], 'left'],
-						[[null, 'bottom', 'center'], 'center']
-					]
-				},
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				{
-					split: 'vertical',
-					children: [
-						[['bottom'], 'bottom'],
-						[['left', 'right'], 'right']
-					]
-				}
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				{
-					split: 'vertical',
-					children: [
-						[['left', 'right'], 'left'],
-						[['bottom'], 'bottom']
-					]
-				},
-				[['left', 'right'], 'right']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				{
-					split: 'horizontal',
-					children: [
-						[['left', 'right'], 'right'],
-						[['bottom'], 'bottom']
-					]
-				}
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				{
-					split: 'horizontal',
-					children: [
-						[['left', 'right'], 'left'],
-						[['bottom'], 'bottom']
-					]
-				},
-				[['left', 'right'], 'right']
-			]
-		},
-		{
-			split: 'horizontal',
-			children: [
-				{
-					split: 'vertical',
-					children: [
-						[['left', 'right'], 'left'],
-						[['left', 'right'], 'right']
-					]
-				},
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'horizontal',
-			children: [
-				[[null, 'bottom', 'center'], 'center'],
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				[[null, 'center'], 'center']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[[null, 'center'], 'center'],
-				[['left', 'right'], 'right']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['bottom'], 'bottom'],
-				[['left', 'right'], 'right']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'horizontal',
-			children: [
-				[['left'], 'left'],
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'horizontal',
-			children: [
-				[['right'], 'right'],
-				[['bottom'], 'bottom']
-			]
-		},
-		{
-			split: 'vertical',
-			children: [
-				[['left', 'right'], 'left'],
-				[['left', 'right'], 'right']
-			]
-		},
-		[[null, 'center'], 'center'],
-		[['left'], 'left'],
-		[['right'], 'right'],
-		[['bottom'], 'bottom']
-	];
+    // keep in order: most precise to least precise
+    this.patterns = [
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                {
+                    split: 'vertical',
+                    children: [
+                        {
+                            split: 'horizontal',
+                            children: [
+                                [[null, 'left', 'right', 'bottom', 'center'], 'center'],
+                                [['bottom'], 'bottom']
+                            ]
+                        },
+                        [['left', 'right'], 'right']
+                    ]
+                }
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        {
+                            split: 'horizontal',
+                            children: [
+                                [[null, 'left', 'right', 'bottom', 'center'], 'center'],
+                                [['bottom'], 'bottom']
+                            ]
+                        }
+                    ]
+                },
+                [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                {
+                    split: 'horizontal',
+                    children: [
+                        {
+                            split: 'vertical',
+                            children: [
+                                [[null, 'left', 'right', 'bottom', 'center'], 'center'],
+                                [['left', 'right'], 'right']
+                            ]
+                        },
+                        [['bottom'], 'bottom']
+                    ]
+                }
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                {
+                    split: 'horizontal',
+                    children: [
+                        {
+                            split: 'vertical',
+                            children: [
+                                [['left', 'right'], 'left'],
+                                [[null, 'left', 'right', 'bottom', 'center'], 'center']
+                            ]
+                        },
+                        [['bottom'], 'bottom']
+                    ]
+                },
+                [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        {
+                            split: 'vertical',
+                            children: [
+                                [[null, 'left', 'right', 'bottom', 'center'], 'center'],
+                                [['left', 'right'], 'right']
+                            ]
+                        }
+                    ]
+                },
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        {
+                            split: 'vertical',
+                            children: [
+                                [['left', 'right'], 'left'],
+                                [[null, 'left', 'right', 'bottom', 'center'], 'center']
+                            ]
+                        },
+                        [['left', 'right'], 'right']
+                    ]
+                },
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                {
+                    split: 'horizontal',
+                    children: [
+                        [[null, 'bottom', 'center'], 'center'],
+                        [['bottom'], 'bottom']
+                    ]
+                }
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                {
+                    split: 'horizontal',
+                    children: [
+                        [[null, 'bottom', 'center'], 'center'],
+                        [['bottom'], 'bottom']
+                    ]
+                },
+                [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                {
+                    split: 'vertical',
+                    children: [
+                        [[null, 'left', 'right', 'center'], 'center'],
+                        [['left', 'right'], 'right']
+                    ]
+                }
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        [[null, 'left', 'right', 'center'], 'center']
+                    ]
+                },
+                [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [[null, 'bottom', 'center'], 'center'],
+                        [['left', 'right'], 'right']
+                    ]
+                },
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        [[null, 'bottom', 'center'], 'center']
+                    ]
+                },
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                {
+                    split: 'vertical',
+                    children: [
+                        [['bottom'], 'bottom'],
+                        [['left', 'right'], 'right']
+                    ]
+                }
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        [['bottom'], 'bottom']
+                    ]
+                },
+                [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                {
+                    split: 'horizontal',
+                    children: [
+                        [['left', 'right'], 'right'],
+                        [['bottom'], 'bottom']
+                    ]
+                }
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                {
+                    split: 'horizontal',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        [['bottom'], 'bottom']
+                    ]
+                },
+                [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        [['left', 'right'], 'right']
+                    ]
+                },
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                [[null, 'bottom', 'center'], 'center'],
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                [[null, 'center'], 'center']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [[null, 'center'], 'center'],
+                [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['bottom'], 'bottom'],
+                [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                [['left'], 'left'],
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                [['right'], 'right'],
+                [['bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                [['left', 'right'], 'left'],
+                [['left', 'right'], 'right']
+            ]
+        },
+        [[null, 'center'], 'center'],
+        [['left'], 'left'],
+        [['right'], 'right'],
+        [['bottom'], 'bottom']
+    ];
 
-	var insertCenterStrategies = [
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					{
-						split: 'vertical',
-						children: [
-							'bottom',
-							'right'
-						]
-					}
-				]
-			},
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[1].children[0]
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					{
-						split: 'vertical',
-						children: [
-							'left',
-							'bottom'
-						]
-					},
-					'right'
-				]
-			},
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[0].children[1]
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					{
-						split: 'horizontal',
-						children: [
-							'right',
-							'bottom'
-						]
-					}
-				]
-			},
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[1].children[0];
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					{
-						split: 'horizontal',
-						children: [
-							'left',
-							'bottom'
-						]
-					},
-					'right'
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout.children[0].children[0];
-			}
-		},
-		{
-			from: {
-				split: 'horizontal',
-				children: [
-					{
-						split: 'vertical',
-						children: [
-							'left',
-							'right'
-						]
-					},
-					'bottom'
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout.children[0].children[0];
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'bottom',
-					'right'
-				]
-			},
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					'bottom'
-				]
-			},
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[1];
-			}
-		},
-		{
-			from: {
-				split: 'horizontal',
-				children: [
-					'left',
-					'bottom'
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					'right'
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout.children[0]
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'right',
-					'bottom'
-				]
-			},
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: 'left',
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'right',
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'bottom',
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout;
-			}
-		}
-	];
+    var insertCenterStrategies = [
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    {
+                        split: 'vertical',
+                        children: [
+                            'bottom',
+                            'right'
+                        ]
+                    }
+                ]
+            },
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[1].children[0]
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    {
+                        split: 'vertical',
+                        children: [
+                            'left',
+                            'bottom'
+                        ]
+                    },
+                    'right'
+                ]
+            },
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[0].children[1]
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    {
+                        split: 'horizontal',
+                        children: [
+                            'right',
+                            'bottom'
+                        ]
+                    }
+                ]
+            },
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[1].children[0];
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    {
+                        split: 'horizontal',
+                        children: [
+                            'left',
+                            'bottom'
+                        ]
+                    },
+                    'right'
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout.children[0].children[0];
+            }
+        },
+        {
+            from: {
+                split: 'horizontal',
+                children: [
+                    {
+                        split: 'vertical',
+                        children: [
+                            'left',
+                            'right'
+                        ]
+                    },
+                    'bottom'
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout.children[0].children[0];
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'bottom',
+                    'right'
+                ]
+            },
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    'bottom'
+                ]
+            },
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[1];
+            }
+        },
+        {
+            from: {
+                split: 'horizontal',
+                children: [
+                    'left',
+                    'bottom'
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    'right'
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout.children[0]
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'right',
+                    'bottom'
+                ]
+            },
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: 'left',
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'right',
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'bottom',
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout;
+            }
+        }
+    ];
 
-	var insertLeftStrategies = [
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					{
-						split: 'horizontal',
-						children: [
-							'center',
-							'bottom'
-						]
-					},
-					'right'
-				]
-			},
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: {
-				split: 'horizontal',
-				children: [
-					{
-						split: 'vertical',
-						children: [
-							'center',
-							'right'
-						]
-					},
-					'bottom'
-				]
-			},
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[0].children[0];
-			}
-		},
-		{
-			from: {
-				split: 'horizontal',
-				children: [
-					'center',
-					'bottom'
-				]
-			},
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'center',
-					'right'
-				]
-			},
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'bottom',
-					'right'
-				]
-			},
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: {
-				split: 'horizontal',
-				children: [
-					'right',
-					'bottom'
-				]
-			},
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: 'center',
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'right',
-			split: 'vertical',
-			index: 0,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'bottom',
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout;
-			}
-		}
-	];
+    var insertLeftStrategies = [
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    {
+                        split: 'horizontal',
+                        children: [
+                            'center',
+                            'bottom'
+                        ]
+                    },
+                    'right'
+                ]
+            },
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: {
+                split: 'horizontal',
+                children: [
+                    {
+                        split: 'vertical',
+                        children: [
+                            'center',
+                            'right'
+                        ]
+                    },
+                    'bottom'
+                ]
+            },
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[0].children[0];
+            }
+        },
+        {
+            from: {
+                split: 'horizontal',
+                children: [
+                    'center',
+                    'bottom'
+                ]
+            },
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'center',
+                    'right'
+                ]
+            },
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'bottom',
+                    'right'
+                ]
+            },
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: {
+                split: 'horizontal',
+                children: [
+                    'right',
+                    'bottom'
+                ]
+            },
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: 'center',
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'right',
+            split: 'vertical',
+            index: 0,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'bottom',
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout;
+            }
+        }
+    ];
 
-	var insertRightStrategies = [
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					{
-						split: 'horizontal',
-						children: [
-							'center',
-							'bottom'
-						]
-					}
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: {
-				split: 'horizontal',
-				children: [
-					{
-						split: 'vertical',
-						children: [
-							'left',
-							'center'
-						]
-					},
-					'bottom'
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: {
-				split: 'horizontal',
-				children: [
-					'center',
-					'bottom'
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					'center'
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					'bottom'
-				]
-			},
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout.children[1];
-			}
-		},
-		{
-			from: {
-				split: 'horizontal',
-				children: [
-					'left',
-					'bottom'
-				]
-			},
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout.children[0];
-			}
-		},
-		{
-			from: 'center',
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'left',
-			split: 'vertical',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'bottom',
-			split: 'horizontal',
-			index: 0,
-			layout: function(layout) {
-				return layout;
-			}
-		}
-	];
+    var insertRightStrategies = [
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    {
+                        split: 'horizontal',
+                        children: [
+                            'center',
+                            'bottom'
+                        ]
+                    }
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: {
+                split: 'horizontal',
+                children: [
+                    {
+                        split: 'vertical',
+                        children: [
+                            'left',
+                            'center'
+                        ]
+                    },
+                    'bottom'
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: {
+                split: 'horizontal',
+                children: [
+                    'center',
+                    'bottom'
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    'center'
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    'bottom'
+                ]
+            },
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout.children[1];
+            }
+        },
+        {
+            from: {
+                split: 'horizontal',
+                children: [
+                    'left',
+                    'bottom'
+                ]
+            },
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout.children[0];
+            }
+        },
+        {
+            from: 'center',
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'left',
+            split: 'vertical',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'bottom',
+            split: 'horizontal',
+            index: 0,
+            layout: function(layout) {
+                return layout;
+            }
+        }
+    ];
 
-	var insertBottomStrategies = [
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					{
-						split: 'vertical',
-						children: [
-							'center',
-							'right'
-						]
-					}
-				]
-			},
-			split: 'horizontal',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					{
-						split: 'vertical',
-						children: [
-							'left',
-							'center'
-						]
-					},
-					'right'
-				]
-			},
-			split: 'horizontal',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					'center'
-				]
-			},
-			split: 'horizontal',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'center',
-					'right'
-				]
-			},
-			split: 'horizontal',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: {
-				split: 'vertical',
-				children: [
-					'left',
-					'right'
-				]
-			},
-			split: 'horizontal',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'center',
-			split: 'horizontal',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'left',
-			split: 'horizontal',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		},
-		{
-			from: 'right',
-			split: 'horizontal',
-			index: 1,
-			layout: function(layout) {
-				return layout;
-			}
-		}
-	];
+    var insertBottomStrategies = [
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    {
+                        split: 'vertical',
+                        children: [
+                            'center',
+                            'right'
+                        ]
+                    }
+                ]
+            },
+            split: 'horizontal',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    {
+                        split: 'vertical',
+                        children: [
+                            'left',
+                            'center'
+                        ]
+                    },
+                    'right'
+                ]
+            },
+            split: 'horizontal',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    'center'
+                ]
+            },
+            split: 'horizontal',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'center',
+                    'right'
+                ]
+            },
+            split: 'horizontal',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: {
+                split: 'vertical',
+                children: [
+                    'left',
+                    'right'
+                ]
+            },
+            split: 'horizontal',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'center',
+            split: 'horizontal',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'left',
+            split: 'horizontal',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        },
+        {
+            from: 'right',
+            split: 'horizontal',
+            index: 1,
+            layout: function(layout) {
+                return layout;
+            }
+        }
+    ];
 
-	this.insertStrategies = {
-		'center': insertCenterStrategies,
-		'left': insertLeftStrategies,
-		'right': insertRightStrategies,
-		'bottom': insertBottomStrategies
-	};
+    this.insertStrategies = {
+        'center': insertCenterStrategies,
+        'left': insertLeftStrategies,
+        'right': insertRightStrategies,
+        'bottom': insertBottomStrategies
+    };
 
     this.computeMatchPrecision = function(match) {
         var precision = 0;
@@ -2174,7 +2174,7 @@ angular.module('ngDocker', [])
     this.matchRootLayoutPattern = function(rootLayout) {
         if(rootLayout === null) {
             throw new Error();
-        } 
+        }
         var that = this;
         var matchLayout = function(layout) {
             // matching attempts begin from most precise to least precise, so
@@ -2351,7 +2351,7 @@ angular.module('ngDocker', [])
                 seenIds[layout.id] = true;
             }
         });
-    };	
+    };
 
     this.cloneLayout = function(layout) {
         if(layout === null) {
@@ -2407,9 +2407,9 @@ angular.module('ngDocker', [])
                     return false;
                 } else if(a.caption !== b.caption) {
                     return false;
-                } else if(a.icon === undefined && b.icon !== undefined 
-                    || a.icon !== undefined && b.icon === undefined 
-                    || a.icon !== undefined && b.icon !== undefined && !this.templatesEqual(a.icon, b.icon)) 
+                } else if(a.icon === undefined && b.icon !== undefined
+                    || a.icon !== undefined && b.icon === undefined
+                    || a.icon !== undefined && b.icon !== undefined && !this.templatesEqual(a.icon, b.icon))
                 {
                     return false;
                 } else if(!this.templatesEqual(a.panel, b.panel)) {
@@ -2482,7 +2482,7 @@ angular.module('ngDocker', [])
             if(result !== undefined) {
                 return result;
             }
-        } 
+        }
         return undefined; // Failed to find layout
     };
 
@@ -2611,7 +2611,7 @@ angular.module('ngDocker', [])
     this.templatesEqual = function(a, b) {
         if(a.templateUrl !== b.templateUrl || a.template !== b.template) {
             return false;
-        } 
+        }
         if(a.controller !== b.controller) {
             return false;
         }
@@ -2620,7 +2620,7 @@ angular.module('ngDocker', [])
         }
         if(a.inject !== undefined && b.inject === undefined) {
             return false;
-        } 
+        }
         if(a.inject !== undefined && b.inject !== undefined) {
             if(!Object.keys(a.inject).reduce(function(accum, k) {
                 return accum && a.inject[k] === b.inject[k];
