@@ -1,5 +1,5 @@
 angular.module('ngDocker', [])
-.service('ngDockerUtil', [function() {
+.service('ngDockerUtil', ['ngDockerInternal', function(ngDockerInternal) {
     var that = this;
 
     this.findPanelLayouts = function(layout) {
@@ -218,6 +218,8 @@ angular.module('ngDocker', [])
                     result.icon = this.cloneTemplate(layout.icon);
                 }
             }
+            result.gravity = layout.gravity;
+            result.group = layout.group;
             if(layout.data !== undefined) {
                 result.data = {};
                 Object.keys(layout.data).forEach(function(k) {
@@ -266,6 +268,12 @@ angular.module('ngDocker', [])
                         return false;
                     }
                 }
+            }
+            if(a.gravity !== b.gravity) {
+                return false;
+            }
+            if(a.group !== b.group) {
+                return false;
             }
             if(a.data !== undefined && b.data === undefined) {
                 return false;
@@ -390,6 +398,157 @@ angular.module('ngDocker', [])
                     rootLayout = null;
                 } else {
                     rootLayout = this.removeSplitChild(rootLayout, p[0], p[1]);
+                }
+            }
+        }
+        return rootLayout;
+    };
+
+    // computes the gravity for a layout
+    // if the gravity is not uniform returns null
+    this.computeLayoutGravity = function(layout) {
+        if(layout.split !== undefined) {
+            return layout.children.map(this.computeLayoutGravity.bind(this)).reduce(function(accum, val) {
+                if(accum !== val) {
+                    return null;
+                } else {
+                    return accum;
+                }
+            });
+        } else {
+            if(layout.gravity === undefined) {
+                throw new Error('non-split panels must have a defined gravity');
+            }
+            return layout.gravity;
+        }
+    };
+
+    this.computeInsertRatio = function(insertStrategy, matchLayout, dockerRatio) {
+        var ratio = insertStrategy.index === 0 ? dockerRatio : 1 - dockerRatio;
+        var layout = insertStrategy.layout(matchLayout);
+        var p = ngDockerUtil.findLayoutParentAndIndex($rootScope.rootLayout, layout);
+        while(p !== null) {
+            if(p[0].split === insertStrategy.split) {
+                ratio = p[1] === 0 ? ratio/p[0].ratio : ratio/(1-p[0].ratio);
+            }
+            layout = p[0];
+            p = ngDockerUtil.findLayoutParentAndIndex($rootScope.rootLayout, layout);
+        }
+        return ratio;
+    };
+
+    this.findInsertStrategy = function(match, layoutToInsert) {
+        var gravity = this.computeLayoutGravity(layoutToInsert);
+        var strategies = ngDockerUtil.insertStrategies[gravity];
+        for(var i = 0; i !== strategies.length; ++i) {
+            var strategy = strategies[i];
+            if(this.matchesAreSame(match, strategy.from)) {
+                return strategy;
+            }
+        }
+        throw new Error('failed to find insert strategy for match');
+    };
+
+    // Insert a panel layout.
+    // Layout must have gravity defined.
+    // Layout may optionally have group defined.
+    this.insertPanelLayout = function(rootLayout, layout, ratio) {
+        if(layout.group === undefined) {
+            throw new Error('Layout group must be defined');
+        }
+        if(layout.gravity === undefined) {
+            throw new Error('Layout gravity must be defined');
+        }
+        var addAsTabSplitTo = function(layout) {
+            if(layout.split === 'tabs') {
+                layout.children.push(panelLayout);
+                layout.activeTabIndex = layout.children.length - 1;
+            } else {
+                var p = ngDockerUtil.findLayoutParentAndIndex(rootLayout, layout);
+                if(p !== null && p[0].split === 'tabs') {
+                    p[0].children.push(panelLayout);
+                    p[0].activeTabIndex = p[0].children.length-1;
+                } else {
+                    var tabSplit = {
+                        split: 'tabs',
+                        activeTabIndex: 1,
+                        children: [
+                            layout,
+                            panelLayout
+                        ]
+                    };
+                    if(p === null) {
+                        rootLayout = tabSplit;
+                    } else {
+                        p[0].children[p[1]] = tabSplit;
+                    }
+                }
+            }
+        };
+        if(rootLayout === null) {
+            rootLayout = panelLayout;
+        } else {
+            // try splitting based on group
+            if(opts.group !== undefined) {
+                var f = function(layout) {
+                    if(layout.group !== undefined) {
+                        if(layout.group === opts.group) {
+                            addAsTabSplitTo(layout);
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        for(var i = 0; i !== layout.children.length; ++i) {
+                            if(f(layout.children[i])) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                };
+                if(f(rootLayout)) {
+                    return;
+                }
+            }
+            // split based on gravity
+            var r = this.matchRootLayoutPattern(rootLayout);
+            var gravity = this.computeLayoutGravity(panelLayout);
+            var f = function(m, l) {
+                if(m === gravity) {
+                    addAsTabSplitTo(l);
+                    return true;
+                } else if(typeof m === 'object' && m.split !== undefined) {
+                    for(var i = 0; i !== m.children.length; ++i) {
+                        if(f(m.children[i], l.children[i])) {
+                            return true;
+                        }
+                    }
+                    return false;
+                } else {
+                    return false;
+                }
+            };
+            if(!f(r.match, r.layout)) {
+                var insertStrategy = this.findInsertStrategy(r.match, panelLayout);
+                var ratio = this.computeInsertRatio(insertStrategy, r.layout, opts.ratio);
+                var layoutToSplit = insertStrategy.layout(r.layout);
+                var p = ngDockerUtil.findLayoutParentAndIndex(rootLayout, layoutToSplit);
+                var split = {
+                    split: insertStrategy.split,
+                    ratio: ratio,
+                    children: insertStrategy.index === 0 ? [
+                        panelLayout,
+                        layoutToSplit
+                    ] : [
+                        layoutToSplit,
+                        panelLayout
+                    ]
+                };
+                if(p === null) {
+                    rootLayout = split;
+                } else {
+                    p[0].children[p[1]] = split;
                 }
             }
         }
@@ -1445,5 +1604,1007 @@ angular.module('ngDocker', [])
                 jQuery(window).off('resize', update);
             });
         }
+    };
+}])
+.service('ngDockerInternal', [function() {
+	// keep in order: most precise to least precise
+	this.patterns = [
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				{
+					split: 'vertical',
+					children: [
+						{
+							split: 'horizontal',
+							children: [
+								[[null, 'left', 'right', 'bottom', 'center'], 'center'],
+								[['bottom'], 'bottom']
+							]
+						},
+						[['left', 'right'], 'right']
+					]
+				}
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				{
+					split: 'vertical',
+					children: [
+						[['left', 'right'], 'left'],
+						{
+							split: 'horizontal',
+							children: [
+								[[null, 'left', 'right', 'bottom', 'center'], 'center'],
+								[['bottom'], 'bottom']
+							]
+						}
+					]
+				},
+				[['left', 'right'], 'right']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				{
+					split: 'horizontal',
+					children: [
+						{
+							split: 'vertical',
+							children: [
+								[[null, 'left', 'right', 'bottom', 'center'], 'center'],
+								[['left', 'right'], 'right']
+							]
+						},
+						[['bottom'], 'bottom']
+					]
+				}
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				{
+					split: 'horizontal',
+					children: [
+						{
+							split: 'vertical',
+							children: [
+								[['left', 'right'], 'left'],
+								[[null, 'left', 'right', 'bottom', 'center'], 'center']
+							]
+						},
+						[['bottom'], 'bottom']
+					]
+				},
+				[['left', 'right'], 'right']
+			]
+		},
+		{
+			split: 'horizontal',
+			children: [
+				{
+					split: 'vertical',
+					children: [
+						[['left', 'right'], 'left'],
+						{
+							split: 'vertical',
+							children: [
+								[[null, 'left', 'right', 'bottom', 'center'], 'center'],
+								[['left', 'right'], 'right']
+							]
+						}
+					]
+				},
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'horizontal',
+			children: [
+				{
+					split: 'vertical',
+					children: [
+						{
+							split: 'vertical',
+							children: [
+								[['left', 'right'], 'left'],
+								[[null, 'left', 'right', 'bottom', 'center'], 'center']
+							]
+						},
+						[['left', 'right'], 'right']
+					]
+				},
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				{
+					split: 'horizontal',
+					children: [
+						[[null, 'bottom', 'center'], 'center'],
+						[['bottom'], 'bottom']
+					]
+				}
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				{
+					split: 'horizontal',
+					children: [
+						[[null, 'bottom', 'center'], 'center'],
+						[['bottom'], 'bottom']
+					]
+				},
+				[['left', 'right'], 'right']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				{
+					split: 'vertical',
+					children: [
+						[[null, 'left', 'right', 'center'], 'center'],
+						[['left', 'right'], 'right']
+					]
+				}
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				{
+					split: 'vertical',
+					children: [
+						[['left', 'right'], 'left'],
+						[[null, 'left', 'right', 'center'], 'center']
+					]
+				},
+				[['left', 'right'], 'right']
+			]
+		},
+		{
+			split: 'horizontal',
+			children: [
+				{
+					split: 'vertical',
+					children: [
+						[[null, 'bottom', 'center'], 'center'],
+						[['left', 'right'], 'right']
+					]
+				},
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'horizontal',
+			children: [
+				{
+					split: 'vertical',
+					children: [
+						[['left', 'right'], 'left'],
+						[[null, 'bottom', 'center'], 'center']
+					]
+				},
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				{
+					split: 'vertical',
+					children: [
+						[['bottom'], 'bottom'],
+						[['left', 'right'], 'right']
+					]
+				}
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				{
+					split: 'vertical',
+					children: [
+						[['left', 'right'], 'left'],
+						[['bottom'], 'bottom']
+					]
+				},
+				[['left', 'right'], 'right']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				{
+					split: 'horizontal',
+					children: [
+						[['left', 'right'], 'right'],
+						[['bottom'], 'bottom']
+					]
+				}
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				{
+					split: 'horizontal',
+					children: [
+						[['left', 'right'], 'left'],
+						[['bottom'], 'bottom']
+					]
+				},
+				[['left', 'right'], 'right']
+			]
+		},
+		{
+			split: 'horizontal',
+			children: [
+				{
+					split: 'vertical',
+					children: [
+						[['left', 'right'], 'left'],
+						[['left', 'right'], 'right']
+					]
+				},
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'horizontal',
+			children: [
+				[[null, 'bottom', 'center'], 'center'],
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				[[null, 'center'], 'center']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[[null, 'center'], 'center'],
+				[['left', 'right'], 'right']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['bottom'], 'bottom'],
+				[['left', 'right'], 'right']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'horizontal',
+			children: [
+				[['left'], 'left'],
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'horizontal',
+			children: [
+				[['right'], 'right'],
+				[['bottom'], 'bottom']
+			]
+		},
+		{
+			split: 'vertical',
+			children: [
+				[['left', 'right'], 'left'],
+				[['left', 'right'], 'right']
+			]
+		},
+		[[null, 'center'], 'center'],
+		[['left'], 'left'],
+		[['right'], 'right'],
+		[['bottom'], 'bottom']
+	];
+
+	var insertCenterStrategies = [
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					{
+						split: 'vertical',
+						children: [
+							'bottom',
+							'right'
+						]
+					}
+				]
+			},
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[1].children[0]
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					{
+						split: 'vertical',
+						children: [
+							'left',
+							'bottom'
+						]
+					},
+					'right'
+				]
+			},
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[0].children[1]
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					{
+						split: 'horizontal',
+						children: [
+							'right',
+							'bottom'
+						]
+					}
+				]
+			},
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[1].children[0];
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					{
+						split: 'horizontal',
+						children: [
+							'left',
+							'bottom'
+						]
+					},
+					'right'
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout.children[0].children[0];
+			}
+		},
+		{
+			from: {
+				split: 'horizontal',
+				children: [
+					{
+						split: 'vertical',
+						children: [
+							'left',
+							'right'
+						]
+					},
+					'bottom'
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout.children[0].children[0];
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'bottom',
+					'right'
+				]
+			},
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					'bottom'
+				]
+			},
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[1];
+			}
+		},
+		{
+			from: {
+				split: 'horizontal',
+				children: [
+					'left',
+					'bottom'
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					'right'
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout.children[0]
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'right',
+					'bottom'
+				]
+			},
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: 'left',
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'right',
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'bottom',
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout;
+			}
+		}
+	];
+
+	var insertLeftStrategies = [
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					{
+						split: 'horizontal',
+						children: [
+							'center',
+							'bottom'
+						]
+					},
+					'right'
+				]
+			},
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: {
+				split: 'horizontal',
+				children: [
+					{
+						split: 'vertical',
+						children: [
+							'center',
+							'right'
+						]
+					},
+					'bottom'
+				]
+			},
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[0].children[0];
+			}
+		},
+		{
+			from: {
+				split: 'horizontal',
+				children: [
+					'center',
+					'bottom'
+				]
+			},
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'center',
+					'right'
+				]
+			},
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'bottom',
+					'right'
+				]
+			},
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: {
+				split: 'horizontal',
+				children: [
+					'right',
+					'bottom'
+				]
+			},
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: 'center',
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'right',
+			split: 'vertical',
+			index: 0,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'bottom',
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout;
+			}
+		}
+	];
+
+	var insertRightStrategies = [
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					{
+						split: 'horizontal',
+						children: [
+							'center',
+							'bottom'
+						]
+					}
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: {
+				split: 'horizontal',
+				children: [
+					{
+						split: 'vertical',
+						children: [
+							'left',
+							'center'
+						]
+					},
+					'bottom'
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: {
+				split: 'horizontal',
+				children: [
+					'center',
+					'bottom'
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					'center'
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					'bottom'
+				]
+			},
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout.children[1];
+			}
+		},
+		{
+			from: {
+				split: 'horizontal',
+				children: [
+					'left',
+					'bottom'
+				]
+			},
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout.children[0];
+			}
+		},
+		{
+			from: 'center',
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'left',
+			split: 'vertical',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'bottom',
+			split: 'horizontal',
+			index: 0,
+			layout: function(layout) {
+				return layout;
+			}
+		}
+	];
+
+	var insertBottomStrategies = [
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					{
+						split: 'vertical',
+						children: [
+							'center',
+							'right'
+						]
+					}
+				]
+			},
+			split: 'horizontal',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					{
+						split: 'vertical',
+						children: [
+							'left',
+							'center'
+						]
+					},
+					'right'
+				]
+			},
+			split: 'horizontal',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					'center'
+				]
+			},
+			split: 'horizontal',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'center',
+					'right'
+				]
+			},
+			split: 'horizontal',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: {
+				split: 'vertical',
+				children: [
+					'left',
+					'right'
+				]
+			},
+			split: 'horizontal',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'center',
+			split: 'horizontal',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'left',
+			split: 'horizontal',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		},
+		{
+			from: 'right',
+			split: 'horizontal',
+			index: 1,
+			layout: function(layout) {
+				return layout;
+			}
+		}
+	];
+
+	this.insertStrategies = {
+		'center': insertCenterStrategies,
+		'left': insertLeftStrategies,
+		'right': insertRightStrategies,
+		'bottom': insertBottomStrategies
+	};
+
+    this.computeMatchPrecision = function(match) {
+        var precision = 0;
+        var f = function(m) {
+            if(typeof m === 'object') {
+                m.children.forEach(f);
+            } else if(typeof m === 'string') {
+                ++precision;
+            } else {
+                throw new Error('Unexpected ' + m);
+            }
+        };
+        f(match);
+        return precision;
+    };
+
+    this.tryMatchLayout = function(pattern, layout) {
+        var that = this;
+        var f = function(p, l) {
+            if(p instanceof Array) {
+                var gravity = that.computeLayoutGravity(l);
+                if(p[0].indexOf(gravity) >= 0) {
+                    return p[1];
+                } else {
+                    return null;
+                }
+            } else if(p.split === l.split && p.children.length === l.children.length) {
+                var children = [];
+                for(var i = 0; i !== p.children.length; ++i) {
+                    var child = f(p.children[i], l.children[i]);
+                    if(child !== null) {
+                        children.push(child);
+                    } else {
+                        return null;
+                    }
+                }
+                return {
+                    split: p.split,
+                    children: children
+                };
+            } else {
+                return null;
+            }
+        };
+        return f(pattern, layout);
+    };
+
+    this.matchRootLayoutPattern = function(rootLayout) {
+        if(rootLayout === null) {
+            throw new Error();
+        } 
+        var that = this;
+        var matchLayout = function(layout) {
+            // matching attempts begin from most precise to least precise, so
+            // the first match we find will automatically be the best match
+            for(var i = 0; i !== this.patterns.length; ++i) {
+                var pattern = this.patterns[i];
+                var match = that.tryMatchLayout(pattern, layout);
+                if(match !== null) {
+                    return match;
+                }
+            }
+            throw new Error('layout does not match any patterns');
+        };
+        var series = [rootLayout];
+        {
+            var next = rootLayout;
+            while(next.split !== undefined && next.split === 'horizontal') {
+                series.push(next.children[1]);
+                next = next.children[1];
+            }
+        }
+        var bestMatch = null;
+        var bestMatchPrecision = null;
+        var bestMatchIndex = null;
+        for(var i = 0; i !== series.length; ++i) {
+            var match = matchLayout(series[i]);
+            var score = this.computeMatchPrecision(match);
+            if(bestMatch === null || bestMatchPrecision > score) {
+                bestMatch = match;
+                bestMatchPrecision = score;
+                bestMatchIndex = i;
+            }
+        }
+        return {
+            match: bestMatch,
+            layout: series[bestMatchIndex]
+        };
+    };
+
+    this.matchesAreSame = function(match1, match2) {
+        var f = function(m1, m2) {
+            if(typeof m1 !== typeof m2) {
+                return false;
+            }
+            switch(typeof m1) {
+                case 'string':
+                    if(m1 !== m2) {
+                        return false;
+                    }
+                    break;
+                case 'object':
+                    if(m1.split !== m2.split) {
+                        return false;
+                    }
+                    if(m1.children.length !== m2.children.length) {
+                        return false;
+                    }
+                    for(var i = 0; i !== m1.children.length; ++i) {
+                        if(!f(m1.children[i], m2.children[i])) {
+                            return false;
+                        }
+                    }
+                    break;
+                default:
+                    throw new Error();
+            }
+            return true;
+        };
+        return f(match1, match2);
     };
 }]);

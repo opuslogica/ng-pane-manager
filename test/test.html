@@ -7,10 +7,10 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js"></script>
         <script src="../ngDocker.js"></script>
 
-		<script type="text/javascript">
+        <script type="text/javascript">
             var app = angular.module('ngDockerTest', ['ngDocker']);
 
-			app.controller('TestDockerController', ['$scope', function($scope) {
+            app.controller('TestDockerController', ['$scope', function($scope) {
                 $scope.layout = {
                     split: 'tabs',
                     activeTabIndex: 0,
@@ -81,7 +81,7 @@
                         }
                     ]
                 };
-			}]);
+            }]);
         </script>
         <style type="text/css">
             body {
@@ -120,34 +120,34 @@
         <script type="text/ng-template" id="icon.html">
             <div class="icon" ng-style="{'background-color': color}"></div>
         </script>
-		<script type="text/ng-template" id="red.html">
-			<div class="red">
+        <script type="text/ng-template" id="red.html">
+            <div class="red">
                 <div class="message">
                     {{message}}
                 </div>
             </div>
-		</script>
-		<script type="text/ng-template" id="green.html">
-			<div class="green">
+        </script>
+        <script type="text/ng-template" id="green.html">
+            <div class="green">
                 <div class="message">
                     {{message}}
                 </div>
             </div>
-		</script>
-		<script type="text/ng-template" id="blue.html">
-			<div class="blue">
+        </script>
+        <script type="text/ng-template" id="blue.html">
+            <div class="blue">
                 <div class="message">
                     {{message}}
                 </div>
             </div>
-		</script>
-		<script type="text/ng-template" id="yellow.html">
-			<div class="yellow">
+        </script>
+        <script type="text/ng-template" id="yellow.html">
+            <div class="yellow">
                 <div class="message">
                     {{message}}
                 </div>
             </div>
-		</script>
-		<ng-docker layout="layout" ng-controller="TestDockerController"></ng-docker>
+        </script>
+        <ng-docker layout="layout" ng-controller="TestDockerController"></ng-docker>
     </body>
 </html>
