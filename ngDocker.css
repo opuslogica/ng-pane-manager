@@ -90,6 +90,7 @@ ng-docker,
     bottom: 0;
     left: 0;
     box-sizing: border-box;
+    background-color: rgb(227, 227, 227);
 }
 
 .ng-docker-separator {
