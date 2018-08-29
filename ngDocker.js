@@ -2,163 +2,159 @@ angular.module('ngDocker', [])
 .service('ngDockerUtil', ['ngDockerInternal', function(ngDockerInternal) {
     var that = this;
 
-    this.findPanelLayouts = function(layout) {
-        return ngDockerInternal.findPanelLayouts(layout);
+    this.findLeaves = function(root) {
+        return ngDockerInternal.findLeaves(root);
     };
 
-    this.validateLayout = function(layout) {
-        return ngDockerInternal.validateLayout(layout);
+    this.validateLayout = function(root) {
+        return ngDockerInternal.validateLayout(root);
     };
 
-    this.cloneLayout = function(layout) {
-        return ngDockerInternal.cloneLayout(layout);
+    this.cloneLayout = function(root) {
+        return ngDockerInternal.cloneLayout(root);
     };
 
     this.layoutsEqual = function(a, b) {
         return ngDockerInternal.layoutsEqual(a, b);
     };
 
-    this.findLayoutParentAndIndex = function(rootLayout, layout) {
-        return ngDockerInternal.findLayoutParentAndIndex(rootLayout, layout);
+    this.findParent = function(root, node) {
+        return ngDockerInternal.findParent(root, node);
     };
 
-    this.findPanelLayoutWithId = function(layout, id) {
-        return ngDockerInternal.findPanelLayoutWithId(layout, id);
+    this.findLeafWithId = function(root, id) {
+        return ngDockerInternal.findLeafWithId(root, id);
     };
 
-    // returns the new root layout
-    this.removeSplitChild = function(rootLayout, layout, index) {
-        if(layout.split === undefined) {
+    this.removeSplitChild = function(root, node, index) {
+        if(node.split === undefined) {
             throw new Error('removeSplitChild only valid on splits');
         }
-        layout.children.splice(index, 1);
-        if(layout.split === 'tabs' && layout.activeTabIndex >= layout.children.length) {
-            --layout.activeTabIndex;
+        node.children.splice(index, 1);
+        if(node.split === 'tabs' && node.activeTabIndex >= node.children.length) {
+            --node.activeTabIndex;
         }
-        if(layout.children.length < 2) {
-            if(layout.children.length === 1) {
-                var p = this.findLayoutParentAndIndex(rootLayout, layout);
+        if(node.children.length < 2) {
+            if(node.children.length === 1) {
+                var p = this.findParent(root, node);
                 if(p === null) {
-                    rootLayout = layout.children[0];
+                    root = node.children[0];
                 } else {
-                    p[0].children[p[1]] = layout.children[0];
+                    p[0].children[p[1]] = node.children[0];
                 }
             } else {
                 ngDockerInternal.validationFail();
             }
         }
-        return rootLayout;
+        return root;
     };
 
-    // returns the new root layout
-    this.removeLayout = function(rootLayout, layout) {
-        var p = this.findLayoutParentAndIndex(rootLayout, layout);
+    this.removeNode = function(root, node) {
+        var p = this.findParent(root, node);
         if(p === null) {
-            rootLayout = null;
+            root = null;
         } else {
-            rootLayout = this.removeSplitChild(rootLayout, p[0], p[1]);
+            root = this.removeSplitChild(root, p[0], p[1]);
         }
-        return rootLayout;
+        return root;
     };
 
-    // returns the new root layout
-    this.removePanelLayoutById = function(rootLayout, id) {
-        var panelLayouts = this.findPanelLayouts(rootLayout);
+    this.removeLeafWithId = function(root, id) {
+        var panelLayouts = this.findLeaves(root);
         for(var i = 0; i !== panelLayouts.length; ++i) {
             var panelLayout = panelLayouts[i];
             if(panelLayout.id === id) {
-                var p = this.findLayoutParentAndIndex(rootLayout, panelLayout);
+                var p = this.findParent(root, panelLayout);
                 if(p === null) {
                     // root panel removed
-                    rootLayout = null;
+                    root = null;
                 } else {
-                    rootLayout = this.removeSplitChild(rootLayout, p[0], p[1]);
+                    root = this.removeSplitChild(root, p[0], p[1]);
                 }
             }
         }
-        return rootLayout;
+        return root;
     };
 
-    this.revealLayout = function(rootLayout, layout) {
-        var p = this.findLayoutParentAndIndex(rootLayout, layout);
+    this.revealNode = function(root, node) {
+        var p = this.findParent(root, node);
         while(p !== null) {
             if(p[0].split === 'tabs') {
                 p[0].activeTabIndex = p[1];
             }
-            p = this.findLayoutParentAndIndex(rootLayout, p[0]);
+            p = this.findParent(root, p[0]);
         }
     };
 
-    // Insert a panel layout.
-    // Layout must have gravity defined.
-    // Layout may optionally have group defined.
-    this.insertPanelLayout = function(rootLayout, panelLayout, ratio) {
+    // Leaf must have gravity defined.
+    // Leaf may optionally have group defined.
+    this.insertLeaf = function(root, leaf, ratio) {
         var that = this;
-        if(panelLayout.gravity === undefined) {
+        if(leaf.gravity === undefined) {
             throw new Error('Layout gravity must be defined');
         }
-        var addAsTabSplitTo = function(layout) {
-            if(layout.split === 'tabs') {
-                layout.children.push(panelLayout);
-                layout.activeTabIndex = layout.children.length - 1;
+        var addAsTabSplitTo = function(node) {
+            if(node.split === 'tabs') {
+                node.children.push(leaf);
+                node.activeTabIndex = node.children.length - 1;
             } else {
-                var p = that.findLayoutParentAndIndex(rootLayout, layout);
+                var p = that.findParent(root, node);
                 if(p !== null && p[0].split === 'tabs') {
-                    p[0].children.push(panelLayout);
+                    p[0].children.push(leaf);
                     p[0].activeTabIndex = p[0].children.length-1;
                 } else {
                     var tabSplit = {
                         split: 'tabs',
                         activeTabIndex: 1,
                         children: [
-                            layout,
-                            panelLayout
+                            node,
+                            leaf
                         ]
                     };
                     if(p === null) {
-                        rootLayout = tabSplit;
+                        root = tabSplit;
                     } else {
                         p[0].children[p[1]] = tabSplit;
                     }
                 }
             }
         };
-        if(rootLayout === null) {
-            rootLayout = panelLayout;
+        if(root === null) {
+            root = leaf;
         } else {
             // try splitting based on group
-            if(panelLayout.group !== undefined) {
-                var f = function(layout) {
-                    if(layout.group !== undefined) {
-                        if(layout.group === panelLayout.group) {
-                            addAsTabSplitTo(layout);
+            if(leaf.group !== undefined) {
+                var f = function(node) {
+                    if(node.group !== undefined) {
+                        if(node.group === leaf.group) {
+                            addAsTabSplitTo(node);
                             return true;
                         } else {
                             return false;
                         }
                     } else {
-                        for(var i = 0; i !== layout.children.length; ++i) {
-                            if(f(layout.children[i])) {
+                        for(var i = 0; i !== node.children.length; ++i) {
+                            if(f(node.children[i])) {
                                 return true;
                             }
                         }
                         return false;
                     }
                 };
-                if(f(rootLayout)) {
-                    return rootLayout;
+                if(f(root)) {
+                    return root;
                 }
             }
             // split based on gravity
-            var r = ngDockerInternal.matchRootLayoutPattern(rootLayout);
-            var gravity = ngDockerInternal.computeLayoutGravity(panelLayout);
-            var f = function(m, l) {
+            var r = ngDockerInternal.matchLayoutPattern(root);
+            var gravity = ngDockerInternal.computeLayoutGravity(leaf);
+            var f = function(m, node) {
                 if(m === gravity) {
-                    addAsTabSplitTo(l);
+                    addAsTabSplitTo(node);
                     return true;
                 } else if(typeof m === 'object' && m.split !== undefined) {
                     for(var i = 0; i !== m.children.length; ++i) {
-                        if(f(m.children[i], l.children[i])) {
+                        if(f(m.children[i], node.children[i])) {
                             return true;
                         }
                     }
@@ -167,30 +163,30 @@ angular.module('ngDocker', [])
                     return false;
                 }
             };
-            if(!f(r.match, r.layout)) {
-                var insertStrategy = ngDockerInternal.findInsertStrategy(r.match, panelLayout);
-                var ratio = ngDockerInternal.computeInsertRatio(rootLayout, insertStrategy, r.layout, ratio);
+            if(!f(r.match, r.node)) {
+                var insertStrategy = ngDockerInternal.findInsertStrategy(r.match, leaf);
+                var ratio = ngDockerInternal.computeInsertRatio(root, insertStrategy, r.layout, ratio);
                 var layoutToSplit = insertStrategy.layout(r.layout);
-                var p = this.findLayoutParentAndIndex(rootLayout, layoutToSplit);
+                var p = this.findParent(root, layoutToSplit);
                 var split = {
                     split: insertStrategy.split,
                     ratio: ratio,
                     children: insertStrategy.index === 0 ? [
-                        panelLayout,
+                        leaf,
                         layoutToSplit
                     ] : [
                         layoutToSplit,
-                        panelLayout
+                        leaf
                     ]
                 };
                 if(p === null) {
-                    rootLayout = split;
+                    root = split;
                 } else {
                     p[0].children[p[1]] = split;
                 }
             }
         }
-        return rootLayout;
+        return root;
     };
 }])
 .directive('ngDocker', ['$parse', '$compile', '$templateCache', '$templateRequest', '$q', '$exceptionHandler', '$controller', 'ngDockerUtil', 'ngDockerInternal', function($parse, $compile, $templateCache, $templateRequest, $q, $exceptionHandler, $controller, ngDockerUtil, ngDockerInternal) {
@@ -353,20 +349,20 @@ angular.module('ngDocker', [])
                 }
             }
 
-            var findLayoutParentAndIndex = function(layout) {
-                var p = ngDockerUtil.findLayoutParentAndIndex(layoutGet(layoutScope), layout);
+            var findParent = function(node) {
+                var p = ngDockerUtil.findParent(layoutGet(layoutScope), node);
                 if(p === undefined) {
-                    throw new Error('Failed to find layout');
+                    throw new Error('Failed to find node');
                 } else {
                     return p;
                 }
             };
 
-            // returns the DOM element whose ngDockerLayout == layout, or null if no such element exists
-            var findElementWithLayout = function(layout) {
+            // returns the DOM element whose ngDockerNode == layout, or null if no such element exists
+            var findElementWithNode = function(layout) {
                 var f = function(element) {
-                    var elementLayout = element.data('ngDockerLayout');
-                    if(elementLayout !== undefined && ngDockerUtil.layoutsEqual(elementLayout, layout)) {
+                    var elementNode = element.data('ngDockerNode');
+                    if(elementNode !== undefined && ngDockerUtil.layoutsEqual(elementNode, layout)) {
                         return element;
                     } else {
                         var children = element.children();
@@ -383,15 +379,15 @@ angular.module('ngDocker', [])
             };
 
             // returns the DOM element where the drop visual should be inserted into as a child
-            var findDropVisualParentElement = function(layout) {
-                if(layout === null) {
+            var findDropVisualParentElement = function(node) {
+                if(node === null) {
                     return $element;
-                } else if(layout.split !== undefined) {
-                    return findElementWithLayout(layout);
+                } else if(node.split !== undefined) {
+                    return findElementWithNode(node);
                 } else {
-                    var panel = panels[layout.id];
+                    var panel = panels[node.id];
                     if(panel !== undefined && panel.parent().length > 0) {
-                        var p = findLayoutParentAndIndex(layout);
+                        var p = findParent(node);
                         if(p === null || p[0].split !== 'tabs') {
                             // panel is wrapped in panelContainerHTML, provide .ng-docker-panel-container
                             return panel.parent().parent();
@@ -405,16 +401,16 @@ angular.module('ngDocker', [])
                 }
             };
 
-            var findLayoutHeaderElement = function(layout) {
-                if(layout.split !== undefined) {
-                    switch(layout.split) {
+            var findNodeHeaderElement = function(node) {
+                if(node.split !== undefined) {
+                    switch(node.split) {
                         case 'vertical':
                         case 'horizontal':
                             // vertical/horizontal splits do not have a header
                             return null;
                         case 'tabs':
                             {
-                                var element = findElementWithLayout(layout);
+                                var element = findElementWithNode(node);
                                 if(element !== null) {
                                     return element.children('.ng-docker-tab-nav');
                                 } else {
@@ -426,9 +422,9 @@ angular.module('ngDocker', [])
                             ngDockerInternal.validationFail();
                     }
                 } else {
-                    var panel = panels[layout.id];
+                    var panel = panels[node.id];
                     if(panel !== undefined && panel.parent().length > 0) {
-                        var p = findLayoutParentAndIndex(layout);
+                        var p = findParent(node);
                         if(p === null || p[0].split !== 'tabs') {
                             // panel is wrapped in panelContainerHTML, provide .ng-docker-header
                             return panel.parent().parent().children('.ng-docker-header');
@@ -442,25 +438,25 @@ angular.module('ngDocker', [])
                 }
             };
 
-            var replaceLayout = function(layout, replacement) {
-                var p = findLayoutParentAndIndex(layout);
+            var replaceNode = function(node, replacement) {
+                var p = findParent(node);
                 if(p === null) {
-                    layoutSet(layoutScope, replacement);
+                    nodeSet(nodeScope, replacement);
                 } else {
                     p[0].children[p[1]] = replacement;
                 }
             };
 
-            var removeSplitChild = function(layout, index) {
-                layoutSet(layoutScope, ngDockerUtil.removeSplitChild(layoutGet(layoutScope), layout, index));
+            var removeSplitChild = function(node, index) {
+                layoutSet(layoutScope, ngDockerUtil.removeSplitChild(layoutGet(layoutScope), node, index));
             };
 
-            var removePanelLayoutById = function(id) {
-                layoutSet(layoutScope, ngDockerUtil.removePanelLayoutById(layoutGet(layoutScope), id));
+            var removeLeafWithId = function(id) {
+                layoutSet(layoutScope, ngDockerUtil.removeLeafWithId(layoutGet(layoutScope), id));
             };
 
-            var removeLayout = function(layout) {
-                layoutSet(layoutScope, ngDockerUtil.removeLayout(layoutGet(layoutScope), layout));
+            var removeNode = function(layout) {
+                layoutSet(layoutScope, ngDockerUtil.removeNode(layoutGet(layoutScope), layout));
             };
 
             // get the angular template string from a template
@@ -509,17 +505,17 @@ angular.module('ngDocker', [])
                 if(floatingState === null) {
                     throw new Error('A floating state must exist to compute a drop target');
                 }
-                var allLayout = layoutGet(layoutScope);
-                if(allLayout === null) {
+                var root = layoutGet(layoutScope);
+                if(root === null) {
                     // drop as root
                     return {
                         where: 'whole',
-                        layout: null
+                        node: null
                     };
                 } else {
                     // check panels (for vertical/horizontal split)
                     {
-                        var panelIds = ngDockerUtil.findPanelLayouts(allLayout).map(function(l) {
+                        var panelIds = ngDockerUtil.findLeaves(root).map(function(l) {
                             return l.id;
                         });
                         for(var i = 0; i !== panelIds.length; ++i) {
@@ -531,7 +527,7 @@ angular.module('ngDocker', [])
                                 {
                                     return {
                                         where: computeDropSplitWhere(container),
-                                        layout: panel.data('ngDockerLayout')
+                                        node: panel.data('ngDockerNode')
                                     };
                                 }
                             }
@@ -539,10 +535,10 @@ angular.module('ngDocker', [])
                     }
                     // check headers (for tabs split)
                     {
-                        var f = function(layout) {
-                            var header = findLayoutHeaderElement(layout);
+                        var f = function(node) {
+                            var header = findNodeHeaderElement(node);
                             if(header !== null) {
-                                if(layout.split === 'tabs') {
+                                if(node.split === 'tabs') {
                                     if(floatingState.cursorPosition.pageX >= header.offset().left && floatingState.cursorPosition.pageX < header.offset().left + header.width()
                                         && floatingState.cursorPosition.pageY >= header.offset().top && floatingState.cursorPosition.pageY < header.offset().top + header.height())
                                     {
@@ -561,19 +557,19 @@ angular.module('ngDocker', [])
                                                 return {
                                                     where: 'tab',
                                                     tabIndex: tabIndex,
-                                                    layout: layout
+                                                    node: node
                                                 };
                                             }
                                         }
                                         return {
                                             where: 'tab',
-                                            tabIndex: layout.children.length,
-                                            layout: layout
+                                            tabIndex: node.children.length,
+                                            node: node
                                         };
                                     }
                                 } else {
-                                    if(layout.split !== undefined) {
-                                        throw new Error('Unexpected header on a ' + layout.split + ' split');
+                                    if(node.split !== undefined) {
+                                        throw new Error('Unexpected header on a ' + node.split + ' split');
                                     }
                                     if(floatingState.cursorPosition.pageX >= header.offset().left && floatingState.cursorPosition.pageX < header.offset().left + header.width()
                                         && floatingState.cursorPosition.pageY >= header.offset().top && floatingState.cursorPosition.pageY < header.offset().top + header.height())
@@ -581,14 +577,14 @@ angular.module('ngDocker', [])
                                         return {
                                             where: 'tab',
                                             tabIndex: 1,
-                                            layout: layout
+                                            node: node
                                         };
                                     }
                                 }
                             }
-                            if(layout.split !== undefined) {
-                                for(var i = 0; i !== layout.children.length; ++i) {
-                                    var result = f(layout.children[i]);
+                            if(node.split !== undefined) {
+                                for(var i = 0; i !== node.children.length; ++i) {
+                                    var result = f(node.children[i]);
                                     if(result !== null) {
                                         return result;
                                     }
@@ -596,7 +592,7 @@ angular.module('ngDocker', [])
                             }
                             return null;
                         };
-                        var result = f(allLayout);
+                        var result = f(root);
                         if(result !== null) {
                             return result;
                         }
@@ -605,7 +601,7 @@ angular.module('ngDocker', [])
                     {
                         return {
                             where: computeDropSplitWhere($element),
-                            layout: allLayout
+                            node: root
                         };
                     }
                     return null;
@@ -618,7 +614,7 @@ angular.module('ngDocker', [])
                 }
                 switch(target.where) {
                     case 'top':
-                        replaceLayout(target.layout, {
+                        replaceNode(target.layout, {
                             split: 'horizontal',
                             ratio: floatingState.dropSplitRatio,
                             children: [
@@ -628,7 +624,7 @@ angular.module('ngDocker', [])
                         });
                         break;
                     case 'right':
-                        replaceLayout(target.layout, {
+                        replaceNode(target.layout, {
                             split: 'vertical',
                             ratio: 1-floatingState.dropSplitRatio,
                             children: [
@@ -638,7 +634,7 @@ angular.module('ngDocker', [])
                         });
                         break;
                     case 'bottom':
-                        replaceLayout(target.layout, {
+                        replaceNode(target.layout, {
                             split: 'horizontal',
                             ratio: 1-floatingState.dropSplitRatio,
                             children: [
@@ -648,7 +644,7 @@ angular.module('ngDocker', [])
                         });
                         break;
                     case 'left':
-                        replaceLayout(target.layout, {
+                        replaceNode(target.layout, {
                             split: 'vertical',
                             ratio: floatingState.dropSplitRatio,
                             children: [
@@ -671,7 +667,7 @@ angular.module('ngDocker', [])
                             target.layout.children.splice(target.tabIndex, 0, floatingState.layout);
                             target.layout.activeTabIndex = target.tabIndex;
                         } else {
-                            replaceLayout(target.layout, {
+                            replaceNode(target.layout, {
                                 split: 'tabs',
                                 activeTabIndex: 1,
                                 children: [
@@ -703,7 +699,7 @@ angular.module('ngDocker', [])
                 tabsplits.each(function() {
                     var tabsplit = jQuery(this);
                     var tabNav = tabsplit.children('.ng-docker-tab-nav');
-                    var layout = tabsplit.data('ngDockerLayout');
+                    var layout = tabsplit.data('ngDockerNode');
                     var tabs = tabNav.children('.ng-docker-tab');
                     for(var i = 0; i !== layout.children.length; ++i) {
                         var tab = jQuery(tabs[i]);
@@ -731,7 +727,7 @@ angular.module('ngDocker', [])
                 if(floatingState !== null) {
                     throw new Error('Cannot construct floating state while one is already present');
                 }
-                var p = findLayoutParentAndIndex(layout);
+                var p = findParent(layout);
                 var dropSplitRatio;
                 if(p === null) {
                     dropSplitRatio = defaultDropSplitRatio;
@@ -755,7 +751,7 @@ angular.module('ngDocker', [])
                     default:
                         ngDockerInternal.validationFail();
                 }
-                removeLayout(layout);
+                removeNode(layout);
                 floatingState = {
                     layout: layout,
                     dropSplitRatio: dropSplitRatio,
@@ -873,16 +869,16 @@ angular.module('ngDocker', [])
                     templateRequestPack = null;
                 }
 
-                var allLayout = layoutGet(layoutScope);
+                var root = layoutGet(layoutScope);
 
-                var panelLayouts =  [];
-                if(allLayout !== null) {
-                    ngDockerUtil.validateLayout(allLayout);
-                    Array.prototype.push.apply(panelLayouts, ngDockerUtil.findPanelLayouts(allLayout));
+                var leaves =  [];
+                if(root !== null) {
+                    ngDockerUtil.validateLayout(root);
+                    Array.prototype.push.apply(leaves, ngDockerUtil.findLeaves(root));
                 }
                 if(floatingState !== null) {
                     ngDockerUtil.validateLayout(floatingState.layout);
-                    Array.prototype.push.apply(panelLayouts, ngDockerUtil.findPanelLayouts(floatingState.layout));
+                    Array.prototype.push.apply(leaves, ngDockerUtil.findLeaves(floatingState.layout));
                 }
 
                 // load any uncached templates before proceeding
@@ -892,22 +888,22 @@ angular.module('ngDocker', [])
                         templateRequestPack.add(template.templateUrl);
                     }
                 };
-                panelLayouts.forEach(function(layout) {
-                    if(layout.icon !== undefined) {
-                        maybeAddTemplate(layout.icon);
+                leaves.forEach(function(leaf) {
+                    if(leaf.icon !== undefined) {
+                        maybeAddTemplate(leaf.icon);
                     }
-                    maybeAddTemplate(layout.panel);
+                    maybeAddTemplate(leaf.panel);
                 });
                 templateRequestPack.finalize().then(function() {
                     templateRequestPack = null;
                     // adapt any previously constructed icons and panels to the new layout and discard any unused ones
                     {
-                        var tryAdapt = function(m, panelLayoutsById) {
+                        var tryAdapt = function(m, leavesById) {
                             var next = {};
                             Object.keys(m).forEach(function(k) {
                                 var el = m[k];
-                                var elLayout = el.data('ngDockerLayout');
-                                var layout = panelLayoutsById[elLayout.id];
+                                var elLayout = el.data('ngDockerNode');
+                                var layout = leavesById[elLayout.id];
                                 if(!layout || !ngDockerUtil.layoutsEqual(layout, elLayout)) {
                                     el.scope().$destroy();
                                     el.remove();
@@ -918,36 +914,36 @@ angular.module('ngDocker', [])
                             });
                             return next;
                         };
-                        var panelLayoutsById = {};
-                        var panelLayoutsWithIconById = {};
-                        panelLayouts.forEach(function(layout) {
-                            panelLayoutsById[layout.id] = layout;
-                            if(layout.icon !== undefined) {
-                                panelLayoutsWithIconById[layout.id] = layout;
+                        var leavesById = {};
+                        var leavesWithIconById = {};
+                        leaves.forEach(function(leaf) {
+                            leavesById[leaf.id] = leaf;
+                            if(leaf.icon !== undefined) {
+                                leavesWithIconById[leaf.id] = leaf;
                             }
                         });
-                        icons = tryAdapt(icons, panelLayoutsWithIconById);
-                        panels = tryAdapt(panels, panelLayoutsById);
+                        icons = tryAdapt(icons, leavesWithIconById);
+                        panels = tryAdapt(panels, leavesById);
                     }
 
                     // construct any missing icons and panels
-                    panelLayouts.forEach(function(layout) {
-                        if(!panels[layout.id]) {
-                            var panelScope = newTemplateScope(layout.panel);
+                    leaves.forEach(function(leaf) {
+                        if(!panels[leaf.id]) {
+                            var panelScope = newTemplateScope(leaf.panel);
                             panelScope.closeThisPanel = function() {
-                                removePanelLayoutById(layout.id);
+                                removeLeafWithId(leaf.id);
                             };
-                            var panel = $compile(getTemplateTemplateString(layout.panel))(panelScope);
-                            maybeLoadTemplateController(layout.panel, panelScope, panel);
-                            panel.data('ngDockerLayout', layout);
-                            panels[layout.id] = panel;
+                            var panel = $compile(getTemplateTemplateString(leaf.panel))(panelScope);
+                            maybeLoadTemplateController(leaf.panel, panelScope, panel);
+                            panel.data('ngDockerNode', leaf);
+                            panels[leaf.id] = panel;
                         }
-                        if(layout.icon !== undefined && !icons[layout.id]) {
-                            var iconScope = newTemplateScope(layout.icon);
-                            var icon = $compile(getTemplateTemplateString(layout.icon))(iconScope);
-                            icon.data('ngDockerLayout', layout);
-                            maybeLoadTemplateController(layout.icon, iconScope, icon);
-                            icons[layout.id] = icon;
+                        if(leaf.icon !== undefined && !icons[leaf.id]) {
+                            var iconScope = newTemplateScope(leaf.icon);
+                            var icon = $compile(getTemplateTemplateString(leaf.icon))(iconScope);
+                            icon.data('ngDockerNode', leaf);
+                            maybeLoadTemplateController(leaf.icon, iconScope, icon);
+                            icons[leaf.id] = icon;
                         }
                     });
 
@@ -960,35 +956,35 @@ angular.module('ngDocker', [])
                     // construct the new DOM
                     {
                         var dragId = 0;
-                        var construct = function(layout, parent, interactive) {
-                            if(layout.split !== undefined) {
+                        var construct = function(node, parent, interactive) {
+                            if(node.split !== undefined) {
                                 var element;
-                                switch(layout.split) {
+                                switch(node.split) {
                                     case 'vertical':
                                         {
                                             element = jQuery(vsplitHTML);
                                             var left = element.children('.ng-docker-left');
                                             var sep = element.children('.ng-docker-separator');
                                             var right = element.children('.ng-docker-right');
-                                            construct(layout.children[0], left, interactive);
-                                            construct(layout.children[1], right, interactive);
-                                            left.css('width', 100*layout.ratio + '%');
-                                            sep.css('left', 'calc(' + 100*layout.ratio + '% - 1px)');
-                                            right.css('width', 100*(1-layout.ratio) + '%');
+                                            construct(node.children[0], left, interactive);
+                                            construct(node.children[1], right, interactive);
+                                            left.css('width', 100*node.ratio + '%');
+                                            sep.css('left', 'calc(' + 100*node.ratio + '% - 1px)');
+                                            right.css('width', 100*(1-node.ratio) + '%');
                                             if(interactive) {
                                                 left.children().children('.ng-docker-header').children('.ng-docker-close').click(function() {
-                                                    removeSplitChild(layout, 0);
+                                                    removeSplitChild(node, 0);
                                                     $scope.$digest();
                                                 });
                                                 right.children().children('.ng-docker-header').children('.ng-docker-close').click(function() {
-                                                    removeSplitChild(layout, 1);
+                                                    removeSplitChild(node, 1);
                                                     $scope.$digest();
                                                 });
                                                 dragListeners[dragId++] = {
                                                     element: sep,
                                                     priority: 1,
                                                     dragHandler: function(e) {
-                                                        layout.ratio = Math.max(0, Math.min(1, (e.pageX - element.offset().left)/element.width()));
+                                                        node.ratio = Math.max(0, Math.min(1, (e.pageX - element.offset().left)/element.width()));
                                                     }
                                                 };
                                             }
@@ -1000,25 +996,25 @@ angular.module('ngDocker', [])
                                             var top = element.children('.ng-docker-top');
                                             var sep = element.children('.ng-docker-separator');
                                             var bottom = element.children('.ng-docker-bottom');
-                                            construct(layout.children[0], top, interactive);
-                                            construct(layout.children[1], bottom, interactive);
-                                            top.css('height', 100*layout.ratio + '%');
-                                            sep.css('top', 'calc(' + 100*layout.ratio + '% - 1px)');
-                                            bottom.css('height', 100*(1-layout.ratio) + '%');
+                                            construct(node.children[0], top, interactive);
+                                            construct(node.children[1], bottom, interactive);
+                                            top.css('height', 100*node.ratio + '%');
+                                            sep.css('top', 'calc(' + 100*node.ratio + '% - 1px)');
+                                            bottom.css('height', 100*(1-node.ratio) + '%');
                                             if(interactive) {
                                                 top.children().children('.ng-docker-header').children('.ng-docker-close').click(function() {
-                                                    removeSplitChild(layout, 0);
+                                                    removeSplitChild(node, 0);
                                                     $scope.$digest();
                                                 });
                                                 bottom.children().children('.ng-docker-header').children('.ng-docker-close').click(function() {
-                                                    removeSplitChild(layout, 1);
+                                                    removeSplitChild(node, 1);
                                                     $scope.$digest();
                                                 });
                                                 dragListeners[dragId++] = {
                                                     element: sep,
                                                     priority: 2,
                                                     dragHandler: function(e) {
-                                                        layout.ratio = Math.max(0, Math.min(1, (e.pageY - element.offset().top)/element.height()));
+                                                        node.ratio = Math.max(0, Math.min(1, (e.pageY - element.offset().top)/element.height()));
                                                     }
                                                 };
                                             }
@@ -1028,16 +1024,16 @@ angular.module('ngDocker', [])
                                         {
                                             element = jQuery(tabsplitHTML);
                                             var tabNav = element.children('.ng-docker-tab-nav');
-                                            for(var i = 0; i !== layout.children.length; ++i) (function(i) {
-                                                var tabLayout = layout.children[i];
+                                            for(var i = 0; i !== node.children.length; ++i) (function(i) {
+                                                var tabLayout = node.children[i];
                                                 // note: the width for this tab is calculated after the entire DOM is built: see updateContainerTabWidths
                                                 var tab = jQuery(tabHTML);
                                                 tab.click(function() {
-                                                    layout.activeTabIndex = i;
+                                                    node.activeTabIndex = i;
                                                     $scope.$digest();
                                                 });
                                                 var title = tab.children('.ng-docker-title');
-                                                title.children('.ng-docker-icon').after(jQuery('<div></div>').text(ngDockerInternal.computeLayoutCaption(layout.children[i])).html());
+                                                title.children('.ng-docker-icon').after(jQuery('<div></div>').text(ngDockerInternal.computeLayoutCaption(node.children[i])).html());
                                                 if(tabLayout.split === undefined && tabLayout.icon !== undefined) {
                                                     title.children('.ng-docker-icon').append(icons[tabLayout.id]);
                                                 } else {
@@ -1045,7 +1041,7 @@ angular.module('ngDocker', [])
                                                 }
                                                 if(interactive) {
                                                     tab.children('.ng-docker-close').click(function() {
-                                                        removeSplitChild(layout, i);
+                                                        removeSplitChild(node, i);
                                                         $scope.$digest();
                                                     });
                                                     dragListeners[dragId++] = {
@@ -1053,11 +1049,11 @@ angular.module('ngDocker', [])
                                                         priority: 1,
                                                         threshold: headerDragThreshold,
                                                         dragHandler: function(e) {
-                                                            beginFloating(e, layout.children[i]);
+                                                            beginFloating(e, node.children[i]);
                                                         }
                                                     };
                                                 }
-                                                if(i === layout.activeTabIndex) {
+                                                if(i === node.activeTabIndex) {
                                                     tab.addClass('ng-docker-tab-active');
                                                 }
                                                 tab.appendTo(tabNav);
@@ -1068,13 +1064,13 @@ angular.module('ngDocker', [])
                                                     priority: 0,
                                                     threshold: headerDragThreshold,
                                                     dragHandler: function(e) {
-                                                        beginFloating(e, layout);
+                                                        beginFloating(e, node);
                                                     }
                                                 };
                                             }
-                                            var activeChild = layout.children[layout.activeTabIndex];
+                                            var activeChild = node.children[node.activeTabIndex];
                                             if(activeChild.split !== undefined) {
-                                                construct(layout.children[layout.activeTabIndex], element.children('.ng-docker-contents'), interactive);
+                                                construct(node.children[node.activeTabIndex], element.children('.ng-docker-contents'), interactive);
                                             } else {
                                                 panels[activeChild.id].appendTo(element.children('.ng-docker-contents'));
                                             }
@@ -1083,16 +1079,16 @@ angular.module('ngDocker', [])
                                     default:
                                         ngDockerInternal.validationFail();
                                 }
-                                element.data('ngDockerLayout', layout);
+                                element.data('ngDockerNode', node);
                                 element.appendTo(parent);
                             } else {
-                                var panel = panels[layout.id];
+                                var panel = panels[node.id];
                                 var panelContainer = jQuery(panelContainerHTML);
                                 var header = panelContainer.children('.ng-docker-header');
                                 var title = header.children('.ng-docker-title');
-                                title.children('.ng-docker-icon').after(jQuery('<div></div>').text(ngDockerInternal.computeLayoutCaption(layout)).html());
-                                if(layout.icon !== undefined) {
-                                    title.children('.ng-docker-icon').append(icons[layout.id]);
+                                title.children('.ng-docker-icon').after(jQuery('<div></div>').text(ngDockerInternal.computeLayoutCaption(node)).html());
+                                if(node.icon !== undefined) {
+                                    title.children('.ng-docker-icon').append(icons[node.id]);
                                 } else {
                                     title.children('.ng-docker-icon').remove();
                                 }
@@ -1103,18 +1099,18 @@ angular.module('ngDocker', [])
                                         priority: 0,
                                         threshold: headerDragThreshold,
                                         dragHandler: function(e) {
-                                            beginFloating(e, layout);
+                                            beginFloating(e, node);
                                         }
                                     };
                                 }
                                 panelContainer.appendTo(parent);
                             }
                         };
-                        // construct all container
-                        if(allLayout !== null) {
+                        // construct container for layout elements
+                        if(root !== null) {
                             var allContainer = jQuery(allContainerHTML);
-                            construct(allLayout, allContainer, true);
-                            if(allLayout.split === undefined) {
+                            construct(root, allContainer, true);
+                            if(root.split === undefined) {
                                 // special case with one root panel
                                 allContainer.children().children('.ng-docker-header').children('.ng-docker-close').click(function() {
                                     layoutSet(layoutScope, null);
@@ -1140,9 +1136,9 @@ angular.module('ngDocker', [])
                             {
                                 var target = computeDropTarget();
                                 if(target !== null) {
-                                    var element = findDropVisualParentElement(target.layout);
+                                    var element = findDropVisualParentElement(target.node);
                                     if(element === null) {
-                                        throw new Error('Failed to find element for layout', target.layout);
+                                        throw new Error('Failed to find element for node', target.node);
                                     }
                                     var ratioPercStr = floatingState.dropSplitRatio*100 + '%';
                                     var visual;
@@ -1167,31 +1163,31 @@ angular.module('ngDocker', [])
                                             visual = jQuery(dropVisualWholeHTML);
                                             break;
                                         case 'tab':
-                                            if(target.layout.split !== undefined) {
-                                                if(target.layout.split !== 'tabs') {
+                                            if(target.node.split !== undefined) {
+                                                if(target.node.split !== 'tabs') {
                                                     throw new Error('Expected tabs split');
                                                 }
-                                                var tabNav = findLayoutHeaderElement(target.layout);
+                                                var tabNav = findNodeHeaderElement(target.node);
                                                 var tabVisual = jQuery(dropVisualTabHTML);
                                                 if(target.tabIndex === 0) {
                                                     tabNav.prepend(tabVisual)
                                                 } else {
                                                     jQuery(tabNav.children('.ng-docker-tab')[target.tabIndex-1]).after(tabVisual);
                                                 }
-                                                var futureLayout = ngDockerUtil.cloneLayout(target.layout);
+                                                var futureLayout = ngDockerUtil.cloneLayout(target.node);
                                                 futureLayout.children.splice(target.tabIndex, 0, floatingState.layout);
                                                 tabNav.children().each(function(index) {
                                                     jQuery(this).css('width', computeTabWidth(futureLayout, tabNav.width(), index));
                                                 });
                                                 visual = null;
                                             } else {
-                                                var header = findLayoutHeaderElement(target.layout);
+                                                var header = findNodeHeaderElement(target.node);
                                                 visual = jQuery(dropVisualTabOnPanelHTML);
                                                 var futureLayout = {
                                                     split: 'tabs',
                                                     activeTabIndex: 1,
                                                     children: [
-                                                        target.layout,
+                                                        target.node,
                                                         floatingState.layout
                                                     ]
                                                 };
@@ -1583,8 +1579,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout.children[1].children[0]
+            node: function(node) {
+                return node.children[1].children[0]
             }
         },
         {
@@ -1603,8 +1599,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout.children[0].children[1]
+            node: function(node) {
+                return node.children[0].children[1]
             }
         },
         {
@@ -1623,8 +1619,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout.children[1].children[0];
+            node: function(node) {
+                return node.children[1].children[0];
             }
         },
         {
@@ -1643,8 +1639,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout.children[0].children[0];
+            node: function(node) {
+                return node.children[0].children[0];
             }
         },
         {
@@ -1663,8 +1659,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout.children[0].children[0];
+            node: function(node) {
+                return node.children[0].children[0];
             }
         },
         {
@@ -1677,8 +1673,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
@@ -1691,8 +1687,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout.children[1];
+            node: function(node) {
+                return node.children[1];
             }
         },
         {
@@ -1705,8 +1701,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
@@ -1719,8 +1715,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout.children[0]
+            node: function(node) {
+                return node.children[0]
             }
         },
         {
@@ -1733,32 +1729,32 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
             from: 'left',
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'right',
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'bottom',
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         }
     ];
@@ -1780,8 +1776,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
@@ -1800,8 +1796,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout.children[0].children[0];
+            node: function(node) {
+                return node.children[0].children[0];
             }
         },
         {
@@ -1814,8 +1810,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
@@ -1828,8 +1824,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
@@ -1842,8 +1838,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
@@ -1856,32 +1852,32 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
             from: 'center',
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'right',
             split: 'vertical',
             index: 0,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'bottom',
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         }
     ];
@@ -1903,8 +1899,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
@@ -1923,8 +1919,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
@@ -1937,8 +1933,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
@@ -1951,8 +1947,8 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
@@ -1965,8 +1961,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout.children[1];
+            node: function(node) {
+                return node.children[1];
             }
         },
         {
@@ -1979,32 +1975,32 @@ angular.module('ngDocker', [])
             },
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout.children[0];
+            node: function(node) {
+                return node.children[0];
             }
         },
         {
             from: 'center',
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'left',
             split: 'vertical',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'bottom',
             split: 'horizontal',
             index: 0,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         }
     ];
@@ -2026,8 +2022,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
@@ -2046,8 +2042,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
@@ -2060,8 +2056,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
@@ -2074,8 +2070,8 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
@@ -2088,32 +2084,32 @@ angular.module('ngDocker', [])
             },
             split: 'horizontal',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'center',
             split: 'horizontal',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'left',
             split: 'horizontal',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         },
         {
             from: 'right',
             split: 'horizontal',
             index: 1,
-            layout: function(layout) {
-                return layout;
+            node: function(node) {
+                return node;
             }
         }
     ];
@@ -2140,7 +2136,7 @@ angular.module('ngDocker', [])
         return precision;
     };
 
-    this.tryMatchLayout = function(pattern, layout) {
+    this.tryMatchLayoutPattern = function(pattern, root) {
         var that = this;
         var f = function(p, l) {
             if(p instanceof Array) {
@@ -2168,29 +2164,29 @@ angular.module('ngDocker', [])
                 return null;
             }
         };
-        return f(pattern, layout);
+        return f(pattern, root);
     };
 
-    this.matchRootLayoutPattern = function(rootLayout) {
-        if(rootLayout === null) {
+    this.matchLayoutPattern = function(root) {
+        if(root === null) {
             throw new Error();
         }
         var that = this;
-        var matchLayout = function(layout) {
+        var matchLayout = function(root) {
             // matching attempts begin from most precise to least precise, so
             // the first match we find will automatically be the best match
             for(var i = 0; i !== that.patterns.length; ++i) {
                 var pattern = that.patterns[i];
-                var match = that.tryMatchLayout(pattern, layout);
+                var match = that.tryMatchLayoutPattern(pattern, root);
                 if(match !== null) {
                     return match;
                 }
             }
             throw new Error('layout does not match any patterns');
         };
-        var series = [rootLayout];
+        var series = [root];
         {
-            var next = rootLayout;
+            var next = root;
             while(next.split !== undefined && next.split === 'horizontal') {
                 series.push(next.children[1]);
                 next = next.children[1];
@@ -2210,7 +2206,7 @@ angular.module('ngDocker', [])
         }
         return {
             match: bestMatch,
-            layout: series[bestMatchIndex]
+            node: series[bestMatchIndex]
         };
     };
 
@@ -2246,7 +2242,7 @@ angular.module('ngDocker', [])
         return f(match1, match2);
     };
 
-    this.findPanelLayouts = function(layout) {
+    this.findLeaves = function(layout) {
         var result = [];
         var f = function(layout) {
             if(layout.split) {
@@ -2259,133 +2255,133 @@ angular.module('ngDocker', [])
         return result;
     };
 
-    this.validateLayout = function(layout) {
-        if(!layout) {
+    this.validateLayout = function(root) {
+        if(!root) {
             return;
         }
-        if(typeof layout !== 'object') {
+        if(typeof root !== 'object') {
             throw new Error('Layout must be an object');
         }
-        if(layout.data !== undefined && typeof layout.data !== 'object') {
+        if(root.data !== undefined && typeof root.data !== 'object') {
             throw new Error('data must be an object');
         }
-        if(layout.split !== undefined) {
-            switch(layout.split) {
+        if(root.split !== undefined) {
+            switch(root.split) {
                 case 'horizontal':
                 case 'vertical':
-                    if(layout.ratio === undefined) {
+                    if(root.ratio === undefined) {
                         throw new Error('ratio must be defined for a horizontal or vertical split');
                     }
-                    if(typeof layout.ratio !== 'number') {
+                    if(typeof root.ratio !== 'number') {
                         throw new Error('ratio must be a number');
                     }
-                    if(layout.ratio < 0 || layout.ratio > 1) {
+                    if(root.ratio < 0 || root.ratio > 1) {
                         throw new Error('ratio must be at least 0 and at most 1');
                     }
                     break;
                 case 'tabs':
-                    if(layout.ratio !== undefined) {
+                    if(root.ratio !== undefined) {
                         throw new Error('ratio is not valid for a tabs split');
                     }
-                    if(layout.activeTabIndex === undefined) {
+                    if(root.activeTabIndex === undefined) {
                         throw new Error('activeTabIndex must be defined for a tabs split');
                     }
-                    if(layout.activeTabIndex < 0 || layout.activeTabIndex >= layout.children.length) {
+                    if(root.activeTabIndex < 0 || root.activeTabIndex >= root.children.length) {
                         throw new Error('activeTabIndex out of bounds');
                     }
                     break;
                 default:
-                    throw new Error('Invalid split type \'' + layout.split + '\'');
+                    throw new Error('Invalid split type \'' + root.split + '\'');
             }
-            if(!(layout.children instanceof Array)) {
+            if(!(root.children instanceof Array)) {
                 throw new Error('split must define a children array');
             }
-            switch(layout.split) {
+            switch(root.split) {
                 case 'horizontal':
                 case 'vertical':
-                    if(layout.children.length !== 2) {
+                    if(root.children.length !== 2) {
                         throw new Error('length of children must be 2 for a horizontal or vertical split');
                     }
                     break;
                 case 'tabs':
-                    if(layout.children.length < 2) {
+                    if(root.children.length < 2) {
                         throw new Error('length of children must be at least 2 for a tabs split');
                     }
                     break;
                 default:
                     this.validationFail();
             }
-            layout.children.forEach(this.validateLayout.bind(this));
+            root.children.forEach(this.validateLayout.bind(this));
         } else {
-            if(layout.id === undefined) {
+            if(root.id === undefined) {
                 throw new Error('id must be defined for a panel');
             }
-            if(typeof layout.id !== 'string') {
+            if(typeof root.id !== 'string') {
                 throw new Error('id must be a string');
             }
-            if(layout.caption === undefined) {
+            if(root.caption === undefined) {
                 throw new Error('caption must be defined for a panel');
             }
-            if(typeof layout.caption !== 'string') {
+            if(typeof root.caption !== 'string') {
                 throw new Error('caption must be a string');
             }
-            if(layout.icon !== undefined) {
-                if(typeof layout.icon !== 'object') {
+            if(root.icon !== undefined) {
+                if(typeof root.icon !== 'object') {
                     throw new Error('icon must be an object');
                 }
-                this.validateTemplate(layout.icon);
+                this.validateTemplate(root.icon);
             }
-            if(layout.panel === undefined) {
+            if(root.panel === undefined) {
                 throw new Error('panel must be defined for a panel');
             }
-            if(typeof layout.panel !== 'object') {
+            if(typeof root.panel !== 'object') {
                 throw new Error('panel must be an object');
             }
-            this.validateTemplate(layout.panel);
+            this.validateTemplate(root.panel);
         }
         var seenIds = {};
-        this.findPanelLayouts(layout).forEach(function(layout) {
-            if(seenIds[layout.id]) {
-                throw new Error('Duplicate panel id \'' + layout.id + '\'');
+        this.findLeaves(root).forEach(function(root) {
+            if(seenIds[root.id]) {
+                throw new Error('Duplicate panel id \'' + root.id + '\'');
             } else {
-                seenIds[layout.id] = true;
+                seenIds[root.id] = true;
             }
         });
     };
 
-    this.cloneLayout = function(layout) {
-        if(layout === null) {
+    this.cloneLayout = function(root) {
+        if(root === null) {
             return null;
         } else {
             var result = {};
-            if(layout.split !== undefined) {
-                result.split = layout.split;
-                switch(layout.split) {
+            if(root.split !== undefined) {
+                result.split = root.split;
+                switch(root.split) {
                     case 'vertical':
                     case 'horizontal':
-                        result.ratio = layout.ratio;
+                        result.ratio = root.ratio;
                         break;
                     case 'tabs':
-                        result.activeTabIndex = layout.activeTabIndex;
+                        result.activeTabIndex = root.activeTabIndex;
                         break;
                     default:
                         ngDockerInternal.validationFail();
                 }
-                result.children = layout.children.map(this.cloneLayout.bind(this));
+                result.children = root.children.map(this.cloneLayout.bind(this));
             } else {
-                result.id = layout.id;
-                result.caption = layout.caption;
-                result.panel = this.cloneTemplate(layout.panel);
-                if(layout.icon !== undefined) {
-                    result.icon = this.cloneTemplate(layout.icon);
+                result.id = root.id;
+                result.caption = root.caption;
+                result.panel = this.cloneTemplate(root.panel);
+                if(root.icon !== undefined) {
+                    result.icon = this.cloneTemplate(root.icon);
                 }
             }
-            result.gravity = layout.gravity;
-            result.group = layout.group;
-            if(layout.data !== undefined) {
+            result.gravity = root.gravity;
+            result.group = root.group;
+            if(root.data !== undefined) {
                 result.data = {};
-                Object.keys(layout.data).forEach(function(k) {
-                    result.data[k] = layout.data[k];
+                Object.keys(root.data).forEach(function(k) {
+                    result.data[k] = root.data[k];
                 });
             }
             return result;
@@ -2457,15 +2453,15 @@ angular.module('ngDocker', [])
         return true;
     };
 
-    this.findLayoutParentAndIndex = function(rootLayout, layout) {
+    this.findParent = function(root, node) {
         var that = this;
-        if(this.layoutsEqual(rootLayout, layout)) {
+        if(this.layoutsEqual(root, node)) {
             return null; // Layout is root (no parent)
-        } else if(rootLayout.split !== undefined) {
+        } else if(root.split !== undefined) {
             var f = function(l) {
                 for(var i = 0; i !== l.children.length; ++i) {
                     var child = l.children[i];
-                    if(that.layoutsEqual(child, layout)) {
+                    if(that.layoutsEqual(child, node)) {
                         return [l, i];
                     } else {
                         if(child.split !== undefined) {
@@ -2478,53 +2474,53 @@ angular.module('ngDocker', [])
                 }
                 return undefined;
             };
-            var result = f(rootLayout);
+            var result = f(root);
             if(result !== undefined) {
                 return result;
             }
         }
-        return undefined; // Failed to find layout
+        return undefined; // Failed to find node
     };
 
-    this.findPanelLayoutWithId = function(layout, id) {
-        if(layout === null) {
+    this.findLeafWithId = function(root, id) {
+        if(root === null) {
             return null;
         } else {
-            var f = function(l) {
-                if(l.split !== undefined) {
-                    for(var i = 0; i !== l.children.length; ++i) {
-                        var result = f(l.children[i]);
+            var f = function(node) {
+                if(node.split !== undefined) {
+                    for(var i = 0; i !== node.children.length; ++i) {
+                        var result = f(node.children[i]);
                         if(result !== null) {
                             return result;
                         }
                     }
                     return null;
-                } else if(l.id === id) {
-                    return l;
+                } else if(node.id === id) {
+                    return node;
                 } else {
                     return null;
                 }
             };
-            return f(layout);
+            return f(root);
         }
     };
 
-    this.computeInsertRatio = function(rootLayout, insertStrategy, matchLayout, dockerRatio) {
+    this.computeInsertRatio = function(root, insertStrategy, matchRoot, dockerRatio) {
         var ratio = insertStrategy.index === 0 ? dockerRatio : 1 - dockerRatio;
-        var layout = insertStrategy.layout(matchLayout);
-        var p = this.findLayoutParentAndIndex(rootLayout, layout);
+        var layout = insertStrategy.layout(matchRoot);
+        var p = this.findParent(root, layout);
         while(p !== null) {
             if(p[0].split === insertStrategy.split) {
                 ratio = p[1] === 0 ? ratio/p[0].ratio : ratio/(1-p[0].ratio);
             }
             layout = p[0];
-            p = this.findLayoutParentAndIndex(rootLayout, layout);
+            p = this.findParent(root, layout);
         }
         return ratio;
     };
 
-    this.findInsertStrategy = function(match, layoutToInsert) {
-        var gravity = this.computeLayoutGravity(layoutToInsert);
+    this.findInsertStrategy = function(match, nodeToInsert) {
+        var gravity = this.computeLayoutGravity(nodeToInsert);
         var strategies = this.insertStrategies[gravity];
         for(var i = 0; i !== strategies.length; ++i) {
             var strategy = strategies[i];
@@ -2537,9 +2533,9 @@ angular.module('ngDocker', [])
 
     // computes the gravity for a layout
     // if the gravity is not uniform returns null
-    this.computeLayoutGravity = function(layout) {
-        if(layout.split !== undefined) {
-            return layout.children.map(this.computeLayoutGravity.bind(this)).reduce(function(accum, val) {
+    this.computeLayoutGravity = function(root) {
+        if(root.split !== undefined) {
+            return root.children.map(this.computeLayoutGravity.bind(this)).reduce(function(accum, val) {
                 if(accum !== val) {
                     return null;
                 } else {
@@ -2547,18 +2543,18 @@ angular.module('ngDocker', [])
                 }
             });
         } else {
-            if(layout.gravity === undefined) {
+            if(root.gravity === undefined) {
                 throw new Error('non-split panels must have a defined gravity');
             }
-            return layout.gravity;
+            return root.gravity;
         }
     };
 
-    this.computeLayoutCaption = function(layout) {
-        if(layout.split !== undefined) {
-            return layout.children.map(this.computeLayoutCaption.bind(this)).join(', ');
+    this.computeLayoutCaption = function(root) {
+        if(root.split !== undefined) {
+            return root.children.map(this.computeLayoutCaption.bind(this)).join(', ');
         } else {
-            return layout.caption;
+            return root.caption;
         }
     };
 
