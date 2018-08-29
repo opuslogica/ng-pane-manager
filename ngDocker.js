@@ -60,11 +60,11 @@ angular.module('ngDocker', [])
     };
 
     this.removeLeafWithId = function(root, id) {
-        var panelLayouts = this.findLeaves(root);
-        for(var i = 0; i !== panelLayouts.length; ++i) {
-            var panelLayout = panelLayouts[i];
-            if(panelLayout.id === id) {
-                var p = this.findParent(root, panelLayout);
+        var leaves = this.findLeaves(root);
+        for(var i = 0; i !== leaves.length; ++i) {
+            var leaf = leaves[i];
+            if(leaf.id === id) {
+                var p = this.findParent(root, leaf);
                 if(p === null) {
                     // root panel removed
                     root = null;
@@ -189,7 +189,7 @@ angular.module('ngDocker', [])
         return root;
     };
 }])
-.directive('ngDocker', ['$parse', '$compile', '$templateCache', '$templateRequest', '$q', '$exceptionHandler', '$controller', 'ngDocker', 'ngDockerInternal', function($parse, $compile, $templateCache, $templateRequest, $q, $exceptionHandler, $controller, ngDocker, ngDockerInternal) {
+.directive('ngDocker', ['$parse', '$compile', '$templateCache', '$templateRequest', '$q', '$exceptionHandler', '$controller', '$injector', 'ngDocker', 'ngDockerInternal', function($parse, $compile, $templateCache, $templateRequest, $q, $exceptionHandler, $controller, $injector, ngDocker, ngDockerInternal) {
     return {
         restrict: 'E',
         scope: true,
@@ -264,34 +264,53 @@ angular.module('ngDocker', [])
                 '<div class="ng-docker-drop-visual ng-docker-drop-visual-tab-on-panel"></div>';
             var icons = {};
             var panels = {};
-            var templateRequestPack = null;
+            var templateResolver = null;
             var floatingState = null;
             var dragListeners = {};
 
-            var TemplateRequestPack = function() {
+            var TemplateResolver = function() {
                 this._promises = [];
                 this._aborted = false;
             };
 
-            TemplateRequestPack.AbortedException = function() {};
+            TemplateResolver.AbortedException = function() {};
 
-            TemplateRequestPack.prototype.add = function(templateUrl) {
+            TemplateResolver.prototype.add = function(template) {
                 if(this._aborted) {
-                    throw new Error('Cannot add template requests to an aborted TemplateRequestPack');
+                    throw new Error('Cannot add templates to an aborted TemplateResolver');
                 }
-                this._promises.push($templateRequest(templateUrl));
+                if(template.templateUrl !== undefined) {
+                    this._promises.push($templateRequest(template.templateUrl));
+                }
+                if(template.resolve !== undefined) {
+                    var that = this;
+                    template._resolved = {};
+                    Object.keys(template.resolve).forEach(function(k) {
+                        var val = template.resolve[k];
+                        if(typeof val === 'string') {
+                            template._resolved[k] = $injector.get(k);
+                        } else {
+                            that._promises.push($q.when($injector.invoke(val, null, null, k)).then(function(res) {
+                                if(that._aborted) {
+                                    return;
+                                }
+                                template._resolved[k] = res;
+                            }));
+                        }
+                    });
+                }
             };
 
-            TemplateRequestPack.prototype.finalize = function() {
+            TemplateResolver.prototype.finalize = function() {
                 var that = this;
                 return $q.all(this._promises).then(function() {
                     if(that._aborted) {
-                        throw new TemplateRequestPack.AbortedException();
+                        throw new TemplateResolver.AbortedException();
                     }
                 });
             };
 
-            TemplateRequestPack.prototype.abort = function() {
+            TemplateResolver.prototype.abort = function() {
                 this._aborted = true;
             };
 
@@ -465,7 +484,7 @@ angular.module('ngDocker', [])
             }
 
             var newTemplateScope = function(template) {
-                var scope = $scope.$new();
+                var scope = template.scope !== undefined ? template.scope.$new() : $scope.$new();
                 if(template.inject !== undefined) {
                     Object.keys(template.inject).forEach(function(k) {
                         scope[k] = template.inject[k];
@@ -476,11 +495,17 @@ angular.module('ngDocker', [])
 
             var maybeLoadTemplateController = function(template, scope, element) {
                 if(template.controller !== undefined) {
-                    var controllerInstance = $controller(template.controller, {
+                    var locals = {
                         $scope: scope,
                         $element: element
-                    });
-                    element.data('$ngDockerPanelController', controllerInstance);
+                    };
+                    if(template.resolve !== undefined) {
+                        Object.keys(template.resolve).forEach(function(k) {
+                            locals[k] = template._resolved[k];
+                        });
+                        delete template._resolved;
+                    }
+                    element.data('$ngDockerPanelController', $controller(template.controller, locals));
                 }
             };
 
@@ -864,9 +889,9 @@ angular.module('ngDocker', [])
             }
 
             var update = function() {
-                if(templateRequestPack !== null) {
-                    templateRequestPack.abort();
-                    templateRequestPack = null;
+                if(templateResolver !== null) {
+                    templateResolver.abort();
+                    templateResolver = null;
                 }
 
                 var root = layoutGet(layoutScope);
@@ -882,29 +907,24 @@ angular.module('ngDocker', [])
                 }
 
                 // load any uncached templates before proceeding
-                templateRequestPack = new TemplateRequestPack();
-                var maybeAddTemplate = function(template) {
-                    if(template.templateUrl !== undefined && $templateCache.get(template.templateUrl) === undefined) {
-                        templateRequestPack.add(template.templateUrl);
-                    }
-                };
+                templateResolver = new TemplateResolver();
                 leaves.forEach(function(leaf) {
                     if(leaf.icon !== undefined) {
-                        maybeAddTemplate(leaf.icon);
+                        templateResolver.add(leaf.icon);
                     }
-                    maybeAddTemplate(leaf.panel);
+                    templateResolver.add(leaf.panel);
                 });
-                templateRequestPack.finalize().then(function() {
-                    templateRequestPack = null;
+                templateResolver.finalize().then(function() {
+                    templateResolver = null;
                     // adapt any previously constructed icons and panels to the new leaf and discard any unused ones
                     {
                         var tryAdapt = function(m, leavesById) {
                             var next = {};
                             Object.keys(m).forEach(function(k) {
                                 var el = m[k];
-                                var elLayout = el.data('ngDockerNode');
-                                var leaf = leavesById[elLayout.id];
-                                if(!leaf || !ngDocker.layoutsEqual(leaf, elLayout)) {
+                                var elNode = el.data('ngDockerNode');
+                                var leaf = leavesById[elNode.id];
+                                if(!leaf || !ngDocker.layoutsEqual(leaf, elNode)) {
                                     el.scope().$destroy();
                                     el.remove();
                                 } else {
@@ -935,13 +955,13 @@ angular.module('ngDocker', [])
                             };
                             var panel = $compile(getTemplateTemplateString(leaf.panel))(panelScope);
                             maybeLoadTemplateController(leaf.panel, panelScope, panel);
-                            panel.data('ngDockerNode', leaf);
+                            panel.data('ngDockerNode', ngDocker.cloneLayout(leaf));
                             panels[leaf.id] = panel;
                         }
                         if(leaf.icon !== undefined && !icons[leaf.id]) {
                             var iconScope = newTemplateScope(leaf.icon);
                             var icon = $compile(getTemplateTemplateString(leaf.icon))(iconScope);
-                            icon.data('ngDockerNode', leaf);
+                            icon.data('ngDockerNode', ngDocker.cloneLayout(leaf));
                             maybeLoadTemplateController(leaf.icon, iconScope, icon);
                             icons[leaf.id] = icon;
                         }
@@ -1079,7 +1099,7 @@ angular.module('ngDocker', [])
                                     default:
                                         ngDockerInternal.validationFail();
                                 }
-                                element.data('ngDockerNode', node);
+                                element.data('ngDockerNode', ngDocker.cloneLayout(node));
                                 element.appendTo(parent);
                             } else {
                                 var panel = panels[node.id];
@@ -1208,8 +1228,8 @@ angular.module('ngDocker', [])
                         }
                     }
                 }).catch(function(e) {
-                    templateRequestPack = null;
-                    if(!(e instanceof TemplateRequestPack.AbortedException)) {
+                    templateResolver = null;
+                    if(!(e instanceof TemplateResolver.AbortedException)) {
                         $exceptionHandler(e);
                     }
                 });
@@ -2376,8 +2396,12 @@ angular.module('ngDocker', [])
                     result.icon = this.cloneTemplate(root.icon);
                 }
             }
-            result.gravity = root.gravity;
-            result.group = root.group;
+            if(root.gravity !== undefined) {
+                result.gravity = root.gravity;
+            }
+            if(root.group !== undefined) {
+                result.group = root.group;
+            }
             if(root.data !== undefined) {
                 result.data = {};
                 Object.keys(root.data).forEach(function(k) {
@@ -2592,8 +2616,17 @@ angular.module('ngDocker', [])
         if(template.templateUrl !== undefined) {
             result.templateUrl = template.templateUrl;
         }
+        if(template.scope !== undefined) {
+            result.scope = template.scope;
+        }
         if(template.controller !== undefined) {
             result.controller = template.controller;
+        }
+        if(template.resolve !== undefined) {
+            result.resolve = {};
+            Object.keys(template.resolve).forEach(function(k) {
+                result.resolve[k] = template.resolve[k];
+            });
         }
         if(template.inject !== undefined) {
             result.inject = {};
@@ -2608,7 +2641,31 @@ angular.module('ngDocker', [])
         if(a.templateUrl !== b.templateUrl || a.template !== b.template) {
             return false;
         }
+        if(a.scope !== b.scope) {
+            return false;
+        }
         if(a.controller !== b.controller) {
+            return false;
+        }
+        if(a.resolve === undefined && b.resolve !== undefined) {
+            return false;
+        }
+        if(a.resolve !== undefined && b.resolve === undefined) {
+            return false;
+        }
+        if(a.resolve !== undefined && b.resolve !== undefined) {
+            if(!Object.keys(a.resolve).reduce(function(accum, k) {
+                return accum && a.resolve[k] === b.resolve[k];
+            }, true)) {
+                return false;
+            }
+            if(!Object.keys(b.resolve).reduce(function(accum, k) {
+                return accum && a.resolve[k] === b.resolve[k];
+            }, true)) {
+                return false;
+            }
+        }
+        if(!angular.equals(a.resolve, b.resolve)) {
             return false;
         }
         if(a.inject === undefined && b.inject !== undefined) {
