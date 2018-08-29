@@ -2339,11 +2339,11 @@ angular.module('ngDocker', [])
             if(typeof root.id !== 'string') {
                 throw new Error('id must be a string');
             }
-            if(root.caption === undefined) {
-                throw new Error('caption must be defined for a panel');
+            if(root.title === undefined) {
+                throw new Error('title must be defined for a panel');
             }
-            if(typeof root.caption !== 'string') {
-                throw new Error('caption must be a string');
+            if(typeof root.title !== 'string') {
+                throw new Error('title must be a string');
             }
             if(root.icon !== undefined) {
                 if(typeof root.icon !== 'object') {
@@ -2390,7 +2390,7 @@ angular.module('ngDocker', [])
                 result.children = root.children.map(this.cloneLayout.bind(this));
             } else {
                 result.id = root.id;
-                result.caption = root.caption;
+                result.title = root.title;
                 result.panel = this.cloneTemplate(root.panel);
                 if(root.icon !== undefined) {
                     result.icon = this.cloneTemplate(root.icon);
@@ -2425,7 +2425,7 @@ angular.module('ngDocker', [])
             } else if(a.split === undefined && b.split === undefined) {
                 if(a.id !== b.id) {
                     return false;
-                } else if(a.caption !== b.caption) {
+                } else if(a.title !== b.title) {
                     return false;
                 } else if(a.icon === undefined && b.icon !== undefined
                     || a.icon !== undefined && b.icon === undefined
@@ -2578,7 +2578,7 @@ angular.module('ngDocker', [])
         if(root.split !== undefined) {
             return root.children.map(this.computeLayoutCaption.bind(this)).join(', ');
         } else {
-            return root.caption;
+            return root.title;
         }
     };
 
