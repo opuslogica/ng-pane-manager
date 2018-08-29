@@ -125,7 +125,7 @@ angular.module('ngDocker', [])
             // try splitting based on group
             if(leaf.group !== undefined) {
                 var f = function(node) {
-                    if(node.group !== undefined) {
+                    if(node.split === undefined) {
                         if(node.group === leaf.group) {
                             addAsTabSplitTo(node);
                             return true;
@@ -165,8 +165,8 @@ angular.module('ngDocker', [])
             };
             if(!f(r.match, r.node)) {
                 var insertStrategy = ngDockerInternal.findInsertStrategy(r.match, leaf);
-                var ratio = ngDockerInternal.computeInsertRatio(root, insertStrategy, r.layout, ratio);
-                var layoutToSplit = insertStrategy.layout(r.layout);
+                var ratio = ngDockerInternal.computeInsertRatio(root, insertStrategy, r.node, ratio);
+                var layoutToSplit = insertStrategy.node(r.node);
                 var p = this.findParent(root, layoutToSplit);
                 var split = {
                     split: insertStrategy.split,
@@ -359,10 +359,10 @@ angular.module('ngDocker', [])
             };
 
             // returns the DOM element whose ngDockerNode == layout, or null if no such element exists
-            var findElementWithNode = function(layout) {
+            var findElementWithNode = function(node) {
                 var f = function(element) {
                     var elementNode = element.data('ngDockerNode');
-                    if(elementNode !== undefined && ngDockerUtil.layoutsEqual(elementNode, layout)) {
+                    if(elementNode !== undefined && ngDockerUtil.layoutsEqual(elementNode, node)) {
                         return element;
                     } else {
                         var children = element.children();
@@ -441,7 +441,7 @@ angular.module('ngDocker', [])
             var replaceNode = function(node, replacement) {
                 var p = findParent(node);
                 if(p === null) {
-                    nodeSet(nodeScope, replacement);
+                    layoutSet(layoutScope, replacement);
                 } else {
                     p[0].children[p[1]] = replacement;
                 }
@@ -455,8 +455,8 @@ angular.module('ngDocker', [])
                 layoutSet(layoutScope, ngDockerUtil.removeLeafWithId(layoutGet(layoutScope), id));
             };
 
-            var removeNode = function(layout) {
-                layoutSet(layoutScope, ngDockerUtil.removeNode(layoutGet(layoutScope), layout));
+            var removeNode = function(node) {
+                layoutSet(layoutScope, ngDockerUtil.removeNode(layoutGet(layoutScope), node));
             };
 
             // get the angular template string from a template
@@ -614,64 +614,64 @@ angular.module('ngDocker', [])
                 }
                 switch(target.where) {
                     case 'top':
-                        replaceNode(target.layout, {
+                        replaceNode(target.node, {
                             split: 'horizontal',
                             ratio: floatingState.dropSplitRatio,
                             children: [
                                 floatingState.layout,
-                                target.layout
+                                target.node
                             ]
                         });
                         break;
                     case 'right':
-                        replaceNode(target.layout, {
+                        replaceNode(target.node, {
                             split: 'vertical',
                             ratio: 1-floatingState.dropSplitRatio,
                             children: [
-                                target.layout,
+                                target.node,
                                 floatingState.layout
                             ]
                         });
                         break;
                     case 'bottom':
-                        replaceNode(target.layout, {
+                        replaceNode(target.node, {
                             split: 'horizontal',
                             ratio: 1-floatingState.dropSplitRatio,
                             children: [
-                                target.layout,
+                                target.node,
                                 floatingState.layout
                             ]
                         });
                         break;
                     case 'left':
-                        replaceNode(target.layout, {
+                        replaceNode(target.node, {
                             split: 'vertical',
                             ratio: floatingState.dropSplitRatio,
                             children: [
                                 floatingState.layout,
-                                target.layout
+                                target.node
                             ]
                         });
                         break;
                     case 'whole':
-                        if(target.layout !== null) {
+                        if(target.node !== null) {
                             throw new Error('layout must be null when where is whole');
                         }
                         layoutSet(layoutScope, floatingState.layout);
                         break;
                     case 'tab':
-                        if(target.layout.split !== undefined) {
-                            if(target.layout.split !== 'tabs') {
+                        if(target.node.split !== undefined) {
+                            if(target.node.split !== 'tabs') {
                                 throw new Error('Expected tabs split');
                             }
-                            target.layout.children.splice(target.tabIndex, 0, floatingState.layout);
-                            target.layout.activeTabIndex = target.tabIndex;
+                            target.node.children.splice(target.tabIndex, 0, floatingState.layout);
+                            target.node.activeTabIndex = target.tabIndex;
                         } else {
-                            replaceNode(target.layout, {
+                            replaceNode(target.node, {
                                 split: 'tabs',
                                 activeTabIndex: 1,
                                 children: [
-                                    target.layout,
+                                    target.node,
                                     floatingState.layout
                                 ]
                             });
@@ -682,15 +682,15 @@ angular.module('ngDocker', [])
                 }
             };
 
-            var computeTabWidth = function(layout, headerWidth, tabIndex) {
-                if(layout.split !== 'tabs') {
-                    throw new Error('computeTabWidth expects layout to be a tabs split');
+            var computeTabWidth = function(node, headerWidth, tabIndex) {
+                if(node.split !== 'tabs') {
+                    throw new Error('computeTabWidth expects node to be a tabs split');
                 }
                 var w = headerWidth - tabNavRightPadding;
-                if(layout.children.length*initialTabWidth < w) {
+                if(node.children.length*initialTabWidth < w) {
                     return initialTabWidth;
                 } else {
-                    return w/layout.children.length;
+                    return w/node.children.length;
                 }
             };
 
@@ -699,15 +699,15 @@ angular.module('ngDocker', [])
                 tabsplits.each(function() {
                     var tabsplit = jQuery(this);
                     var tabNav = tabsplit.children('.ng-docker-tab-nav');
-                    var layout = tabsplit.data('ngDockerNode');
+                    var node = tabsplit.data('ngDockerNode');
                     var tabs = tabNav.children('.ng-docker-tab');
-                    for(var i = 0; i !== layout.children.length; ++i) {
+                    for(var i = 0; i !== node.children.length; ++i) {
                         var tab = jQuery(tabs[i]);
-                        tab.css('width', computeTabWidth(layout, tabNav.width(), i));
+                        tab.css('width', computeTabWidth(node, tabNav.width(), i));
                     }
                     var leftBorder = tabNav.children('.ng-docker-tab-nav-border-left');
                     var rightBorder = tabNav.children('.ng-docker-tab-nav-border-right');
-                    var activeTab = jQuery(tabs[layout.activeTabIndex]);
+                    var activeTab = jQuery(tabs[node.activeTabIndex]);
                     leftBorder.css({
                         right: tabNav.width() - activeTab.position().left
                     });
@@ -723,11 +723,11 @@ angular.module('ngDocker', [])
                 updateContainerTabWidths(jQuery($element[0]).find('.ng-docker-floating-container'));
             };
 
-            var beginFloating = function(e, layout) {
+            var beginFloating = function(e, node) {
                 if(floatingState !== null) {
                     throw new Error('Cannot construct floating state while one is already present');
                 }
-                var p = findParent(layout);
+                var p = findParent(node);
                 var dropSplitRatio;
                 if(p === null) {
                     dropSplitRatio = defaultDropSplitRatio;
@@ -751,9 +751,9 @@ angular.module('ngDocker', [])
                     default:
                         ngDockerInternal.validationFail();
                 }
-                removeNode(layout);
+                removeNode(node);
                 floatingState = {
-                    layout: layout,
+                    layout: node,
                     dropSplitRatio: dropSplitRatio,
                     cursorPosition: {
                         pageX: e.pageX,
@@ -896,20 +896,20 @@ angular.module('ngDocker', [])
                 });
                 templateRequestPack.finalize().then(function() {
                     templateRequestPack = null;
-                    // adapt any previously constructed icons and panels to the new layout and discard any unused ones
+                    // adapt any previously constructed icons and panels to the new leaf and discard any unused ones
                     {
                         var tryAdapt = function(m, leavesById) {
                             var next = {};
                             Object.keys(m).forEach(function(k) {
                                 var el = m[k];
                                 var elLayout = el.data('ngDockerNode');
-                                var layout = leavesById[elLayout.id];
-                                if(!layout || !ngDockerUtil.layoutsEqual(layout, elLayout)) {
+                                var leaf = leavesById[elLayout.id];
+                                if(!leaf || !ngDockerUtil.layoutsEqual(leaf, elLayout)) {
                                     el.scope().$destroy();
                                     el.remove();
                                 } else {
                                     el.detach();
-                                    next[layout.id] = el;
+                                    next[leaf.id] = el;
                                 }
                             });
                             return next;
@@ -2507,14 +2507,14 @@ angular.module('ngDocker', [])
 
     this.computeInsertRatio = function(root, insertStrategy, matchRoot, dockerRatio) {
         var ratio = insertStrategy.index === 0 ? dockerRatio : 1 - dockerRatio;
-        var layout = insertStrategy.layout(matchRoot);
-        var p = this.findParent(root, layout);
+        var node = insertStrategy.node(matchRoot);
+        var p = this.findParent(root, node);
         while(p !== null) {
             if(p[0].split === insertStrategy.split) {
                 ratio = p[1] === 0 ? ratio/p[0].ratio : ratio/(1-p[0].ratio);
             }
-            layout = p[0];
-            p = this.findParent(root, layout);
+            node = p[0];
+            p = this.findParent(root, node);
         }
         return ratio;
     };
