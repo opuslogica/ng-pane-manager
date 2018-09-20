@@ -36,56 +36,60 @@ ng-docker,
     display: none;
 }
 
-.ng-docker-title-container {
+.ng-docker-header {
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    flex-direction: row;
+    align-content: center;
+}
+
+.ng-docker-header, .ng-docker-tab {
     color: white;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 14px;
     background-color: black;
     user-select: none;
     cursor: default;
 }
 
-.ng-docker-header {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    height: 20px;
+.ng-docker-title {
+    display: flex;
+    padding: 4px;
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    overflow: hidden;
+    min-width: 0;
 }
 
-.ng-docker-title {
-    position: absolute;
-    top: 2px;
-    right: 12px;
-    bottom: 2px;
-    left: 2px;
+.ng-docker-icon {
+    flex: 0 0 auto;
+    vertical-align: top;
+    padding-right: 4px;
+}
+
+.ng-docker-title-text {
+    flex: 1 1 auto;
+    min-width: 0;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
-.ng-docker-icon {
-    display: inline-block;
-    vertical-align: top;
-    padding-right: 2px;
-}
-
 .ng-docker-close {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    bottom: 2px;
-    width: 12px;
+    display: flex;
+    padding: 4px;
+    flex: 0 0 auto;
     overflow: hidden;
-}
-
-.ng-docker-close::after {
-    content: "\2716";
+    flex-direction: row;
+    align-items: center;
 }
 
 .ng-docker-contents {
     position: absolute;
-    top: 20px;
     right: 0;
     bottom: 0;
     left: 0;
@@ -106,15 +110,12 @@ ng-docker,
 }
 
 .ng-docker-vertical-border {
-    top: 20px;
     bottom: 0px;
-    width: 2px;
 }
 
 .ng-docker-horizontal-border {
     left: 0px;
     right: 0px;
-    height: 2px;
 }
 
 .ng-docker-separator.ng-docker-vertical-border {
@@ -151,10 +152,11 @@ ng-docker,
 
 .ng-docker-tab-nav {
     position: absolute;
+    display: flex;
+    flex-direction: row;
     top: 0;
     right: 0;
     left: 0;
-    height: 20px;
     background-color: rgb(200, 200, 200);
 }
 
@@ -175,9 +177,10 @@ ng-docker,
 
 .ng-docker-tab {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
     background-color: gray;
     height: 100%;
+    flex-direction: row;
 }
 
 .ng-docker-tab-active {
@@ -235,5 +238,4 @@ ng-docker,
 
 .ng-docker-drop-visual-tab-on-panel {
     position: absolute;
-    height: 20px;
 }

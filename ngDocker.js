@@ -2,9 +2,14 @@ angular.module('ngDocker', [])
 .service('ngDocker', ['ngDockerInternal', function(ngDockerInternal) {
     var that = this;
 
+    // When you add configuration options here, be sure to update ngDockerInternal's cloneConfig and configsEqual
     this.DEFAULT_CONFIG = {
         headerHeight: 20,
-        getterSetter: false
+        borderWidth: 2,
+        getterSetter: false,
+        closeButton: {
+            template: '<span style="position: relative; top: 1px; font-size: 16px;">&#x2716;</span>'
+        }
     };
 
     this.findLeaves = function(root) {
@@ -21,6 +26,14 @@ angular.module('ngDocker', [])
 
     this.layoutsEqual = function(a, b) {
         return ngDockerInternal.layoutsEqual(a, b);
+    };
+
+    this.cloneConfig = function(config) {
+        return ngDockerInternal.cloneConfig(config);
+    };
+
+    this.configsEqual = function(a, b) {
+        return ngDockerInternal.configsEqual(a, b);
     };
 
     this.findParent = function(root, node) {
@@ -216,9 +229,10 @@ angular.module('ngDocker', [])
                 '<div class="ng-docker-floating-container"></div>';
             var panelContainerHTML =
                 '<div class="ng-docker-panel-container">' +
-                '<div class="ng-docker-header ng-docker-title-container">' +
+                '<div class="ng-docker-header">' +
                 '<div class="ng-docker-title">' +
                 '<div class="ng-docker-icon"></div>' +
+                '<div class="ng-docker-title-text"></div>' +
                 '</div>' +
                 '<div class="ng-docker-close"></div>' +
                 '</div>' +
@@ -245,9 +259,10 @@ angular.module('ngDocker', [])
                 '<div class="ng-docker-contents"></div>' +
                 '</div>';
             var tabHTML =
-                '<div class="ng-docker-tab ng-docker-title-container">' +
+                '<div class="ng-docker-tab">' +
                 '<div class="ng-docker-title">' +
                 '<div class="ng-docker-icon"></div>' +
+                '<div class="ng-docker-title-text"></div>' +
                 '</div>' +
                 '<div class="ng-docker-close"></div>' +
                 '</div>';
@@ -916,6 +931,7 @@ angular.module('ngDocker', [])
                 }
 
                 var layout = layoutGet($scope);
+                var config = configGet($scope);
 
                 var leaves =  [];
                 if(layout !== null) {
@@ -929,6 +945,7 @@ angular.module('ngDocker', [])
 
                 // load any uncached templates before proceeding
                 templateResolver = new TemplateResolver();
+                templateResolver.add(config.closeButton);
                 leaves.forEach(function(leaf) {
                     if(leaf.icon !== undefined) {
                         templateResolver.add(leaf.icon);
@@ -937,7 +954,7 @@ angular.module('ngDocker', [])
                 });
                 templateResolver.finalize().then(function() {
                     templateResolver = null;
-                    // adapt any previously constructed icons and panels to the new leaf and discard any unused ones
+                    // try to adapt any previously constructed icons and panels to the new leaves, discard those that cannot be adapted
                     {
                         var tryAdapt = function(m, leavesById) {
                             var next = {};
@@ -997,6 +1014,10 @@ angular.module('ngDocker', [])
                     // construct the new DOM
                     {
                         var dragId = 0;
+                        var initCloseButton = function(closeElem) {
+                            var scope = newTemplateScope(config.closeButton);
+                            closeElem.append($compile(getTemplateTemplateString(config.closeButton))(scope));
+                        };
                         var construct = function(root, node, container, interactive) {
                             if(node.split !== undefined) {
                                 var element;
@@ -1024,21 +1045,27 @@ angular.module('ngDocker', [])
                                             });
                                             if(needsLeftBorder()) {
                                                 var borderLeft = jQuery('<div class="ng-docker-border ng-docker-vertical-border"></div>');
+                                                borderLeft.css('top', config.headerHeight);
+                                                borderLeft.css('width', config.borderWidth);
                                                 borderLeft.css('left', 0);
                                                 element.prepend(borderLeft);
                                             }
                                             if(needsRightBorder()) {
                                                 var borderRight = jQuery('<div class="ng-docker-border ng-docker-vertical-border"></div>');
+                                                borderRight.css('top', config.headerHeight);
+                                                borderRight.css('width', config.borderWidth);
                                                 borderRight.css('right', 0);
                                                 element.append(borderRight);
                                             }
                                             var left = element.children('.ng-docker-left');
                                             var sep = element.children('.ng-docker-separator');
                                             var right = element.children('.ng-docker-right');
+                                            sep.css('top', config.headerHeight);
                                             construct(root, node.children[0], left, interactive);
                                             construct(root, node.children[1], right, interactive);
                                             left.css('width', 100*node.ratio + '%');
-                                            sep.css('left', 'calc(' + 100*node.ratio + '% - ' + sep.width()/2 + 'px)');
+                                            sep.css('left', 'calc(' + 100*node.ratio + '% - ' + config.borderWidth/2 + 'px)');
+                                            sep.css('width', config.borderWidth);
                                             right.css('width', 100*(1 - node.ratio) + '%');
                                             if(interactive) {
                                                 left.children().children('.ng-docker-header').children('.ng-docker-close').click(function() {
@@ -1074,7 +1101,8 @@ angular.module('ngDocker', [])
                                             });
                                             if(needsBottomBorder()) {
                                                 var borderBottom = jQuery('<div class="ng-docker-border ng-docker-horizontal-border"></div>');
-                                                borderBottom.css('bottom', borderBottom.height()/2);
+                                                borderBottom.css('height', config.borderWidth);
+                                                borderBottom.css('bottom', 0);
                                                 element.append(borderBottom);
                                             }
                                             var top = element.children('.ng-docker-top');
@@ -1083,7 +1111,8 @@ angular.module('ngDocker', [])
                                             construct(root, node.children[0], top, interactive);
                                             construct(root, node.children[1], bottom, interactive);
                                             top.css('height', 100*node.ratio + '%');
-                                            sep.css('top', 'calc(' + 100*node.ratio + '% - ' + sep.height()/2 + 'px)');
+                                            sep.css('top', 'calc(' + 100*node.ratio + '% - ' + config.borderWidth/2 + 'px)');
+                                            sep.css('height', config.borderWidth);
                                             bottom.css('height', 100*(1-node.ratio) + '%');
                                             if(interactive) {
                                                 top.children().children('.ng-docker-header').children('.ng-docker-close').click(function() {
@@ -1109,6 +1138,7 @@ angular.module('ngDocker', [])
                                         {
                                             element = jQuery(tabsplitHTML);
                                             var tabNav = element.children('.ng-docker-tab-nav');
+                                            tabNav.css('height', config.headerHeight);
                                             for(var i = 0; i !== node.children.length; ++i) (function(i) {
                                                 var tabLayout = node.children[i];
                                                 // note: the width for this tab is calculated after the entire DOM is built: see updateContainerTabWidths
@@ -1118,7 +1148,8 @@ angular.module('ngDocker', [])
                                                     $scope.$digest();
                                                 });
                                                 var title = tab.children('.ng-docker-title');
-                                                title.children('.ng-docker-icon').after(jQuery('<div></div>').text(ngDockerInternal.computeLayoutCaption(node.children[i])).html());
+                                                initCloseButton(tab.children('.ng-docker-close'));
+                                                title.children('.ng-docker-title-text').text(ngDockerInternal.computeLayoutCaption(tabLayout));
                                                 if(tabLayout.split === undefined && tabLayout.icon !== undefined) {
                                                     title.children('.ng-docker-icon').append(icons[tabLayout.id]);
                                                 } else {
@@ -1162,14 +1193,18 @@ angular.module('ngDocker', [])
                                             if(needsSideBorders()) {
                                                 var borderLeft = jQuery('<div class="ng-docker-border ng-docker-vertical-border"></div>');
                                                 var borderRight = jQuery('<div class="ng-docker-border ng-docker-vertical-border"></div>');
-                                                borderLeft.css('left', borderLeft.width()/2);
-                                                borderRight.css('right', borderRight.width()/2);
+                                                borderLeft.css('top', config.headerHeight);
+                                                borderLeft.css('width', config.borderWidth);
+                                                borderLeft.css('left', 0);
+                                                borderRight.css('top', config.headerHeight);
+                                                borderRight.css('right', 0);
                                                 element.append(borderLeft);
                                                 element.append(borderRight);
                                             }
                                             if(needsBottomBorder()) {
                                                 var borderBottom = jQuery('<div class="ng-docker-border ng-docker-horizontal-border"></div>');
-                                                borderBottom.css('bottom', borderBottom.height()/2);
+                                                borderBottom.css('height', config.borderWidth);
+                                                borderBottom.css('bottom', 0);
                                                 element.append(borderBottom);
                                             }
                                             if(interactive) {
@@ -1183,10 +1218,12 @@ angular.module('ngDocker', [])
                                                 };
                                             }
                                             var activeChild = node.children[node.activeTabIndex];
+                                            var contents = element.children('.ng-docker-contents');
+                                            contents.css('top', config.headerHeight);
                                             if(activeChild.split !== undefined) {
-                                                construct(root, node.children[node.activeTabIndex], element.children('.ng-docker-contents'), interactive);
+                                                construct(root, node.children[node.activeTabIndex], contents, interactive);
                                             } else {
-                                                panels[activeChild.id].appendTo(element.children('.ng-docker-contents'));
+                                                panels[activeChild.id].appendTo(contents);
                                             }
                                         }
                                         break;
@@ -1199,14 +1236,18 @@ angular.module('ngDocker', [])
                                 var panel = panels[node.id];
                                 var panelContainer = jQuery(panelContainerHTML);
                                 var header = panelContainer.children('.ng-docker-header');
+                                var contents = panelContainer.children('.ng-docker-contents');
                                 var title = header.children('.ng-docker-title');
-                                title.children('.ng-docker-icon').after(jQuery('<div></div>').text(ngDockerInternal.computeLayoutCaption(node)).html());
+                                initCloseButton(header.children('.ng-docker-close'));
+                                header.css('height', config.headerHeight);
+                                contents.css('top', config.headerHeight);
+                                title.children('.ng-docker-title-text').text(ngDockerInternal.computeLayoutCaption(node));
                                 if(node.icon !== undefined) {
                                     title.children('.ng-docker-icon').append(icons[node.id]);
                                 } else {
                                     title.children('.ng-docker-icon').remove();
                                 }
-                                panel.appendTo(panelContainer.children('.ng-docker-contents'));
+                                panel.appendTo(contents);
                                 var needsSideBorders = function() {
                                     for(var p = ngDocker.findParent(root, node); p !== null; p = ngDocker.findParent(root, p[0])) {
                                         if(p[0].split === 'vertical') {
@@ -1226,14 +1267,19 @@ angular.module('ngDocker', [])
                                 if(needsSideBorders()) {
                                     var borderLeft = jQuery('<div class="ng-docker-border ng-docker-vertical-border"></div>');
                                     var borderRight = jQuery('<div class="ng-docker-border ng-docker-vertical-border"></div>');
-                                    borderLeft.css('left', borderLeft.width()/2);
-                                    borderRight.css('right', borderRight.width()/2);
+                                    borderLeft.css('top', config.headerHeight);
+                                    borderLeft.css('width', config.borderWidth);
+                                    borderLeft.css('left', 0);
+                                    borderRight.css('top', config.headerHeight);
+                                    borderRight.css('width', config.borderWidth);
+                                    borderRight.css('right', 0);
                                     container.append(borderLeft);
                                     container.append(borderRight);
                                 }
                                 if(needsBottomBorder()) {
                                     var borderBottom = jQuery('<div class="ng-docker-border ng-docker-horizontal-border"></div>');
-                                    borderBottom.css('bottom', borderBottom.height()/2);
+                                    borderBottom.css('height', config.borderWidth);
+                                    borderBottom.css('bottom', 0);
                                     container.append(borderBottom);
                                 }
                                 if(interactive) {
@@ -1336,7 +1382,8 @@ angular.module('ngDocker', [])
                                                 };
                                                 visual.css({
                                                     left: computeTabWidth(futureLayout, header.width(), 0),
-                                                    width: computeTabWidth(futureLayout, header.width(), 1)
+                                                    width: computeTabWidth(futureLayout, header.width(), 1),
+                                                    height: config.headerHeight
                                                 });
                                             }
                                             break;
@@ -1361,16 +1408,20 @@ angular.module('ngDocker', [])
             // layout watcher
             var flipflop = true;
             var lastLayout = undefined;
+            var lastConfig = undefined;
             var lastFloatingState = undefined;
             $scope.$watch(function() {
                 var layout = layoutGet($scope);
-                if(lastLayout !== undefined
-                    && lastFloatingState !== undefined
-                    && (!ngDocker.layoutsEqual(lastLayout, layout)) || !floatingStatesEqual(lastFloatingState, floatingState))
-                {
+                var config = configGet($scope);
+                var changed = 
+                       lastLayout !== undefined && !ngDocker.layoutsEqual(lastLayout, layout)
+                    || lastFloatingState !== undefined && !floatingStatesEqual(lastFloatingState, floatingState)
+                    || lastConfig !== undefined && !ngDocker.configsEqual(config, lastConfig);
+                if(changed) {
                     flipflop = !flipflop;
                 }
                 lastLayout = ngDocker.cloneLayout(layout);
+                lastConfig = ngDocker.cloneConfig(config);
                 lastFloatingState = cloneFloatingState(floatingState);
                 return flipflop;
             }, update);
@@ -2596,6 +2647,42 @@ angular.module('ngDocker', [])
                     return false;
                 }
             }
+        }
+        return true;
+    };
+
+    this.cloneConfig = function(config) {
+        if(!config) {
+            return angular.copy(config);
+        }
+        return {
+            headerHeight: config.headerHeight,
+            borderWidth: config.borderWidth,
+            getterSetter: config.getterSetter,
+            closeButton: this.cloneTemplate(config.closeButton)
+        };
+    };
+
+    this.configsEqual = function(a, b) {
+        if(!a && b) {
+            return false;
+        } else if(a && !b) {
+            return false;
+        } else if(a && b) {
+            if(a.headerHeight !== b.headerHeight) {
+                return false;
+            }
+            if(a.borderWidth !== b.borderWidth) {
+                return false;
+            }
+            if(a.getterSetter !== b.getterSetter) {
+                return false;
+            }
+            if(!this.templatesEqual(a.closeButton, b.closeButton)) {
+                return false;
+            }
+        } else if(!angular.equals(a, b)) {
+            return false;
         }
         return true;
     };

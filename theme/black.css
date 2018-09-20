@@ -2,39 +2,12 @@ ng-docker  {
     background-color: rgb(14, 14, 14);
 }
 
-.ng-docker-tab-nav {
-    background-color: rgb(28, 28, 28);
-}
-
-.ng-docker-title-container {
-    height: 30px;
+.ng-docker-title {
     font-size: 16px;
 }
 
-.ng-docker-title {
-    top: 6px;
-    left: 6px;
-    right: 30px;
-}
-
-.ng-docker-icon {
-    padding-right: 6px;
-}
-
-.ng-docker-header {
-    height: 30px;
-}
-
-.ng-docker-contents {
-    top: 30px;
-}
-
 .ng-docker-tab-nav {
-    height: 30px;
-}
-
-.ng-docker-drop-visual-tab-on-panel {
-    height: 30px;
+    background-color: rgb(28, 28, 28);
 }
 
 .ng-docker-tab {
@@ -49,23 +22,10 @@ ng-docker  {
     background: linear-gradient(#273F5E, #262E38);
 }
 
-.ng-docker-close {
-    background-image: url('black/X.png');
-    top: 7px;
-    right: 6px;
-    bottom: 7px;
-    width: 16px;
-}
-
-.ng-docker-close::after {
-    content: "";
-}
-
 .ng-docker-contents {
     background-color: rgb(12, 12, 12);
 }
 
-.ng-docker-tab-nav-border {
-    background-color: #373737;
-    height: 2px;
+.ng-docker-border {
+    background-color: #272727;
 }
