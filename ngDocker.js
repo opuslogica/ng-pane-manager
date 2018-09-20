@@ -2,6 +2,11 @@ angular.module('ngDocker', [])
 .service('ngDocker', ['ngDockerInternal', function(ngDockerInternal) {
     var that = this;
 
+    this.DEFAULT_CONFIG = {
+        headerHeight: 20,
+        getterSetter: false
+    };
+
     this.findLeaves = function(root) {
         return ngDockerInternal.findLeaves(root);
     };
@@ -206,7 +211,7 @@ angular.module('ngDocker', [])
             var initialTabWidth = 200;
             var defaultDropSplitRatio = 0.3333333;
             var allContainerHTML =
-                '<div class="ng-docker-all-container"></div>';
+                '<div class="ng-docker-container"></div>';
             var floatingContainerHTML =
                 '<div class="ng-docker-floating-container"></div>';
             var panelContainerHTML =
@@ -348,28 +353,43 @@ angular.module('ngDocker', [])
                 return true;
             };
 
-            // everything below this point assumes a dependency on layoutGet/layoutSet
-            var layoutGetRaw = $parse($attr.layout);
-            var layoutGet = function(obj) {
-                // convert falsy layouts to null
-                var result = layoutGetRaw(obj);
-                return result ? result : null;
-            };
-            var layoutSet = layoutGetRaw.assign;
-            if(!layoutSet) {
-                throw new Error('layout must be assignable');
+            var configGet;
+            if($attr.config !== undefined) {
+                var configGetRaw = $parse($attr.config);
+                configGet = function(obj) {
+                    return angular.extend({}, ngDocker.DEFAULT_CONFIG, configGetRaw(obj));
+                };
+            } else {
+                configGet = function(obj) {
+                    return ngDocker.DEFAULT_CONFIG;
+                };
             }
 
-            var layoutScope = $scope;
-            while(!layoutScope.hasOwnProperty($attr.layout)) {
-                layoutScope = Object.getPrototypeOf(layoutScope);
-                if(layoutScope === null) {
-                    throw new Error('\'' + $attr.layout + '\' must be defined in either the current scope or any parent scopes');
+            var layoutGet;
+            var layoutSet;
+            if(configGet($scope).getterSetter) {
+                var layoutGetRaw = $parse($attr.layout);
+                layoutGet = function(obj) {
+                    return layoutGetRaw(obj)();
+                };
+                layoutSet = function(obj, val) {
+                    layoutGetRaw(obj)(val);
+                };
+            } else {
+                var layoutGetRaw = $parse($attr.layout);
+                layoutGet = function(obj) {
+                    // convert falsy layouts to null
+                    var result = layoutGetRaw(obj);
+                    return result ? result : null;
+                };
+                layoutSet = layoutGetRaw.assign;
+                if(!layoutSet) {
+                    throw new Error('layout must be assignable');
                 }
             }
 
             var findParent = function(node) {
-                var p = ngDocker.findParent(layoutGet(layoutScope), node);
+                var p = ngDocker.findParent(layoutGet($scope), node);
                 if(p === undefined) {
                     throw new Error('Failed to find node');
                 } else {
@@ -394,7 +414,7 @@ angular.module('ngDocker', [])
                         return null;
                     }
                 };
-                return f($element.children('.ng-docker-all-container'));
+                return f($element.children('.ng-docker-container'));
             };
 
             // returns the DOM element where the drop visual should be inserted into as a child
@@ -460,22 +480,23 @@ angular.module('ngDocker', [])
             var replaceNode = function(node, replacement) {
                 var p = findParent(node);
                 if(p === null) {
-                    layoutSet(layoutScope, replacement);
+                    layoutSet($scope, replacement);
                 } else {
                     p[0].children[p[1]] = replacement;
+                    layoutSet($scope, layoutGet($scope));
                 }
             };
 
             var removeSplitChild = function(node, index) {
-                layoutSet(layoutScope, ngDocker.removeSplitChild(layoutGet(layoutScope), node, index));
+                layoutSet($scope, ngDocker.removeSplitChild(layoutGet($scope), node, index));
             };
 
             var removeLeafWithId = function(id) {
-                layoutSet(layoutScope, ngDocker.removeLeafWithId(layoutGet(layoutScope), id));
+                layoutSet($scope, ngDocker.removeLeafWithId(layoutGet($scope), id));
             };
 
             var removeNode = function(node) {
-                layoutSet(layoutScope, ngDocker.removeNode(layoutGet(layoutScope), node));
+                layoutSet($scope, ngDocker.removeNode(layoutGet($scope), node));
             };
 
             // get the angular template string from a template
@@ -530,7 +551,7 @@ angular.module('ngDocker', [])
                 if(floatingState === null) {
                     throw new Error('A floating state must exist to compute a drop target');
                 }
-                var root = layoutGet(layoutScope);
+                var root = layoutGet($scope);
                 if(root === null) {
                     // drop as root
                     return {
@@ -682,7 +703,7 @@ angular.module('ngDocker', [])
                         if(target.node !== null) {
                             throw new Error('layout must be null when where is whole');
                         }
-                        layoutSet(layoutScope, floatingState.layout);
+                        layoutSet($scope, floatingState.layout);
                         break;
                     case 'tab':
                         if(target.node.split !== undefined) {
@@ -744,7 +765,7 @@ angular.module('ngDocker', [])
 
             var clearDropTargetVisuals = function() {
                 jQuery($element[0]).find('.ng-docker-drop-visual').remove();
-                updateContainerTabWidths(jQuery($element[0]).find('.ng-docker-all-container'));
+                updateContainerTabWidths(jQuery($element[0]).find('.ng-docker-container'));
                 updateContainerTabWidths(jQuery($element[0]).find('.ng-docker-floating-container'));
             };
 
@@ -894,7 +915,7 @@ angular.module('ngDocker', [])
                     templateResolver = null;
                 }
 
-                var layout = layoutGet(layoutScope);
+                var layout = layoutGet($scope);
 
                 var leaves =  [];
                 if(layout !== null) {
@@ -971,7 +992,7 @@ angular.module('ngDocker', [])
                     dragListeners = {};
 
                     // clear the constructed DOM
-                    jQuery($element[0]).children('.ng-docker-all-container, .ng-docker-floating-container, .ng-docker-drop-visual').remove();
+                    jQuery($element[0]).children('.ng-docker-container, .ng-docker-floating-container, .ng-docker-drop-visual').remove();
 
                     // construct the new DOM
                     {
@@ -1033,6 +1054,7 @@ angular.module('ngDocker', [])
                                                     priority: 1,
                                                     dragHandler: function(e) {
                                                         node.ratio = Math.max(0, Math.min(1, (e.pageX - element.offset().left)/element.width()));
+                                                        layoutSet($scope, layoutGet($scope));
                                                     }
                                                 };
                                             }
@@ -1077,6 +1099,7 @@ angular.module('ngDocker', [])
                                                     priority: 2,
                                                     dragHandler: function(e) {
                                                         node.ratio = Math.max(0, Math.min(1, (e.pageY - element.offset().top)/element.height()));
+                                                        layoutSet($scope, layoutGet($scope));
                                                     }
                                                 };
                                             }
@@ -1233,7 +1256,7 @@ angular.module('ngDocker', [])
                             if(layout.split === undefined) {
                                 // special case with one root panel
                                 allContainer.children().children('.ng-docker-header').children('.ng-docker-close').click(function() {
-                                    layoutSet(layoutScope, null);
+                                    layoutSet($scope, null);
                                     $scope.$digest();
                                 });
                             }
@@ -1340,7 +1363,7 @@ angular.module('ngDocker', [])
             var lastLayout = undefined;
             var lastFloatingState = undefined;
             $scope.$watch(function() {
-                var layout = layoutGet(layoutScope);
+                var layout = layoutGet($scope);
                 if(lastLayout !== undefined
                     && lastFloatingState !== undefined
                     && (!ngDocker.layoutsEqual(lastLayout, layout)) || !floatingStatesEqual(lastFloatingState, floatingState))

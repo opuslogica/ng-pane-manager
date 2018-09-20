@@ -16,7 +16,7 @@ ng-docker,
     box-sizing: border-box;
 }
 
-.ng-docker-all-container {
+.ng-docker-container {
     position: absolute;
     top: 20px;
     right: 20px;
