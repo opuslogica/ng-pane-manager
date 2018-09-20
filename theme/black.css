@@ -62,11 +62,6 @@ ng-docker  {
 }
 
 .ng-docker-contents {
-    border-right-style: solid;
-    border-bottom-style: solid;
-    border-left-style: solid;
-    border-width: 1px;
-    border-color: #373737;
     background-color: rgb(12, 12, 12);
 }
 

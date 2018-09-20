@@ -93,25 +93,35 @@ ng-docker,
     background-color: rgb(227, 227, 227);
 }
 
-.ng-docker-separator {
+.ng-docker-border {
+    position: absolute;
+    background-color: black;
+    z-index: 1;
+}
+
+.ng-docker-border-invisible {
     position: absolute;
     opacity: 0;
     z-index: 1;
 }
 
-.ng-docker-vsplit-separator {
-    position: absolute;
-    top: 0;
-    bottom: 0;
+.ng-docker-vertical-border {
+    top: 20px;
+    bottom: 0px;
     width: 2px;
+}
+
+.ng-docker-horizontal-border {
+    left: 0px;
+    right: 0px;
+    height: 2px;
+}
+
+.ng-docker-separator.ng-docker-vertical-border {
     cursor: col-resize;
 }
 
-.ng-docker-hsplit-separator {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 2px;
+.ng-docker-separator.ng-docker-horizontal-border {
     cursor: row-resize;
 }
 
