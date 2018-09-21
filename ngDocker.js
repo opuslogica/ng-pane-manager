@@ -9,7 +9,20 @@ angular.module('ngDocker', [])
         getterSetter: false,
         closeButton: {
             template: '<span style="position: relative; top: 1px; font-size: 16px;">&#x2716;</span>'
-        }
+        },
+        refs: {}
+    };
+
+    this.ref = function(name) {
+        return ngDockerInternal.ref(name);
+    };
+
+    this.isRef = function(x) {
+        return ngDockerInternal.isRef(x);
+    };
+
+    this.deref = function(x, config) {
+        return ngDockerInternal.deref(x, config);
     };
 
     this.findLeaves = function(root) {
@@ -20,12 +33,20 @@ angular.module('ngDocker', [])
         return ngDockerInternal.validateLayout(root);
     };
 
+    this.derefLayout = function(root, config) {
+        return ngDockerInternal.derefLayout(root, config);
+    };
+
     this.cloneLayout = function(root) {
         return ngDockerInternal.cloneLayout(root);
     };
 
     this.layoutsEqual = function(a, b) {
         return ngDockerInternal.layoutsEqual(a, b);
+    };
+
+    this.derefConfig = function(config) {
+        return ngDockerInternal.derefConfig(config);
     };
 
     this.cloneConfig = function(config) {
@@ -288,7 +309,8 @@ angular.module('ngDocker', [])
             var floatingState = null;
             var dragListeners = {};
 
-            var TemplateResolver = function() {
+            var TemplateResolver = function(config) {
+                this._config = config;
                 this._promises = [];
                 this._aborted = false;
             };
@@ -306,7 +328,7 @@ angular.module('ngDocker', [])
                     var that = this;
                     template._resolved = {};
                     Object.keys(template.resolve).forEach(function(k) {
-                        var val = template.resolve[k];
+                        var val = ngDocker.deref(template.resolve[k], that._config);
                         if(typeof val === 'string') {
                             template._resolved[k] = $injector.get(k);
                         } else {
@@ -522,8 +544,9 @@ angular.module('ngDocker', [])
             var newTemplateScope = function(template) {
                 var scope = $scope.$new();
                 if(template.inject !== undefined) {
+                    var config = configGet($scope);
                     Object.keys(template.inject).forEach(function(k) {
-                        scope[k] = template.inject[k];
+                        scope[k] = ngDocker.deref(template.inject[k], config);
                     });
                 }
                 return scope;
@@ -932,6 +955,7 @@ angular.module('ngDocker', [])
 
                 var layout = layoutGet($scope);
                 var config = configGet($scope);
+                var configCopy = ngDocker.cloneConfig(config);
 
                 var leaves =  [];
                 if(layout !== null) {
@@ -944,7 +968,7 @@ angular.module('ngDocker', [])
                 }
 
                 // load any uncached templates before proceeding
-                templateResolver = new TemplateResolver();
+                templateResolver = new TemplateResolver(config);
                 templateResolver.add(config.closeButton);
                 leaves.forEach(function(leaf) {
                     if(leaf.icon !== undefined) {
@@ -961,8 +985,19 @@ angular.module('ngDocker', [])
                             Object.keys(m).forEach(function(k) {
                                 var el = m[k];
                                 var elNode = el.data('ngDockerNode');
+                                var elConfig = el.data('ngDockerConfig');
                                 var leaf = leavesById[elNode.id];
-                                if(!leaf || !ngDocker.layoutsEqual(leaf, elNode)) {
+                                var destroy = false;
+                                if(!leaf) {
+                                    destroy = true;
+                                } else {
+                                    var before = ngDocker.derefLayout(ngDocker.cloneLayout(elNode), elConfig);
+                                    var after = ngDocker.derefLayout(ngDocker.cloneLayout(leaf), config);
+                                    if(!ngDocker.layoutsEqual(before, after)) {
+                                        destroy = true;
+                                    }
+                                }
+                                if(destroy) {
                                     el.scope().$destroy();
                                     el.remove();
                                 } else {
@@ -994,12 +1029,14 @@ angular.module('ngDocker', [])
                             var panel = $compile(getTemplateTemplateString(leaf.panel))(panelScope);
                             maybeLoadTemplateController(leaf.panel, panelScope, panel);
                             panel.data('ngDockerNode', ngDocker.cloneLayout(leaf));
+                            panel.data('ngDockerConfig', configCopy);
                             panels[leaf.id] = panel;
                         }
                         if(leaf.icon !== undefined && !icons[leaf.id]) {
                             var iconScope = newTemplateScope(leaf.icon);
                             var icon = $compile(getTemplateTemplateString(leaf.icon))(iconScope);
                             icon.data('ngDockerNode', ngDocker.cloneLayout(leaf));
+                            icon.data('ngDockerConfig', configCopy);
                             maybeLoadTemplateController(leaf.icon, iconScope, icon);
                             icons[leaf.id] = icon;
                         }
@@ -1231,6 +1268,7 @@ angular.module('ngDocker', [])
                                         ngDockerInternal.validationFail();
                                 }
                                 element.data('ngDockerNode', ngDocker.cloneLayout(node));
+                                element.data('ngDockerConfig', configCopy);
                                 element.appendTo(container);
                             } else {
                                 var panel = panels[node.id];
@@ -1408,21 +1446,27 @@ angular.module('ngDocker', [])
             // layout watcher
             var flipflop = true;
             var lastLayout = undefined;
-            var lastConfig = undefined;
             var lastFloatingState = undefined;
+            var lastConfig = undefined;
             $scope.$watch(function() {
-                var layout = layoutGet($scope);
-                var config = configGet($scope);
+                var layout = ngDocker.cloneLayout(layoutGet($scope));
+                var flState = cloneFloatingState(floatingState);
+                var config = ngDocker.cloneConfig(configGet($scope));
+                ngDocker.derefLayout(layout, config);
+                if(flState !== null) {
+                    ngDocker.derefLayout(flState.layout, config);
+                }
+                ngDocker.derefConfig(config);
                 var changed = 
                        lastLayout !== undefined && !ngDocker.layoutsEqual(lastLayout, layout)
-                    || lastFloatingState !== undefined && !floatingStatesEqual(lastFloatingState, floatingState)
+                    || lastFloatingState !== undefined && !floatingStatesEqual(lastFloatingState, flState)
                     || lastConfig !== undefined && !ngDocker.configsEqual(config, lastConfig);
                 if(changed) {
                     flipflop = !flipflop;
                 }
-                lastLayout = ngDocker.cloneLayout(layout);
-                lastConfig = ngDocker.cloneConfig(config);
-                lastFloatingState = cloneFloatingState(floatingState);
+                lastLayout = layout;
+                lastFloatingState = flState;
+                lastConfig = config;
                 return flipflop;
             }, update);
 
@@ -2436,6 +2480,34 @@ angular.module('ngDocker', [])
         return f(match1, match2);
     };
 
+    this.REF_PREFIX = '$$ngDockerRef:';
+
+    this.ref = function(name) {
+        return this.REF_PREFIX + name;
+    };
+
+    this.isRef = function(x) {
+        return typeof x === 'string' && x.indexOf(this.REF_PREFIX) === 0;
+    };
+
+    this.deref = function(x, config) {
+        var count = 0;
+        var res = x;
+        while(this.isRef(res)) {
+            var name = res.substring(this.REF_PREFIX.length);
+            if(!(name in config.refs)) {
+                throw new Error('Reference \'' + name + '\' is not defined');
+            }
+            res = config.refs[name];
+            ++count;
+            if(count >= 1000) {
+                var xname = res.substring(this.REF_PREFIX.length);
+                throw new Error('Too many levels of references: started with \'' + xname + '\'');
+            }
+        }
+        return res;
+    };
+
     this.findLeaves = function(layout) {
         var result = [];
         var f = function(layout) {
@@ -2541,6 +2613,21 @@ angular.module('ngDocker', [])
                 seenIds[root.id] = true;
             }
         });
+    };
+
+    // dereference all references in the layout
+    this.derefLayout = function(root, config) {
+        if(root !== null) {
+            if(root.split !== undefined) {
+                for(var i = 0; i !== root.children.length; ++i) {
+                    this.derefLayout(root.children[i], config);
+                }
+            } else {
+                this.derefTemplate(root.icon, config);
+                this.derefTemplate(root.panel, config);
+            }
+        }
+        return root;
     };
 
     this.cloneLayout = function(root) {
@@ -2651,6 +2738,37 @@ angular.module('ngDocker', [])
         return true;
     };
 
+    this.cloneRefs = function(refs) {
+        var res = {};
+        for(var k in refs) {
+            res[k] = refs[k];
+        }
+        return res;
+    };
+
+    this.refsEqual = function(a, b) {
+        for(var k in a) {
+            if(a[k] !== b[k]) {
+                return false;
+            }
+        }
+        for(var k in b) {
+            if(a[k] !== b[k]) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    this.derefConfig = function(config) {
+        if(config) {
+            this.derefTemplate(config.closeButton);
+            for(var k in config.refs) {
+                config.refs[k] = this.deref(config.refs[k], config);
+            }
+        }
+    };
+
     this.cloneConfig = function(config) {
         if(!config) {
             return angular.copy(config);
@@ -2659,7 +2777,8 @@ angular.module('ngDocker', [])
             headerHeight: config.headerHeight,
             borderWidth: config.borderWidth,
             getterSetter: config.getterSetter,
-            closeButton: this.cloneTemplate(config.closeButton)
+            closeButton: this.cloneTemplate(config.closeButton),
+            refs: this.cloneRefs(config.refs)
         };
     };
 
@@ -2679,6 +2798,9 @@ angular.module('ngDocker', [])
                 return false;
             }
             if(!this.templatesEqual(a.closeButton, b.closeButton)) {
+                return false;
+            }
+            if(!this.refsEqual(a.refs, b.refs)) {
                 return false;
             }
         } else if(!angular.equals(a, b)) {
@@ -2796,6 +2918,7 @@ angular.module('ngDocker', [])
     };
 
     this.validateTemplate = function(template) {
+        var that = this;
         if(template.templateUrl === undefined && template.template === undefined) {
             throw new Error('templateUrl or template must be defined for a normal panel');
         }
@@ -2808,6 +2931,18 @@ angular.module('ngDocker', [])
         if(template.controller !== undefined && (typeof template.controller !== 'function' && typeof template.controller !== 'string')) {
             throw new Error('controller must be a string or function');
         }
+        if(template.resolve !== undefined) {
+            if(typeof template.resolve !== 'object') {
+                throw new Error('resolve must be an object');
+            } else {
+                Object.keys(template.resolve).forEach(function(k) {
+                    var val = template.resolve[k];
+                    if(!that.isRef(val) && typeof val !== 'function') {
+                        throw new Error('resolver for \'' + k + '\' must be a function');
+                    }
+                });
+            }
+        }
         if(template.inject !== undefined) {
             if(typeof template.inject !== 'object') {
                 throw new Error('inject must be an object');
@@ -2817,6 +2952,19 @@ angular.module('ngDocker', [])
                         throw new Error('\'' + k + '\' cannot be injected, it is reserved for ngDocker');
                     }
                 });
+            }
+        }
+    };
+
+    this.derefTemplate = function(template, config) {
+        if(template.resolve !== undefined) {
+            for(var k in template.resolve) {
+                template.resolve[k] = this.deref(template.resolve[k], config);
+            }
+        }
+        if(template.inject !== undefined) {
+            for(var k in template.inject) {
+                template.inject[k] = this.deref(template.inject[k], config);
             }
         }
     };
@@ -2871,9 +3019,6 @@ angular.module('ngDocker', [])
             }, true)) {
                 return false;
             }
-        }
-        if(!angular.equals(a.resolve, b.resolve)) {
-            return false;
         }
         if(a.inject === undefined && b.inject !== undefined) {
             return false;
