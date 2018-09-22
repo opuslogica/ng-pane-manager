@@ -8,7 +8,7 @@ angular.module('ngDocker', [])
         borderWidth: 2,
         getterSetter: false,
         closeButton: {
-            template: '<span style="position: relative; top: 1px; font-size: 16px;">&#x2716;</span>'
+            template: '<span style="position: relative; font-size: 16px;">&#x2A09;</span>'
         },
         refs: {}
     };
@@ -807,7 +807,7 @@ angular.module('ngDocker', [])
                 updateContainerTabWidths(jQuery($element[0]).find('.ng-docker-floating-container'));
             };
 
-            var beginFloating = function(e, node) {
+            var beginFloating = function(info, node) {
                 if(floatingState !== null) {
                     throw new Error('Cannot construct floating state while one is already present');
                 }
@@ -840,8 +840,8 @@ angular.module('ngDocker', [])
                     layout: node,
                     dropSplitRatio: dropSplitRatio,
                     cursorPosition: {
-                        pageX: e.pageX,
-                        pageY: e.pageY
+                        pageX: info.pageX,
+                        pageY: info.pageY
                     }
                 };
             };
@@ -850,7 +850,7 @@ angular.module('ngDocker', [])
             {
                 var activeDragId = null;
                 var activeDragStartPos = null;
-                var release = function(e) {
+                var release = function(info) {
                     if(floatingState !== null) {
                         activeDragId = null;
                         clearDropTargetVisuals();
@@ -862,88 +862,146 @@ angular.module('ngDocker', [])
                         $scope.$digest();
                     } else if(activeDragId !== null) {
                         var dl = dragListeners[activeDragId];
+                        activeDragId = null;
+                    }
+                };
+                var move = function(info) {
+                    if(floatingState !== null) {
+                        activeDragId = null;
+                        floatingState.cursorPosition = {
+                            pageX: info.pageX,
+                            pageY: info.pageY
+                        };
+                        $scope.$digest();
+                        return true;
+                    } else if(activeDragId !== null) {
+                        var dl = dragListeners[activeDragId];
                         if(dl === undefined) {
                             activeDragId = null;
                         } else {
-                            if(dl.upHandler) {
-                                dl.upHandler(e);
-                                $scope.$digest();
+                            var dist = Math.sqrt((info.pageX-activeDragStartPos.pageX)*(info.pageX-activeDragStartPos.pageX) + (info.pageY-activeDragStartPos.pageY)*(info.pageY-activeDragStartPos.pageY));
+                            if(dl.threshold === undefined || dist >= dl.threshold) {
+                                if(dl.dragHandler) {
+                                    dl.dragHandler(info);
+                                    $scope.$digest();
+                                }
                             }
-                            activeDragId = null;
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+                var down = function(info) {
+                    activeDragId = null;
+                    var keys = Object.keys(dragListeners);
+                    var candidates = [];
+                    for(var i = 0; i !== keys.length; ++i) {
+                        var dl = dragListeners[keys[i]];
+                        var el = dl.element;
+                        if(info.pageX >= el.offset().left && info.pageY >= el.offset().top
+                            && info.pageX < el.offset().left + el.width() && info.pageY < el.offset().top + el.height())
+                        {
+                            candidates.push(keys[i]);
+                        }
+                    }
+                    if(candidates.length > 0) {
+                        candidates.sort(function(a, b) {
+                            return dragListeners[b].priority - dragListeners[a].priority;
+                        });
+                        var dl = dragListeners[candidates[0]];
+                        activeDragId = candidates[0];
+                        activeDragStartPos = {
+                            pageX: info.pageX,
+                            pageY: info.pageY
+                        };
+                        if(dl.downHandler) {
+                            dl.downHandler(info);
+                            $scope.$digest();
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+                $element[0].addEventListener('mouseup', function(e) {
+                    var info = {pageX: e.pageX, pageY: e.pageY};
+                    if(e.button === 0) {
+                        release(info);
+                    }
+                });
+                $element[0].addEventListener('mouseleave', function(e) {
+                    var info = {pageX: e.pageX, pageY: e.pageY};
+                    if(e.button === 0) {
+                        release(info);
+                    }
+                });
+                $element[0].addEventListener('mousemove', function(e) {
+                    var info = {pageX: e.pageX, pageY: e.pageY};
+                    if(e.buttons === 1) {
+                        if(move(info)) {
+                            e.preventDefault();
+                        }
+                    } else {
+                        release(info);
+                    }
+                });
+                $element[0].addEventListener('mousedown', function(e) {
+                    var info = {pageX: e.pageX, pageY: e.pageY};
+                    if(e.button === 0) {
+                        if(down(info)) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+                var isTouchInBounds = function(e) {
+                    var offs = $element.offset();
+                    return e.pageX >= offs.left && e.pageX < offs.left + $element.width()
+                        && e.pageY >= offs.top && e.pageY < offs.top + $element.height();
+                };
+                var touchstart = function(e) {
+                    if(!isTouchInBounds(e)) {
+                        return;
+                    }
+                    console.log('touchstart');
+                    var info = {pageX: e.pageX, pageY: e.pageY};
+                    if(e.touches.length === 1) {
+                        if(down(info)) {
                             e.preventDefault();
                         }
                     }
                 };
-                $element.on('mouseup', function(e) {
-                    if(e.button === 0) {
-                        release(e);
+                var touchmove = function(e) {
+                    if(!isTouchInBounds(e)) {
+                        return;
                     }
-                });
-                $element.on('mouseleave', function(e) {
-                    if(e.button === 0) {
-                        release(e);
-                    }
-                });
-                $element.on('mousemove', function(e) {
-                    if(e.buttons === 1) {
-                        if(floatingState !== null) {
-                            activeDragId = null;
-                            floatingState.cursorPosition = {
-                                pageX: e.pageX,
-                                pageY: e.pageY
-                            };
-                            $scope.$digest();
+                    console.log('touchmove');
+                    var info = {pageX: e.pageX, pageY: e.pageY};
+                    if(e.touches.length === 1) {
+                        if(move(info)) {
                             e.preventDefault();
-                        } else if(activeDragId !== null) {
-                            var dl = dragListeners[activeDragId];
-                            if(dl === undefined) {
-                                activeDragId = null;
-                            } else {
-                                var dist = Math.sqrt((e.pageX-activeDragStartPos.pageX)*(e.pageX-activeDragStartPos.pageX) + (e.pageY-activeDragStartPos.pageY)*(e.pageY-activeDragStartPos.pageY));
-                                if(dl.threshold === undefined || dist >= dl.threshold) {
-                                    if(dl.dragHandler) {
-                                        dl.dragHandler(e);
-                                        $scope.$digest();
-                                    }
-                                }
-                                e.preventDefault();
-                            }
                         }
                     } else {
-                        release(e);
+                        release(info);
                     }
-                });
-                $element.on('mousedown', function(e) {
-                    if(e.button === 0) {
-                        activeDragId = null;
-                        var keys = Object.keys(dragListeners);
-                        var candidates = [];
-                        for(var i = 0; i !== keys.length; ++i) {
-                            var dl = dragListeners[keys[i]];
-                            var el = dl.element;
-                            if(e.pageX >= el.offset().left && e.pageY >= el.offset().top
-                                && e.pageX < el.offset().left + el.width() && e.pageY < el.offset().top + el.height())
-                            {
-                                candidates.push(keys[i]);
-                            }
-                        }
-                        if(candidates.length > 0) {
-                            candidates.sort(function(a, b) {
-                                return dragListeners[b].priority - dragListeners[a].priority;
-                            });
-                            var dl = dragListeners[candidates[0]];
-                            activeDragId = candidates[0];
-                            activeDragStartPos = {
-                                pageX: e.pageX,
-                                pageY: e.pageY
-                            };
-                            if(dl.downHandler) {
-                                dl.downHandler(e);
-                                $scope.$digest();
-                            }
-                            e.preventDefault();
-                        }
-                    }
+                };
+                var touchend = function(e) {
+                    var info = {pageX: e.pageX, pageY: e.pageY};
+                    console.log('touchend');
+                    release(info);
+                };
+                var touchcancel = function(e) {
+                    var info = {pageX: e.pageX, pageY: e.pageY};
+                    console.log('touchcancel');
+                    release(info);
+                };
+                document.addEventListener('touchstart', touchstart);
+                document.addEventListener('touchmove', touchmove);
+                document.addEventListener('touchend', touchend);
+                document.addEventListener('touchcancel', touchcancel);
+                $scope.$on('$destroy', function() {
+                    document.removeEventListener('touchstart', touchstart);
+                    document.removeEventListener('touchmove', touchmove);
+                    document.removeEventListener('touchend', touchend);
+                    document.removeEventListenre('touchcancel', touchcancel);
                 });
             }
 
@@ -1116,8 +1174,8 @@ angular.module('ngDocker', [])
                                                 dragListeners[dragId++] = {
                                                     element: sep,
                                                     priority: 1,
-                                                    dragHandler: function(e) {
-                                                        node.ratio = Math.max(0, Math.min(1, (e.pageX - element.offset().left)/element.width()));
+                                                    dragHandler: function(info) {
+                                                        node.ratio = Math.max(0, Math.min(1, (info.pageX - element.offset().left)/element.width()));
                                                         layoutSet($scope, layoutGet($scope));
                                                     }
                                                 };
@@ -1163,8 +1221,8 @@ angular.module('ngDocker', [])
                                                 dragListeners[dragId++] = {
                                                     element: sep,
                                                     priority: 2,
-                                                    dragHandler: function(e) {
-                                                        node.ratio = Math.max(0, Math.min(1, (e.pageY - element.offset().top)/element.height()));
+                                                    dragHandler: function(info) {
+                                                        node.ratio = Math.max(0, Math.min(1, (info.pageY - element.offset().top)/element.height()));
                                                         layoutSet($scope, layoutGet($scope));
                                                     }
                                                 };
@@ -1177,7 +1235,7 @@ angular.module('ngDocker', [])
                                             var tabNav = element.children('.ng-docker-tab-nav');
                                             tabNav.css('height', config.headerHeight);
                                             for(var i = 0; i !== node.children.length; ++i) (function(i) {
-                                                var tabLayout = node.children[i];
+                                                var tabNode = node.children[i];
                                                 // note: the width for this tab is calculated after the entire DOM is built: see updateContainerTabWidths
                                                 var tab = jQuery(tabHTML);
                                                 tab.click(function() {
@@ -1185,10 +1243,14 @@ angular.module('ngDocker', [])
                                                     $scope.$digest();
                                                 });
                                                 var title = tab.children('.ng-docker-title');
-                                                initCloseButton(tab.children('.ng-docker-close'));
-                                                title.children('.ng-docker-title-text').text(ngDockerInternal.computeLayoutCaption(tabLayout));
-                                                if(tabLayout.split === undefined && tabLayout.icon !== undefined) {
-                                                    title.children('.ng-docker-icon').append(icons[tabLayout.id]);
+                                                if(tabNode.closeable === undefined || tabNode.closeable) {
+                                                    initCloseButton(tab.children('.ng-docker-close'));
+                                                } else {
+                                                    tab.children('.ng-docker-close').remove();
+                                                }
+                                                title.children('.ng-docker-title-text').text(ngDockerInternal.computeLayoutCaption(tabNode));
+                                                if(tabNode.split === undefined && tabNode.icon !== undefined) {
+                                                    title.children('.ng-docker-icon').append(icons[tabNode.id]);
                                                 } else {
                                                     title.children('.ng-docker-icon').remove();
                                                 }
@@ -1201,8 +1263,8 @@ angular.module('ngDocker', [])
                                                         element: tab,
                                                         priority: 1,
                                                         threshold: headerDragThreshold,
-                                                        dragHandler: function(e) {
-                                                            beginFloating(e, node.children[i]);
+                                                        dragHandler: function(info) {
+                                                            beginFloating(info, node.children[i]);
                                                         }
                                                     };
                                                 }
@@ -1276,7 +1338,11 @@ angular.module('ngDocker', [])
                                 var header = panelContainer.children('.ng-docker-header');
                                 var contents = panelContainer.children('.ng-docker-contents');
                                 var title = header.children('.ng-docker-title');
-                                initCloseButton(header.children('.ng-docker-close'));
+                                if(node.closeable === undefined || node.closeable) {
+                                    initCloseButton(header.children('.ng-docker-close'));
+                                } else {
+                                    header.children('.ng-docker-close').remove();
+                                }
                                 header.css('height', config.headerHeight);
                                 contents.css('top', config.headerHeight);
                                 title.children('.ng-docker-title-text').text(ngDockerInternal.computeLayoutCaption(node));
@@ -2528,9 +2594,6 @@ angular.module('ngDocker', [])
         if(typeof root !== 'object') {
             throw new Error('Layout must be an object');
         }
-        if(root.data !== undefined && typeof root.data !== 'object') {
-            throw new Error('data must be an object');
-        }
         if(root.split !== undefined) {
             switch(root.split) {
                 case 'horizontal':
@@ -2591,6 +2654,9 @@ angular.module('ngDocker', [])
             if(typeof root.title !== 'string') {
                 throw new Error('title must be a string');
             }
+            if(root.closeable !== undefined && typeof root.closeable !== 'boolean') {
+                throw new Error('closeable must be a boolean');
+            }
             if(root.icon !== undefined) {
                 if(typeof root.icon !== 'object') {
                     throw new Error('icon must be an object');
@@ -2604,6 +2670,15 @@ angular.module('ngDocker', [])
                 throw new Error('panel must be an object');
             }
             this.validateTemplate(root.panel);
+        }
+        if(root.gravity !== undefined && typeof root.gravity !== 'string') {
+            throw new Error('gravity must be a string');
+        }
+        if(root.group !== undefined && typeof root.group !== 'string') {
+            throw new Error('group must be a string');
+        }
+        if(root.data !== undefined && typeof root.data !== 'object') {
+            throw new Error('data must be an object');
         }
         var seenIds = {};
         this.findLeaves(root).forEach(function(root) {
@@ -2652,6 +2727,9 @@ angular.module('ngDocker', [])
             } else {
                 result.id = root.id;
                 result.title = root.title;
+                if(root.closeable !== undefined) {
+                    result.closeable = root.closeable;
+                }
                 result.panel = this.cloneTemplate(root.panel);
                 if(root.icon !== undefined) {
                     result.icon = this.cloneTemplate(root.icon);
@@ -2687,6 +2765,8 @@ angular.module('ngDocker', [])
                 if(a.id !== b.id) {
                     return false;
                 } else if(a.title !== b.title) {
+                    return false;
+                } else if(a.closeable !== b.closeable) {
                     return false;
                 } else if(a.icon === undefined && b.icon !== undefined
                     || a.icon !== undefined && b.icon === undefined
