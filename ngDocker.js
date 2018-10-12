@@ -6,6 +6,7 @@ angular.module('ngDocker', [])
     this.DEFAULT_CONFIG = {
         headerHeight: 20,
         borderWidth: 2,
+        marginWidth: 20,
         getterSetter: false,
         closeButton: {
             template: '<span style="position: relative; font-size: 16px;">&#x2A09;</span>'
@@ -1402,6 +1403,12 @@ angular.module('ngDocker', [])
                         // construct container for layout elements
                         if(layout !== null) {
                             var allContainer = jQuery(allContainerHTML);
+                            allContainer.css({
+                                top: marginWidth,
+                                left: marginWidth,
+                                bottom: marginWidth,
+                                right: marginWidth
+                            });
                             construct(layout, layout, allContainer, true);
                             if(layout.split === undefined) {
                                 // special case with one root panel
