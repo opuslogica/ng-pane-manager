@@ -1404,10 +1404,10 @@ angular.module('ngDocker', [])
                         if(layout !== null) {
                             var allContainer = jQuery(allContainerHTML);
                             allContainer.css({
-                                top: marginWidth,
-                                left: marginWidth,
-                                bottom: marginWidth,
-                                right: marginWidth
+                                top: config.marginWidth,
+                                left: config.marginWidth,
+                                bottom: config.marginWidth,
+                                right: config.marginWidth
                             });
                             construct(layout, layout, allContainer, true);
                             if(layout.split === undefined) {
