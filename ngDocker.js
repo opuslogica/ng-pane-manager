@@ -953,57 +953,6 @@ angular.module('ngDocker', [])
                         }
                     }
                 });
-                var isTouchInBounds = function(e) {
-                    var offs = $element.offset();
-                    return e.pageX >= offs.left && e.pageX < offs.left + $element.width()
-                        && e.pageY >= offs.top && e.pageY < offs.top + $element.height();
-                };
-                var touchstart = function(e) {
-                    if(!isTouchInBounds(e)) {
-                        return;
-                    }
-                    console.log('touchstart');
-                    var info = {pageX: e.pageX, pageY: e.pageY};
-                    if(e.touches.length === 1) {
-                        if(down(info)) {
-                            e.preventDefault();
-                        }
-                    }
-                };
-                var touchmove = function(e) {
-                    if(!isTouchInBounds(e)) {
-                        return;
-                    }
-                    console.log('touchmove');
-                    var info = {pageX: e.pageX, pageY: e.pageY};
-                    if(e.touches.length === 1) {
-                        if(move(info)) {
-                            e.preventDefault();
-                        }
-                    } else {
-                        release(info);
-                    }
-                };
-                var touchend = function(e) {
-                    var info = {pageX: e.pageX, pageY: e.pageY};
-                    console.log('touchend');
-                    release(info);
-                };
-                var touchcancel = function(e) {
-                    var info = {pageX: e.pageX, pageY: e.pageY};
-                    console.log('touchcancel');
-                    release(info);
-                };
-                document.addEventListener('touchstart', touchstart);
-                document.addEventListener('touchmove', touchmove);
-                document.addEventListener('touchend', touchend);
-                document.addEventListener('touchcancel', touchcancel);
-                $scope.$on('$destroy', function() {
-                    document.removeEventListener('touchstart', touchstart);
-                    document.removeEventListener('touchmove', touchmove);
-                    document.removeEventListener('touchend', touchend);
-                    document.removeEventListenre('touchcancel', touchcancel);
-                });
             }
 
             var update = function() {
