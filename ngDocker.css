@@ -156,21 +156,6 @@ ng-docker,
     background-color: rgb(200, 200, 200);
 }
 
-.ng-docker-tab-nav-border {
-    position: absolute;
-    bottom: 0;
-    height: 1px;
-    z-index: 1;
-}
-
-.ng-docker-tab-nav-border-left {
-    left: 0px;
-}
-
-.ng-docker-tab-nav-border-right {
-    right: 0px;
-}
-
 .ng-docker-tab {
     position: relative;
     display: inline-flex;
