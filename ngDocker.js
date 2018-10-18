@@ -1245,6 +1245,7 @@ angular.module('ngDocker', [])
                                                 borderLeft.css('width', config.borderWidth + 'px');
                                                 borderLeft.css('left', '0');
                                                 borderRight.css('top', config.headerHeight + 'px');
+                                                borderRight.css('width', config.borderWidth + 'px');
                                                 borderRight.css('right', '0');
                                                 element.append(borderLeft);
                                                 element.append(borderRight);
