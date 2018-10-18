@@ -2969,20 +2969,8 @@ angular.module('ngDocker', [])
         if(template.template !== undefined && typeof template.template !== 'string') {
             throw new Error('template must be a string');
         }
-        if(template.controller !== undefined && (typeof template.controller !== 'function' && typeof template.controller !== 'string')) {
-            throw new Error('controller must be a string or function');
-        }
-        if(template.resolve !== undefined) {
-            if(typeof template.resolve !== 'object') {
-                throw new Error('resolve must be an object');
-            } else {
-                Object.keys(template.resolve).forEach(function(k) {
-                    var val = template.resolve[k];
-                    if(!that.isRef(val) && typeof val !== 'function') {
-                        throw new Error('resolver for \'' + k + '\' must be a function');
-                    }
-                });
-            }
+        if(template.resolve !== undefined && typeof template.resolve !== 'object') {
+            throw new Error('resolve must be an object');
         }
         if(template.scope !== undefined) {
             if(typeof template.scope !== 'object') {
