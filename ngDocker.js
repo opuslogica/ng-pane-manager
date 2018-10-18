@@ -782,6 +782,9 @@ angular.module('ngDocker', [])
             };
 
             var updateContainerTabWidths = function(container) {
+                if(container.length === 0) {
+                    return;
+                }
                 var tabsplits = angular.element(container[0].querySelectorAll('.ng-docker-tabsplit'));
                 for(var i = 0; i !== tabsplits.length; ++i) {
                     var tabsplit = angular.element(tabsplits[i]);
