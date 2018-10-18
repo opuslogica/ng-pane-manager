@@ -539,10 +539,10 @@ angular.module('ngDocker', [])
 
             var newTemplateScope = function(template) {
                 var scope = $scope.$new();
-                if(template.inject !== undefined) {
+                if(template.scope !== undefined) {
                     var config = configGet($scope);
-                    Object.keys(template.inject).forEach(function(k) {
-                        scope[k] = ngDocker.deref(template.inject[k], config);
+                    Object.keys(template.scope).forEach(function(k) {
+                        scope[k] = ngDocker.deref(template.scope[k], config);
                     });
                 }
                 return scope;
@@ -2981,13 +2981,13 @@ angular.module('ngDocker', [])
                 });
             }
         }
-        if(template.inject !== undefined) {
-            if(typeof template.inject !== 'object') {
-                throw new Error('inject must be an object');
+        if(template.scope !== undefined) {
+            if(typeof template.scope !== 'object') {
+                throw new Error('scope must be an object');
             } else {
                 ['closeThisPanel'].forEach(function(k) {
-                    if(template.inject[k]) {
-                        throw new Error('\'' + k + '\' cannot be injected, it is reserved for ngDocker');
+                    if(template.scope[k]) {
+                        throw new Error('\'' + k + '\' cannot be added to the panel\'s scope, it is reserved for ngDocker');
                     }
                 });
             }
@@ -3000,9 +3000,9 @@ angular.module('ngDocker', [])
                 template.resolve[k] = this.deref(template.resolve[k], config);
             }
         }
-        if(template.inject !== undefined) {
-            for(var k in template.inject) {
-                template.inject[k] = this.deref(template.inject[k], config);
+        if(template.scope !== undefined) {
+            for(var k in template.scope) {
+                template.scope[k] = this.deref(template.scope[k], config);
             }
         }
     };
@@ -3024,10 +3024,10 @@ angular.module('ngDocker', [])
                 result.resolve[k] = template.resolve[k];
             });
         }
-        if(template.inject !== undefined) {
-            result.inject = {};
-            Object.keys(template.inject).forEach(function(k) {
-                result.inject[k] = template.inject[k];
+        if(template.scope !== undefined) {
+            result.scope = {};
+            Object.keys(template.scope).forEach(function(k) {
+                result.scope[k] = template.scope[k];
             });
         }
         return result;
@@ -3058,20 +3058,20 @@ angular.module('ngDocker', [])
                 return false;
             }
         }
-        if(a.inject === undefined && b.inject !== undefined) {
+        if(a.scope === undefined && b.scope !== undefined) {
             return false;
         }
-        if(a.inject !== undefined && b.inject === undefined) {
+        if(a.scope !== undefined && b.scope === undefined) {
             return false;
         }
-        if(a.inject !== undefined && b.inject !== undefined) {
-            if(!Object.keys(a.inject).reduce(function(accum, k) {
-                return accum && a.inject[k] === b.inject[k];
+        if(a.scope !== undefined && b.scope !== undefined) {
+            if(!Object.keys(a.scope).reduce(function(accum, k) {
+                return accum && a.scope[k] === b.scope[k];
             }, true)) {
                 return false;
             }
-            if(!Object.keys(b.inject).reduce(function(accum, k) {
-                return accum && a.inject[k] === b.inject[k];
+            if(!Object.keys(b.scope).reduce(function(accum, k) {
+                return accum && a.scope[k] === b.scope[k];
             }, true)) {
                 return false;
             }
