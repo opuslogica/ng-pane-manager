@@ -550,6 +550,7 @@ angular.module('ngDocker', [])
 
             var maybeLoadTemplateController = function(template, scope, element) {
                 if(template.controller !== undefined) {
+                    var config = configGet($scope);
                     var locals = {
                         $scope: scope,
                         $element: element
@@ -560,7 +561,8 @@ angular.module('ngDocker', [])
                         });
                         delete template._resolved;
                     }
-                    element.data('$ngDockerPanelController', $controller(template.controller, locals));
+                    var controller = ngDocker.deref(template.controller, config);
+                    element.data('$ngDockerPanelController', $controller(controller, locals));
                 }
             };
 
