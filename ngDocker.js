@@ -275,6 +275,7 @@ angular.module('ngDocker', [])
                 '   </div>' +
                 '   <div class="ng-docker-contents"></div>' +
                 '</div>';
+            var tabNavBorderHTML = '<div class="ng-docker-border ng-docker-tab-nav-border"></div>';
             var tabHTML =
                 '<div class="ng-docker-tab">' +
                 '   <div class="ng-docker-title">' +
@@ -1187,6 +1188,16 @@ angular.module('ngDocker', [])
                                         {
                                             element = angular.element(tabsplitHTML);
                                             var tabNav = ngDockerInternal.childrenWithClass(element, 'ng-docker-tab-nav');
+                                            var borderLeft = angular.element(tabNavBorderHTML);
+                                            var borderRight = angular.element(tabNavBorderHTML);
+                                            [borderLeft, borderRight].forEach(function(el) {
+                                                el.css('width', config.borderWidth + 'px');
+                                                el.css('height', config.headerHeight + 'px');
+                                            });
+                                            borderLeft.css('left', '0');
+                                            borderRight.css('right', '0');
+                                            tabNav.append(borderLeft);
+                                            tabNav.append(borderRight);
                                             tabNav.css('height', config.headerHeight + 'px');
                                             for(var i = 0; i !== node.children.length; ++i) (function(i) {
                                                 var tabNode = node.children[i];
