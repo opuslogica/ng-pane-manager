@@ -1104,7 +1104,6 @@ angular.module('ngDocker', [])
                                                 borderRight.css('right', '0');
                                                 element.append(borderRight);
                                             }
-                                            window.childrenWithClass = ngDockerInternal.childrenWithClass;
                                             var left = ngDockerInternal.childrenWithClass(element, 'ng-docker-left');
                                             var sep = ngDockerInternal.childrenWithClass(element, 'ng-docker-separator');
                                             var right = ngDockerInternal.childrenWithClass(element, 'ng-docker-right');
