@@ -2909,7 +2909,7 @@ angular.module('ngDocker', [])
                         }
                     }
                     return null;
-                } else if(node.id === id) {
+                } else if(node.id == id) {
                     return node;
                 } else {
                     return null;
