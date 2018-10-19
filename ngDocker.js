@@ -630,7 +630,7 @@ angular.module('ngDocker', [])
                                     if(floatingState.cursorPosition.pageX >= headerOffs.left && floatingState.cursorPosition.pageX < headerOffs.left + ngDockerInternal.elementWidth(header)
                                         && floatingState.cursorPosition.pageY >= headerOffs.top && floatingState.cursorPosition.pageY < headerOffs.top + ngDockerInternal.elementHeight(header))
                                     {
-                                        var tabs = ngDockerInternal.childrenWithClass(header, 'ng-docker-tab'); 
+                                        var tabs = ngDockerInternal.childrenWithClass(header, 'ng-docker-tab');
                                         for(var i = 0; i !== tabs.length; ++i) {
                                             var tab = angular.element(tabs[i]);
                                             var tabOffs = ngDockerInternal.elementOffset(tab);
@@ -1442,9 +1442,11 @@ angular.module('ngDocker', [])
                                                 }
                                                 var futureLayout = ngDocker.cloneLayout(target.node);
                                                 futureLayout.children.splice(target.tabIndex, 0, floatingState.layout);
-                                                var tabNavChildren = tabNav.children();
-                                                for(var index = 0; index !== tabNavChildren.length; ++index) {
-                                                    angular.element(tabNavChildren[index]).css('width', computeTabWidth(futureLayout, ngDockerInternal.elementWidth(tabNav), index) + 'px');
+                                                var tabs = 
+                                                    angular.element(Array.prototype.slice.call(ngDockerInternal.childrenWithClass(tabNav, 'ng-docker-tab'))
+                                                        .concat(ngDockerInternal.childrenWithClass(tabNav, 'ng-docker-drop-visual-tab')));
+                                                for(var index = 0; index !== tabs.length; ++index) {
+                                                    angular.element(tabs[index]).css('width', computeTabWidth(futureLayout, ngDockerInternal.elementWidth(tabNav), index) + 'px');
                                                 }
                                                 visual = null;
                                             } else {
