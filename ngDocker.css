@@ -1,9 +1,10 @@
 ng-docker {
+    position: relative;
     overflow: hidden;
+    display: block;
     background-color: rgb(227, 227, 227);
 }
 
-ng-docker,
 .ng-docker-panel-container, 
 .ng-docker-vsplit, 
 .ng-docker-hsplit,
