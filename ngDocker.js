@@ -248,40 +248,40 @@ angular.module('ngDocker', [])
                 '<div class="ng-docker-floating-container"></div>';
             var panelContainerHTML =
                 '<div class="ng-docker-panel-container">' +
-                '<div class="ng-docker-header">' +
-                '<div class="ng-docker-title">' +
-                '<div class="ng-docker-icon"></div>' +
-                '<div class="ng-docker-title-text"></div>' +
-                '</div>' +
-                '<div class="ng-docker-close"></div>' +
-                '</div>' +
-                '<div class="ng-docker-contents"></div>' +
+                '   <div class="ng-docker-header">' +
+                '       <div class="ng-docker-title">' +
+                '           <div class="ng-docker-icon"></div>' +
+                '           <div class="ng-docker-title-text"></div>' +
+                '       </div>' +
+                '       <div class="ng-docker-close"></div>' +
+                '   </div>' +
+                '   <div class="ng-docker-contents"></div>' +
                 '</div>';
             var vsplitHTML =
                 '<div class="ng-docker-vsplit">' +
-                '<div class="ng-docker-left"></div>' +
-                '<div class="ng-docker-separator ng-docker-border ng-docker-vertical-border"></div>' +
-                '<div class="ng-docker-right"></div>' +
+                '   <div class="ng-docker-left"></div>' +
+                '   <div class="ng-docker-separator ng-docker-border ng-docker-vertical-border"></div>' +
+                '   <div class="ng-docker-right"></div>' +
                 '</div>';
             var hsplitHTML =
                 '<div class="ng-docker-hsplit">' +
-                '<div class="ng-docker-top"></div>' +
-                '<div class="ng-docker-separator ng-docker-border-invisible ng-docker-horizontal-border"></div>' +
-                '<div class="ng-docker-bottom"></div>' +
+                '   <div class="ng-docker-top"></div>' +
+                '   <div class="ng-docker-separator ng-docker-border-invisible ng-docker-horizontal-border"></div>' +
+                '   <div class="ng-docker-bottom"></div>' +
                 '</div>';
             var tabsplitHTML =
                 '<div class="ng-docker-tabsplit">' +
-                '<div class="ng-docker-tab-nav">' +
-                '</div>' +
-                '<div class="ng-docker-contents"></div>' +
+                '   <div class="ng-docker-tab-nav">' +
+                '   </div>' +
+                '   <div class="ng-docker-contents"></div>' +
                 '</div>';
             var tabHTML =
                 '<div class="ng-docker-tab">' +
-                '<div class="ng-docker-title">' +
-                '<div class="ng-docker-icon"></div>' +
-                '<div class="ng-docker-title-text"></div>' +
-                '</div>' +
-                '<div class="ng-docker-close"></div>' +
+                '   <div class="ng-docker-title">' +
+                '       <div class="ng-docker-icon"></div>' +
+                '       <div class="ng-docker-title-text"></div>' +
+                '   </div>' +
+                '   <div class="ng-docker-close"></div>' +
                 '</div>';
             var hiddenHTML =
                 '<div class="ng-docker-hidden"></div>';
