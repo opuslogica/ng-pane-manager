@@ -794,9 +794,9 @@ angular.module('ngDocker', [])
                     var tabNav = ngDockerInternal.childrenWithClass(tabsplit, 'ng-docker-tab-nav');
                     var node = tabsplit.data('ngDockerNode');
                     var tabs = ngDockerInternal.childrenWithClass(tabNav, 'ng-docker-tab'); 
-                    for(var i = 0; i !== tabs.length; ++i) {
-                        var tab = angular.element(tabs[i]);
-                        tab.css('width', computeTabWidth(node, ngDockerInternal.elementWidth(tabNav), i) + 'px');
+                    for(var j = 0; j !== tabs.length; ++j) {
+                        var tab = angular.element(tabs[j]);
+                        tab.css('width', computeTabWidth(node, ngDockerInternal.elementWidth(tabNav), j) + 'px');
                     }
                 }
             };
