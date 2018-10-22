@@ -2958,7 +2958,7 @@ angular.module('ngDocker', [])
             });
         } else {
             if(root.gravity === undefined) {
-                throw new Error('non-split panels must have a defined gravity');
+                throw new Error('when using insertLeaf, all leaves in the layout must have gravity defined');
             }
             return root.gravity;
         }
