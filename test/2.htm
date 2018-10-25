@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.min.js"></script>
+<script type="text/javascript" src="../ngDocker.js"></script>
+<link rel="stylesheet" href="../ngDocker.css">
+<link rel="stylesheet" href="../theme/black.css">
+<style type="text/css">
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+[ng-docker] {
+    width: 100%;
+    height: 100%;
+}
+
+.panel-icon-1 {
+    width: 16px;
+    height: 16px;
+    background-color: blue;
+}
+
+.panel-icon-2 {
+    width: 16px;
+    height: 16px;
+    background-color: red;
+}
+
+.panel-icon-3 {
+    width: 16px;
+    height: 16px;
+    background-color: green;
+}
+
+.panel-icon-4 {
+    width: 16px;
+    height: 16px;
+    background-color: yellow;
+}
+
+.test-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+<script type="text/javascript">
+var app = angular.module('test', ['ngDocker']);
+app.controller('TestPanel2', ['$scope', 'nameInPanel', function($scope, nameInPanel) {
+    $scope.name = nameInPanel;
+}]);
+app.service('TestService', function() {
+    this.panel2Name = 'Y';
+});
+app.run(['ngDocker', '$rootScope', '$q', 'TestService', function(ngDocker, $rootScope, $q, TestService) {
+    var layout = {
+        split: 'horizontal',
+        ratio: 0.5,
+        children: [
+            {
+                split: 'vertical',
+                ratio: 0.5,
+                children: [
+                    {
+                        id: 'test1',
+                        closeable: false,
+                        title: 'Test Panel 1',
+                        icon: {
+                            template: '<div></div>',
+                            controller: ngDocker.ref('panel1IconController')
+                        },
+                        panel: {
+                            templateUrl: 'test.html',
+                            scope: {
+                                name: ngDocker.ref('panel1Name')
+                            }
+                        }
+                    },
+                    {
+                        id: 'test2',
+                        title: 'Test Panel 2',
+                        icon: {
+                            template: '<div class="panel-icon-2"></div>'
+                        },
+                        panel: {
+                            controller: 'TestPanel2',
+                            templateUrl: 'test.html',
+                            resolve: {
+                                nameInPanel: ngDocker.ref('panel2Resolve')
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                split: 'tabs',
+                activeTabIndex: 0,
+                children: [
+                    {
+                        id: 'test3',
+                        title: 'Test Panel 3',
+                        icon: {
+                            template: '<div class="panel-icon-3"></div>'
+                        },
+                        panel: {
+                            templateUrl: 'test.html',
+                            scope: {
+                                name: 'Z'
+                            }
+                        }
+                    },
+                    {
+                        id: 'test4',
+                        title: 'Test Panel 4',
+                        icon: {
+                            template: '<div class="panel-icon-4"></div>'
+                        },
+                        panel: {
+                            templateUrl: 'test.html',
+                            controller: ['$scope', 'transformName', function($scope, transformName) {
+                                $scope.name = transformName($scope.name);
+                            }],
+                            scope: {
+                                name: 'w'
+                            },
+                            resolve: {
+                                transformName: function() {
+                                    return function(name) {
+                                        return name.toUpperCase();
+                                    };
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+        ]
+    };
+    var layoutFn = function(x) {
+        if(arguments.length > 0) {
+            layout = x;
+        } else {
+            return layout;
+        }
+    };
+    $rootScope.config = {
+        refs: {
+            panel1Name: 'X',
+            panel1IconController: ['$element', function($element) {
+                $element.addClass('panel-icon-1');
+            }],
+            panel2Resolve: ['TestService', function(TestService) {
+                return $q(function(resolve, reject) {
+                    setTimeout(function() {
+                        resolve(TestService.panel2Name);
+                    }, 100);
+                });
+            }]
+        },
+        getterSetter: true,
+        layout: layoutFn
+    };
+}]);
+</script>
+</head>
+<body ng-app="test">
+    <script type="text/ng-template" id="test.html">
+        <div class="test-panel">
+            Hello {{name}}!
+        </div>
+    </script>
+    <div ng-docker="config"></div>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular-cookies.js"></script>
+<script type="text/javascript" src="../ngDocker.js"></script>
+<link rel="stylesheet" href="../ngDocker.css">
+<style type="text/css">
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+
+    body, .docker {
+        background-color: rgb(227, 227, 227);
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        font-family: sans-serif;
+    }
+
+    .docker {
+        flex: 1 1 75%;
+    }
+
+    .controls {
+        flex: 1 1 25%;
+        padding: 20px;
+    }
+
+    .panel-icon {
+        width: 16px;
+        height: 16px;
+        background-color: red;
+    }
+
+    .test-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+<script type="text/javascript">
+    var app = angular.module('test', ['ngDocker', 'ngCookies']);
+    app.run(['ngDocker', '$rootScope', function(ngDocker, $rootScope) {
+        window.rootScope = $rootScope;
+        $rootScope.config = {
+            layout: {
+                id: '1',
+                title: 'Panel 1',
+                icon: {
+                    template: '<div class="panel-icon"></div>'
+                },
+                panel: {
+                    templateUrl: 'test.html',
+                    scope: {
+                        panelText: 'I am the first panel!'
+                    }
+                },
+                gravity: 'center'
+            }
+        };
+        Object.setPrototypeOf($rootScope.config, ngDocker.DEFAULT_CONFIG);
+
+        $rootScope.nextId = function() {
+            var i = 1;
+            for(; ngDocker.findLeafWithId($rootScope.config.layout, i) !== null; ++i);
+            return i.toString();
+        };
+    }]);
+    app.controller('Controls', ['ngDocker', '$rootScope', '$scope', '$cookies', function(ngDocker, $rootScope, $scope, $cookies) {
+        $scope.newPanelText = '';
+        $scope.panelGravity = 'left';
+        $scope.addPanel = function() {
+            var id = $rootScope.nextId();
+            $rootScope.config.layout = ngDocker.insertLeaf($rootScope.config.layout, {
+                id: id,
+                title: 'Panel ' + id,
+                icon: {
+                    template: '<div class="panel-icon"></div>'
+                },
+                panel: {
+                    templateUrl: 'test.html',
+                    scope: {
+                        panelText: 'I am panel ' + id
+                    }
+                },
+                gravity: $scope.panelGravity
+            }, 0.5);
+        };
+        $scope.saveLayout = function() {
+            $cookies.put('layout', JSON.stringify($rootScope.config.layout));
+        };
+        $scope.loadLayout = function() {
+            $rootScope.config.layout = JSON.parse($cookies.get('layout'));
+        };
+        $scope.savedLayoutAvailable = function() {
+            return $cookies.get('layout') !== undefined;
+        };
+        $scope.clearSavedLayout = function() {
+            $cookies.remove('layout');
+        };
+    }]);
+</script>
+<body ng-app="test">
+    <script type="text/ng-template" id="test.html">
+        <div class="test-panel">
+            {{panelText}}
+        </div>
+    </script>
+    <div class="docker" ng-docker="config"></div>
+    <div class="controls" ng-controller="Controls">
+        <fieldset>
+            <legend>Config</legend>
+            <label>Header height: <input type="number" ng-model="config.headerHeight"></label><br/>
+            <label>Border width: <input type="number" ng-model="config.borderWidth"></label><br/>
+            <label>Margin width: <input type="number" ng-model="config.marginWidth"></label>
+            <div>
+        </fieldset>
+        <fieldset>
+            <legend>Save/Load</legend>
+            <button ng-click="saveLayout()">Save Layout</button> <!-- save layout to cookies -->
+            <button ng-disabled="!savedLayoutAvailable()" ng-click="loadLayout()">Load Saved Layout</button> <!-- load layout from cookies -->
+            <button ng-disabled="!savedLayoutAvailable()" ng-click="clearSavedLayout()">Clear Saved Layout</button> <!-- remove any layout saved in cookies -->
+        </fieldset>
+        <fieldset>
+            <legend>New Panel</legend>
+            <fieldset>
+                <legend>Gravity</legend>
+                <label><input type="radio" value="left" ng-model="panelGravity"> Left</label>
+                <label><input type="radio" value="center" ng-model="panelGravity"> Center</label>
+                <label><input type="radio" value="right" ng-model="panelGravity"> Right</label>
+            </fieldset>
+            <button ng-click="addPanel()">Add Panel</button>
+        </fieldset>
+    </div>
+</body>
+</html>

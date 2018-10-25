@@ -1,7 +1,6 @@
-ng-docker {
+[ng-docker] {
     position: relative;
     overflow: hidden;
-    display: block;
     background-color: rgb(227, 227, 227);
 }
 

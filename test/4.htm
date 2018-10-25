@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.min.js"></script>
+<script type="text/javascript" src="../ngDocker.js"></script>
+<link rel="stylesheet" href="../ngDocker.css">
+<style type="text/css">
+    html {
+        height: 100%;
+    }
+
+    body {
+        font-family: sans-serif;
+        margin: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .docker-container {
+        margin: 10px;
+        flex: 1 1 auto;
+    }
+
+    .docker {
+        width: 100%;
+        height: 100%;
+    }
+
+    .panel-icon-1 {
+        width: 16px;
+        height: 16px;
+        background-color: blue;
+    }
+
+    .panel-icon-2 {
+        width: 16px;
+        height: 16px;
+        background-color: red;
+    }
+
+    .test-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+<script type="text/javascript">
+    var app = angular.module('test', ['ngDocker']);
+    app.run(['$rootScope', function($rootScope) {
+        $rootScope.config1 = {
+            layout: {
+                split: 'vertical',
+                ratio: 0.5,
+                children: [
+                    {
+                        id: 'test1',
+                        title: 'Test Panel',
+                        icon: {
+                            template: '<div class="panel-icon-1"></div>'
+                        },
+                        panel: {
+                            templateUrl: 'test.html',
+                            scope: {
+                                name: 'X'
+                            }
+                        }
+                    },
+                    {
+                        id: 'test2',
+                        title: 'Test Panel',
+                        icon: {
+                            template: '<div class="panel-icon-1"></div>'
+                        },
+                        panel: {
+                            templateUrl: 'test.html',
+                            scope: {
+                                name: 'Y'
+                            }
+                        }
+                    }
+                ]
+            }
+        };
+
+        $rootScope.config2 = {
+            layout: {
+                split: 'vertical',
+                ratio: 0.5,
+                children: [
+                    {
+                        id: 'test1',
+                        title: 'Test Panel',
+                        icon: {
+                            template: '<div class="panel-icon-2"></div>'
+                        },
+                        panel: {
+                            templateUrl: 'test.html',
+                            scope: {
+                                name: 'Z'
+                            }
+                        }
+                    },
+                    {
+                        id: 'test2',
+                        title: 'Test Panel',
+                        icon: {
+                            template: '<div class="panel-icon-2"></div>'
+                        },
+                        panel: {
+                            templateUrl: 'test.html',
+                            scope: {
+                                name: 'W'
+                            }
+                        }
+                    }
+                ]
+            }
+        };
+    }]);
+</script>
+</head>
+<body ng-app="test">
+    <script type="text/ng-template" id="test.html">
+        <div class="test-panel">
+            Hello {{name}}!
+        </div>
+    </script>
+    <fieldset class="docker-container">
+        <legend>Docker 1</legend>
+        <div class="docker" ng-docker="config1"></div>
+    </fieldset>
+    <fieldset class="docker-container">
+        <legend>Docker 2</legend>
+        <div class="docker" ng-docker="config2"></div>
+    </fieldset>
+</body>
+</html>

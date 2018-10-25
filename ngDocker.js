@@ -2,7 +2,7 @@ angular.module('ngDocker', [])
 .service('ngDocker', ['ngDockerInternal', function(ngDockerInternal) {
     var that = this;
 
-    // When you add configuration options here, be sure to update ngDockerInternal's cloneConfig and configsEqual
+    // NOTE: When you add configuration options here, be sure to update ngDockerInternal's cloneConfig, configsEqual, and derefConfig
     this.DEFAULT_CONFIG = {
         headerHeight: 20,
         borderWidth: 2,
@@ -11,7 +11,8 @@ angular.module('ngDocker', [])
         closeButton: {
             template: '<span style="position: relative; font-size: 16px;">&#x2A09;</span>'
         },
-        refs: {}
+        refs: {},
+        layout: null
     };
 
     this.ref = function(name) {
@@ -231,7 +232,7 @@ angular.module('ngDocker', [])
 }])
 .directive('ngDocker', ['$parse', '$compile', '$templateCache', '$templateRequest', '$q', '$exceptionHandler', '$controller', '$injector', 'ngDocker', 'ngDockerInternal', function($parse, $compile, $templateCache, $templateRequest, $q, $exceptionHandler, $controller, $injector, ngDocker, ngDockerInternal) {
     return {
-        restrict: 'E',
+        restrict: 'A',
         scope: true,
         link: function($scope, $element, $attr) {
             var tabNavRightPadding = 20; // given a full tab nav bar, how much space to leave at the right to allow the user to drag it
@@ -387,43 +388,35 @@ angular.module('ngDocker', [])
                 return true;
             };
 
-            var configGet;
-            if($attr.config !== undefined) {
-                var configGetRaw = $parse($attr.config);
-                configGet = function(obj) {
-                    return angular.extend({}, ngDocker.DEFAULT_CONFIG, configGetRaw(obj));
-                };
-            } else {
-                configGet = function(obj) {
-                    return ngDocker.DEFAULT_CONFIG;
-                };
-            }
-
-            var layoutGet;
-            var layoutSet;
-            if(configGet($scope).getterSetter) {
-                var layoutGetRaw = $parse($attr.layout);
-                layoutGet = function(obj) {
-                    return layoutGetRaw(obj)();
-                };
-                layoutSet = function(obj, val) {
-                    layoutGetRaw(obj)(val);
-                };
-            } else {
-                var layoutGetRaw = $parse($attr.layout);
-                layoutGet = function(obj) {
-                    // convert falsy layouts to null
-                    var result = layoutGetRaw(obj);
-                    return result ? result : null;
-                };
-                layoutSet = layoutGetRaw.assign;
-                if(!layoutSet) {
-                    throw new Error('layout must be assignable');
+            var configGetRaw = $parse($attr.ngDocker);
+            var configGet = function() {
+                var raw = configGetRaw($scope);
+                if(typeof raw !== 'object') {
+                    throw new Error('ng-docker must refer to an object');
                 }
-            }
+                return angular.extend({}, ngDocker.DEFAULT_CONFIG, raw);
+            };
+
+            var layoutGet = function() {
+                var config = configGet();
+                if(config.getterSetter) {
+                    return config.layout();
+                } else {
+                    return config.layout;
+                }
+            };
+            var layoutSet = function(val) {
+                var config = configGet();
+                if(config.getterSetter) {
+                    config.layout(val);
+                } else {
+                    var rawConfig = configGetRaw($scope);
+                    rawConfig.layout = val;
+                }
+            };
 
             var findParent = function(node) {
-                var p = ngDocker.findParent(layoutGet($scope), node);
+                var p = ngDocker.findParent(layoutGet(), node);
                 if(p === undefined) {
                     throw new Error('Failed to find node');
                 } else {
@@ -514,23 +507,23 @@ angular.module('ngDocker', [])
             var replaceNode = function(node, replacement) {
                 var p = findParent(node);
                 if(p === null) {
-                    layoutSet($scope, replacement);
+                    layoutSet(replacement);
                 } else {
                     p[0].children[p[1]] = replacement;
-                    layoutSet($scope, layoutGet($scope));
+                    layoutSet(layoutGet());
                 }
             };
 
             var removeSplitChild = function(node, index) {
-                layoutSet($scope, ngDocker.removeSplitChild(layoutGet($scope), node, index));
+                layoutSet(ngDocker.removeSplitChild(layoutGet(), node, index));
             };
 
             var removeLeafWithId = function(id) {
-                layoutSet($scope, ngDocker.removeLeafWithId(layoutGet($scope), id));
+                layoutSet(ngDocker.removeLeafWithId(layoutGet(), id));
             };
 
             var removeNode = function(node) {
-                layoutSet($scope, ngDocker.removeNode(layoutGet($scope), node));
+                layoutSet(ngDocker.removeNode(layoutGet(), node));
             };
 
             // get the angular template string from a template
@@ -541,7 +534,7 @@ angular.module('ngDocker', [])
             var newTemplateScope = function(template) {
                 var scope = $scope.$new();
                 if(template.scope !== undefined) {
-                    var config = configGet($scope);
+                    var config = configGet();
                     Object.keys(template.scope).forEach(function(k) {
                         scope[k] = ngDocker.deref(template.scope[k], config);
                     });
@@ -551,7 +544,7 @@ angular.module('ngDocker', [])
 
             var maybeLoadTemplateController = function(template, scope, element) {
                 if(template.controller !== undefined) {
-                    var config = configGet($scope);
+                    var config = configGet();
                     var locals = {
                         $scope: scope,
                         $element: element
@@ -591,7 +584,7 @@ angular.module('ngDocker', [])
                 if(floatingState === null) {
                     throw new Error('A floating state must exist to compute a drop target');
                 }
-                var root = layoutGet($scope);
+                var root = layoutGet();
                 if(root === null) {
                     // drop as root
                     return {
@@ -747,7 +740,7 @@ angular.module('ngDocker', [])
                         if(target.node !== null) {
                             throw new Error('layout must be null when where is whole');
                         }
-                        layoutSet($scope, floatingState.layout);
+                        layoutSet(floatingState.layout);
                         break;
                     case 'tab':
                         if(target.node.split !== undefined) {
@@ -961,8 +954,8 @@ angular.module('ngDocker', [])
                     templateResolver = null;
                 }
 
-                var layout = layoutGet($scope);
-                var config = configGet($scope);
+                var layout = layoutGet();
+                var config = configGet();
                 var configCopy = ngDocker.cloneConfig(config);
 
                 var leaves =  [];
@@ -1129,7 +1122,7 @@ angular.module('ngDocker', [])
                                                     dragHandler: function(info) {
                                                         var elOffs = ngDockerInternal.elementOffset(element);
                                                         node.ratio = Math.max(0, Math.min(1, (info.pageX - elOffs.left)/ngDockerInternal.elementWidth(element)));
-                                                        layoutSet($scope, layoutGet($scope));
+                                                        layoutSet(layoutGet());
                                                     }
                                                 };
                                             }
@@ -1177,7 +1170,7 @@ angular.module('ngDocker', [])
                                                     dragHandler: function(info) {
                                                         var elOffs = ngDockerInternal.elementOffset(element);
                                                         node.ratio = Math.max(0, Math.min(1, (info.pageY - elOffs.top)/ngDockerInternal.elementHeight(element)));
-                                                        layoutSet($scope, layoutGet($scope));
+                                                        layoutSet(layoutGet());
                                                     }
                                                 };
                                             }
@@ -1377,7 +1370,7 @@ angular.module('ngDocker', [])
                             if(layout.split === undefined) {
                                 // special case with one root panel
                                 ngDockerInternal.childrenWithClass(ngDockerInternal.childrenWithClass(allContainer.children(), 'ng-docker-header'), 'ng-docker-close').on('click', function() {
-                                    layoutSet($scope, null);
+                                    layoutSet(null);
                                     $scope.$digest();
                                 });
                             }
@@ -1484,15 +1477,15 @@ angular.module('ngDocker', [])
                 });
             };
 
-            // layout watcher
+            // config/layout watcher
             var flipflop = true;
             var lastLayout = undefined;
             var lastFloatingState = undefined;
             var lastConfig = undefined;
             $scope.$watch(function() {
-                var layout = ngDocker.cloneLayout(layoutGet($scope));
+                var layout = ngDocker.cloneLayout(layoutGet());
                 var flState = cloneFloatingState(floatingState);
-                var config = ngDocker.cloneConfig(configGet($scope));
+                var config = ngDocker.cloneConfig(configGet());
                 ngDocker.derefLayout(layout, config);
                 if(flState !== null) {
                     ngDocker.derefLayout(flState.layout, config);
@@ -1529,146 +1522,6 @@ angular.module('ngDocker', [])
                 {
                     split: 'vertical',
                     children: [
-                        {
-                            split: 'horizontal',
-                            children: [
-                                [[null, 'left', 'right', 'bottom', 'center'], 'center'],
-                                [['bottom'], 'bottom']
-                            ]
-                        },
-                        [['left', 'right'], 'right']
-                    ]
-                }
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                {
-                    split: 'vertical',
-                    children: [
-                        [['left', 'right'], 'left'],
-                        {
-                            split: 'horizontal',
-                            children: [
-                                [[null, 'left', 'right', 'bottom', 'center'], 'center'],
-                                [['bottom'], 'bottom']
-                            ]
-                        }
-                    ]
-                },
-                [['left', 'right'], 'right']
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                [['left', 'right'], 'left'],
-                {
-                    split: 'horizontal',
-                    children: [
-                        {
-                            split: 'vertical',
-                            children: [
-                                [[null, 'left', 'right', 'bottom', 'center'], 'center'],
-                                [['left', 'right'], 'right']
-                            ]
-                        },
-                        [['bottom'], 'bottom']
-                    ]
-                }
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                {
-                    split: 'horizontal',
-                    children: [
-                        {
-                            split: 'vertical',
-                            children: [
-                                [['left', 'right'], 'left'],
-                                [[null, 'left', 'right', 'bottom', 'center'], 'center']
-                            ]
-                        },
-                        [['bottom'], 'bottom']
-                    ]
-                },
-                [['left', 'right'], 'right']
-            ]
-        },
-        {
-            split: 'horizontal',
-            children: [
-                {
-                    split: 'vertical',
-                    children: [
-                        [['left', 'right'], 'left'],
-                        {
-                            split: 'vertical',
-                            children: [
-                                [[null, 'left', 'right', 'bottom', 'center'], 'center'],
-                                [['left', 'right'], 'right']
-                            ]
-                        }
-                    ]
-                },
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
-            split: 'horizontal',
-            children: [
-                {
-                    split: 'vertical',
-                    children: [
-                        {
-                            split: 'vertical',
-                            children: [
-                                [['left', 'right'], 'left'],
-                                [[null, 'left', 'right', 'bottom', 'center'], 'center']
-                            ]
-                        },
-                        [['left', 'right'], 'right']
-                    ]
-                },
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                [['left', 'right'], 'left'],
-                {
-                    split: 'horizontal',
-                    children: [
-                        [[null, 'bottom', 'center'], 'center'],
-                        [['bottom'], 'bottom']
-                    ]
-                }
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                {
-                    split: 'horizontal',
-                    children: [
-                        [[null, 'bottom', 'center'], 'center'],
-                        [['bottom'], 'bottom']
-                    ]
-                },
-                [['left', 'right'], 'right']
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                [['left', 'right'], 'left'],
-                {
-                    split: 'vertical',
-                    children: [
                         [[null, 'left', 'right', 'center'], 'center'],
                         [['left', 'right'], 'right']
                     ]
@@ -1689,104 +1542,6 @@ angular.module('ngDocker', [])
             ]
         },
         {
-            split: 'horizontal',
-            children: [
-                {
-                    split: 'vertical',
-                    children: [
-                        [[null, 'bottom', 'center'], 'center'],
-                        [['left', 'right'], 'right']
-                    ]
-                },
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
-            split: 'horizontal',
-            children: [
-                {
-                    split: 'vertical',
-                    children: [
-                        [['left', 'right'], 'left'],
-                        [[null, 'bottom', 'center'], 'center']
-                    ]
-                },
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                [['left', 'right'], 'left'],
-                {
-                    split: 'vertical',
-                    children: [
-                        [['bottom'], 'bottom'],
-                        [['left', 'right'], 'right']
-                    ]
-                }
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                {
-                    split: 'vertical',
-                    children: [
-                        [['left', 'right'], 'left'],
-                        [['bottom'], 'bottom']
-                    ]
-                },
-                [['left', 'right'], 'right']
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                [['left', 'right'], 'left'],
-                {
-                    split: 'horizontal',
-                    children: [
-                        [['left', 'right'], 'right'],
-                        [['bottom'], 'bottom']
-                    ]
-                }
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                {
-                    split: 'horizontal',
-                    children: [
-                        [['left', 'right'], 'left'],
-                        [['bottom'], 'bottom']
-                    ]
-                },
-                [['left', 'right'], 'right']
-            ]
-        },
-        {
-            split: 'horizontal',
-            children: [
-                {
-                    split: 'vertical',
-                    children: [
-                        [['left', 'right'], 'left'],
-                        [['left', 'right'], 'right']
-                    ]
-                },
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
-            split: 'horizontal',
-            children: [
-                [[null, 'bottom', 'center'], 'center'],
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
             split: 'vertical',
             children: [
                 [['left', 'right'], 'left'],
@@ -1803,187 +1558,16 @@ angular.module('ngDocker', [])
         {
             split: 'vertical',
             children: [
-                [['bottom'], 'bottom'],
-                [['left', 'right'], 'right']
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
-                [['left', 'right'], 'left'],
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
-            split: 'horizontal',
-            children: [
-                [['left'], 'left'],
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
-            split: 'horizontal',
-            children: [
-                [['right'], 'right'],
-                [['bottom'], 'bottom']
-            ]
-        },
-        {
-            split: 'vertical',
-            children: [
                 [['left', 'right'], 'left'],
                 [['left', 'right'], 'right']
             ]
         },
         [[null, 'center'], 'center'],
         [['left'], 'left'],
-        [['right'], 'right'],
-        [['bottom'], 'bottom']
+        [['right'], 'right']
     ];
 
     var insertCenterStrategies = [
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'left',
-                    {
-                        split: 'vertical',
-                        children: [
-                            'bottom',
-                            'right'
-                        ]
-                    }
-                ]
-            },
-            split: 'horizontal',
-            index: 0,
-            node: function(node) {
-                return node.children[1].children[0]
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    {
-                        split: 'vertical',
-                        children: [
-                            'left',
-                            'bottom'
-                        ]
-                    },
-                    'right'
-                ]
-            },
-            split: 'horizontal',
-            index: 0,
-            node: function(node) {
-                return node.children[0].children[1]
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'left',
-                    {
-                        split: 'horizontal',
-                        children: [
-                            'right',
-                            'bottom'
-                        ]
-                    }
-                ]
-            },
-            split: 'vertical',
-            index: 0,
-            node: function(node) {
-                return node.children[1].children[0];
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    {
-                        split: 'horizontal',
-                        children: [
-                            'left',
-                            'bottom'
-                        ]
-                    },
-                    'right'
-                ]
-            },
-            split: 'vertical',
-            index: 1,
-            node: function(node) {
-                return node.children[0].children[0];
-            }
-        },
-        {
-            from: {
-                split: 'horizontal',
-                children: [
-                    {
-                        split: 'vertical',
-                        children: [
-                            'left',
-                            'right'
-                        ]
-                    },
-                    'bottom'
-                ]
-            },
-            split: 'vertical',
-            index: 1,
-            node: function(node) {
-                return node.children[0].children[0];
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'bottom',
-                    'right'
-                ]
-            },
-            split: 'horizontal',
-            index: 0,
-            node: function(node) {
-                return node.children[0];
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'left',
-                    'bottom'
-                ]
-            },
-            split: 'horizontal',
-            index: 0,
-            node: function(node) {
-                return node.children[1];
-            }
-        },
-        {
-            from: {
-                split: 'horizontal',
-                children: [
-                    'left',
-                    'bottom'
-                ]
-            },
-            split: 'vertical',
-            index: 1,
-            node: function(node) {
-                return node.children[0];
-            }
-        },
         {
             from: {
                 split: 'vertical',
@@ -1999,20 +1583,6 @@ angular.module('ngDocker', [])
             }
         },
         {
-            from: {
-                split: 'vertical',
-                children: [
-                    'right',
-                    'bottom'
-                ]
-            },
-            split: 'vertical',
-            index: 0,
-            node: function(node) {
-                return node.children[0];
-            }
-        },
-        {
             from: 'left',
             split: 'vertical',
             index: 1,
@@ -2027,14 +1597,6 @@ angular.module('ngDocker', [])
             node: function(node) {
                 return node;
             }
-        },
-        {
-            from: 'bottom',
-            split: 'horizontal',
-            index: 0,
-            node: function(node) {
-                return node;
-            }
         }
     ];
 
@@ -2043,93 +1605,11 @@ angular.module('ngDocker', [])
             from: {
                 split: 'vertical',
                 children: [
-                    {
-                        split: 'horizontal',
-                        children: [
-                            'center',
-                            'bottom'
-                        ]
-                    },
-                    'right'
-                ]
-            },
-            split: 'vertical',
-            index: 0,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: {
-                split: 'horizontal',
-                children: [
-                    {
-                        split: 'vertical',
-                        children: [
-                            'center',
-                            'right'
-                        ]
-                    },
-                    'bottom'
-                ]
-            },
-            split: 'vertical',
-            index: 0,
-            node: function(node) {
-                return node.children[0].children[0];
-            }
-        },
-        {
-            from: {
-                split: 'horizontal',
-                children: [
-                    'center',
-                    'bottom'
-                ]
-            },
-            split: 'vertical',
-            index: 0,
-            node: function(node) {
-                return node.children[0];
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
                     'center',
                     'right'
                 ]
             },
             split: 'vertical',
-            index: 0,
-            node: function(node) {
-                return node.children[0];
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'bottom',
-                    'right'
-                ]
-            },
-            split: 'horizontal',
-            index: 0,
-            node: function(node) {
-                return node.children[0];
-            }
-        },
-        {
-            from: {
-                split: 'horizontal',
-                children: [
-                    'right',
-                    'bottom'
-                ]
-            },
-            split: 'horizontal',
             index: 0,
             node: function(node) {
                 return node.children[0];
@@ -2146,14 +1626,6 @@ angular.module('ngDocker', [])
         {
             from: 'right',
             split: 'vertical',
-            index: 0,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: 'bottom',
-            split: 'horizontal',
             index: 0,
             node: function(node) {
                 return node;
@@ -2167,60 +1639,6 @@ angular.module('ngDocker', [])
                 split: 'vertical',
                 children: [
                     'left',
-                    {
-                        split: 'horizontal',
-                        children: [
-                            'center',
-                            'bottom'
-                        ]
-                    }
-                ]
-            },
-            split: 'vertical',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: {
-                split: 'horizontal',
-                children: [
-                    {
-                        split: 'vertical',
-                        children: [
-                            'left',
-                            'center'
-                        ]
-                    },
-                    'bottom'
-                ]
-            },
-            split: 'vertical',
-            index: 1,
-            node: function(node) {
-                return node.children[0];
-            }
-        },
-        {
-            from: {
-                split: 'horizontal',
-                children: [
-                    'center',
-                    'bottom'
-                ]
-            },
-            split: 'vertical',
-            index: 1,
-            node: function(node) {
-                return node.children[0];
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'left',
                     'center'
                 ]
             },
@@ -2228,34 +1646,6 @@ angular.module('ngDocker', [])
             index: 1,
             node: function(node) {
                 return node;
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'left',
-                    'bottom'
-                ]
-            },
-            split: 'horizontal',
-            index: 0,
-            node: function(node) {
-                return node.children[1];
-            }
-        },
-        {
-            from: {
-                split: 'horizontal',
-                children: [
-                    'left',
-                    'bottom'
-                ]
-            },
-            split: 'vertical',
-            index: 1,
-            node: function(node) {
-                return node.children[0];
             }
         },
         {
@@ -2269,123 +1659,6 @@ angular.module('ngDocker', [])
         {
             from: 'left',
             split: 'vertical',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: 'bottom',
-            split: 'horizontal',
-            index: 0,
-            node: function(node) {
-                return node;
-            }
-        }
-    ];
-
-    var insertBottomStrategies = [
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'left',
-                    {
-                        split: 'vertical',
-                        children: [
-                            'center',
-                            'right'
-                        ]
-                    }
-                ]
-            },
-            split: 'horizontal',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    {
-                        split: 'vertical',
-                        children: [
-                            'left',
-                            'center'
-                        ]
-                    },
-                    'right'
-                ]
-            },
-            split: 'horizontal',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'left',
-                    'center'
-                ]
-            },
-            split: 'horizontal',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'center',
-                    'right'
-                ]
-            },
-            split: 'horizontal',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: {
-                split: 'vertical',
-                children: [
-                    'left',
-                    'right'
-                ]
-            },
-            split: 'horizontal',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: 'center',
-            split: 'horizontal',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: 'left',
-            split: 'horizontal',
-            index: 1,
-            node: function(node) {
-                return node;
-            }
-        },
-        {
-            from: 'right',
-            split: 'horizontal',
             index: 1,
             node: function(node) {
                 return node;
@@ -2396,8 +1669,7 @@ angular.module('ngDocker', [])
     this.insertStrategies = {
         'center': insertCenterStrategies,
         'left': insertLeftStrategies,
-        'right': insertRightStrategies,
-        'bottom': insertBottomStrategies
+        'right': insertRightStrategies
     };
 
     this.computeMatchPrecision = function(match) {
@@ -2646,9 +1918,19 @@ angular.module('ngDocker', [])
             }
             this.validateTemplate(root.panel);
         }
-        if(root.gravity !== undefined && typeof root.gravity !== 'string') {
-            throw new Error('gravity must be a string');
-        }
+        if(root.gravity !== undefined) {
+            if(typeof root.gravity !== 'string') {
+                throw new Error('gravity must be a string');
+            }
+            switch(root.gravity) {
+                case 'left':
+                case 'center':
+                case 'right':
+                    break;
+                default:
+                    throw new Error('gravity must be either left, center, or right');
+            }
+        } 
         if(root.group !== undefined && typeof root.group !== 'string') {
             throw new Error('group must be a string');
         }
@@ -2673,7 +1955,9 @@ angular.module('ngDocker', [])
                     this.derefLayout(root.children[i], config);
                 }
             } else {
-                this.derefTemplate(root.icon, config);
+                if(root.icon !== undefined) {
+                    this.derefTemplate(root.icon, config);
+                }
                 this.derefTemplate(root.panel, config);
             }
         }
@@ -2821,6 +2105,9 @@ angular.module('ngDocker', [])
             for(var k in config.refs) {
                 config.refs[k] = this.deref(config.refs[k], config);
             }
+            if(!config.getterSetter) {
+                this.derefLayout(config.layout);
+            }
         }
     };
 
@@ -2831,35 +2118,41 @@ angular.module('ngDocker', [])
         return {
             headerHeight: config.headerHeight,
             borderWidth: config.borderWidth,
+            marginWidth: config.marginWidth,
             getterSetter: config.getterSetter,
             closeButton: this.cloneTemplate(config.closeButton),
-            refs: this.cloneRefs(config.refs)
+            refs: this.cloneRefs(config.refs),
+            layout: config.getterSetter ? config.layout : this.cloneLayout(config.layout)
         };
     };
 
     this.configsEqual = function(a, b) {
-        if(!a && b) {
+        if(a.headerHeight !== b.headerHeight) {
             return false;
-        } else if(a && !b) {
+        }
+        if(a.borderWidth !== b.borderWidth) {
             return false;
-        } else if(a && b) {
-            if(a.headerHeight !== b.headerHeight) {
-                return false;
-            }
-            if(a.borderWidth !== b.borderWidth) {
-                return false;
-            }
-            if(a.getterSetter !== b.getterSetter) {
-                return false;
-            }
-            if(!this.templatesEqual(a.closeButton, b.closeButton)) {
-                return false;
-            }
-            if(!this.refsEqual(a.refs, b.refs)) {
-                return false;
-            }
-        } else if(!angular.equals(a, b)) {
+        }
+        if(a.marginWidth !== b.marginWidth) {
             return false;
+        }
+        if(a.getterSetter !== b.getterSetter) {
+            return false;
+        }
+        if(!this.templatesEqual(a.closeButton, b.closeButton)) {
+            return false;
+        }
+        if(!this.refsEqual(a.refs, b.refs)) {
+            return false;
+        }
+        if(a.getterSetter) {
+            if(a.layout !== b.layout) {
+                return false;
+            }
+        } else {
+            if(!this.layoutsEqual(a.layout, b.layout)) {
+                return false;
+            }
         }
         return true;
     };
