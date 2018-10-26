@@ -143,6 +143,7 @@ angular.module('ngDocker', [])
      * $scope.config = {
      *   layout: {
      *     id: 'center-panel',
+     *     title: 'Center Panel',
      *     panel: {
      *       template: '<div>I want to be in the center!</div>'
      *     },
@@ -151,6 +152,7 @@ angular.module('ngDocker', [])
      * };
      * var leftLeaf = {
      *   id: 'left-panel',
+     *   title: 'Left Panel',
      *   panel: {
      *     template: '<div>I want to be at the left!</div>'
      *   },
@@ -163,6 +165,7 @@ angular.module('ngDocker', [])
      * //   children: [
      * //     {
      * //       id: 'left-panel',
+     * //       title: 'Left Panel',
      * //       panel: {
      * //         template: '<div>I want to be at the left!</div>'
      * //       },
@@ -170,6 +173,7 @@ angular.module('ngDocker', [])
      * //     },
      * //     {
      * //       id: 'center-panel',
+     * //       title: 'Center Panel',
      * //       panel: {
      * //         template: '<div>I want to be in the center!</div>'
      * //       }
@@ -333,12 +337,14 @@ angular.module('ngDocker', [])
      *     children: [
      *       {
      *         id: 'panel-1',
+     *         title: 'Panel 1',
      *         panel: {
      *           template: '<div>I am panel 1</div>'
      *         }
      *       },
      *       {
      *         id: 'panel-2',
+     *         title: 'Panel 2',
      *         panel: {
      *           template: '<div>I am panel 2</div>'
      *         }
@@ -350,6 +356,7 @@ angular.module('ngDocker', [])
      * // After this, $scope.config.layout will be
      * // {
      * //   id: 'panel-2',
+     * //   title: 'Panel 2',
      * //   panel: {
      * //     template: '<div>I am panel 2</div>'
      * //   }
@@ -485,6 +492,7 @@ angular.module('ngDocker', [])
      *   },
      *   layout: {
      *     id: 'some-panel',
+     *     title: 'Some Panel',
      *     panel: {
      *       template: '<div>{{something}}</div>',
      *       controller: ngDocker.ref('SomePanelController')
