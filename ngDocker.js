@@ -1,5 +1,9 @@
 angular.module('ngDocker', [])
 .service('ngDocker', ['ngDockerInternal', function(ngDockerInternal) {
+    /**
+     * @namespace ngDocker
+     */
+
     var that = this;
 
     // NOTE: When you add configuration options here, be sure to update ngDockerInternal's cloneConfig, configsEqual, and derefConfig
@@ -15,120 +19,165 @@ angular.module('ngDocker', [])
         layout: null
     };
 
-    this.ref = function(name) {
-        return ngDockerInternal.ref(name);
-    };
-
-    this.isRef = function(x) {
-        return ngDockerInternal.isRef(x);
-    };
-
-    this.deref = function(x, config) {
-        return ngDockerInternal.deref(x, config);
-    };
-
+    /**
+     * Finds all the leaf nodes in a layout.
+     *
+     * @memberof ngDocker
+     * @param {object} root The node in the layout from which to find leaves.
+     * @returns {Array} An array of leaf nodes from the given layout. 
+     *
+     * @example
+     * var layout = {
+     *   split: 'vertical',
+     *   ratio: 0.5,
+     *   children: [
+     *     {
+     *       split: 'horizontal',
+     *       ratio: 0.5,
+     *       children: [
+     *         {
+     *           id: 'panel-1',
+     *           title: 'Panel 1',
+     *           panel: {
+     *             template: '<div>I am panel 1.</div>'
+     *           }
+     *         },
+     *         {
+     *           id: 'panel-2',
+     *           title: 'Panel 2',
+     *           panel: {
+     *             template: '<div>I am panel 2.</div>'
+     *           }
+     *         }
+     *       ]
+     *     },
+     *     {
+     *       id: 'panel-3',
+     *       title: 'Panel 3',
+     *       panel: {
+     *         template: '<div>I am panel 3.</div>'
+     *       }
+     *     }
+     *   ]
+     * };
+     * var leaves = ngDocker.findLeaves(layout); // leaves is an array containing nodes 'panel-1', 'panel-2', 'panel-3'
+     */
     this.findLeaves = function(root) {
         return ngDockerInternal.findLeaves(root);
     };
 
-    this.validateLayout = function(root) {
-        return ngDockerInternal.validateLayout(root);
-    };
-
-    this.derefLayout = function(root, config) {
-        return ngDockerInternal.derefLayout(root, config);
-    };
-
-    this.cloneLayout = function(root) {
-        return ngDockerInternal.cloneLayout(root);
-    };
-
-    this.layoutsEqual = function(a, b) {
-        return ngDockerInternal.layoutsEqual(a, b);
-    };
-
-    this.derefConfig = function(config) {
-        return ngDockerInternal.derefConfig(config);
-    };
-
-    this.cloneConfig = function(config) {
-        return ngDockerInternal.cloneConfig(config);
-    };
-
-    this.configsEqual = function(a, b) {
-        return ngDockerInternal.configsEqual(a, b);
-    };
-
-    this.findParent = function(root, node) {
-        return ngDockerInternal.findParent(root, node);
-    };
-
+    /**
+     * Finds the leaf node in a layout with the given ID.
+     *
+     * @memberof ngDocker
+     * @param {object} root The root node of the layout.
+     * @param {string} id The ID of the leaf to find.
+     * @return {object} If found, the leaf node with the given ID, otherwise null.
+     *
+     * @example
+     * var layout = {
+     *   split: 'vertical',
+     *   ratio: 0.5,
+     *   children: [
+     *     {
+     *       split: 'horizontal',
+     *       ratio: 0.5,
+     *       children: [
+     *         {
+     *           id: 'panel-1',
+     *           title: 'Panel 1',
+     *           panel: {
+     *             template: '<div>I am panel 1.</div>'
+     *           }
+     *         },
+     *         {
+     *           id: 'panel-2',
+     *           title: 'Panel 2',
+     *           panel: {
+     *             template: '<div>I am panel 2.</div>'
+     *           }
+     *         }
+     *       ]
+     *     },
+     *     {
+     *       id: 'panel-3',
+     *       title: 'Panel 3',
+     *       panel: {
+     *         template: '<div>I am panel 3.</div>'
+     *       }
+     *     }
+     *   ]
+     * };
+     * var leaf = ngDocker.findLeafWithId(layout, 'panel-2'); // returns the second child of the horizontal split
+     * var notfound = ngDocker.findLeafWithId(layout, 'nope'); // returns null
+     */
     this.findLeafWithId = function(root, id) {
         return ngDockerInternal.findLeafWithId(root, id);
     };
 
-    this.removeSplitChild = function(root, node, index) {
-        if(node.split === undefined) {
-            throw new Error('removeSplitChild only valid on splits');
-        }
-        node.children.splice(index, 1);
-        if(node.split === 'tabs' && node.activeTabIndex >= node.children.length) {
-            --node.activeTabIndex;
-        }
-        if(node.children.length < 2) {
-            if(node.children.length === 1) {
-                var p = this.findParent(root, node);
-                if(p === null) {
-                    root = node.children[0];
-                } else {
-                    p[0].children[p[1]] = node.children[0];
-                }
-            } else {
-                ngDockerInternal.validationFail();
-            }
-        }
-        return root;
-    };
-
-    this.removeNode = function(root, node) {
-        var p = this.findParent(root, node);
-        if(p === null) {
-            root = null;
-        } else {
-            root = this.removeSplitChild(root, p[0], p[1]);
-        }
-        return root;
-    };
-
-    this.removeLeafWithId = function(root, id) {
-        var leaves = this.findLeaves(root);
-        for(var i = 0; i !== leaves.length; ++i) {
-            var leaf = leaves[i];
-            if(leaf.id === id) {
-                var p = this.findParent(root, leaf);
-                if(p === null) {
-                    // root panel removed
-                    root = null;
-                } else {
-                    root = this.removeSplitChild(root, p[0], p[1]);
-                }
-            }
-        }
-        return root;
-    };
-
-    this.revealNode = function(root, node) {
-        var p = this.findParent(root, node);
-        while(p !== null) {
-            if(p[0].split === 'tabs') {
-                p[0].activeTabIndex = p[1];
-            }
-            p = this.findParent(root, p[0]);
-        }
-    };
-
-    // Leaf must have gravity defined.
-    // Leaf may optionally have group defined.
+    /**
+     * Inserts a leaf node into the layout. <code>leaf</code> must have a <code>gravity</code> property on it, and all existing leaves
+     * in the given layout must have <code>gravity</code> defined as well. <b>Set your layout to the return value of this function</b>.
+     *
+     * Insertion currently supports three kinds of <code>gravity</code>: <code>left</code>, <code>center</code>, <code>right</code>.
+     * The algorithm tries to recognize where the "left", "center", and "right" parts of the layout are. If the panel has left
+     * gravity, then it is placed in the left region of the layout (either with a vertical split, if there is no left region, or 
+     * with a tab split). For center gravity, the center region of the layout is identified, and the leaf is inserted either with a 
+     * vertical split or a tab split. For right gravity, the right region of the layout is identified, and the leaf is inserted either with a
+     * vertical split or a tab split.
+     *
+     * If you want certain leaf nodes to always form a tab split (regardless of gravity), you can use the optional <code>group</code> property. 
+     * When <code>insertLeaf</code> is called, it will first check if <code>leaf</code> has a <code>group</code> property. If it does, it will 
+     * search the layout for other nodes with the same <code>group</code>: if it finds another node with the same group, it will form a tab 
+     * split with that node instead of splitting by gravity.
+     *
+     * See {@link https://sashavol.com/misc/ngDocker/test/3.htm the test page 3.htm} for an interactive demo of how insertLeaf works.
+     *
+     * @memberof ngDocker
+     * @param {object} root The root node of the layout.
+     * @param {object} leaf The leaf to insert.
+     * @param {Number} ratio The ratio of the leaf in its split (only used if a vertical split is created).
+     * @returns {object} The new root of the layout.
+     *
+     * @example
+     * $scope.config = {
+     *   layout: {
+     *     id: 'center-panel',
+     *     panel: {
+     *       template: '<div>I want to be in the center!</div>'
+     *     },
+     *     gravity: 'center'
+     *   }
+     * };
+     * var leftLeaf = {
+     *   id: 'left-panel',
+     *   panel: {
+     *     template: '<div>I want to be at the left!</div>'
+     *   },
+     *   gravity: 'left'
+     * };
+     * // After this, $scope.config.layout will be
+     * // {
+     * //   split: 'vertical',
+     * //   ratio: 0.5,
+     * //   children: [
+     * //     {
+     * //       id: 'left-panel',
+     * //       panel: {
+     * //         template: '<div>I want to be at the left!</div>'
+     * //       },
+     * //       gravity: 'left'
+     * //     },
+     * //     {
+     * //       id: 'center-panel',
+     * //       panel: {
+     * //         template: '<div>I want to be in the center!</div>'
+     * //       }
+     * //     }
+     * //   ]
+     * // }
+     * $scope.config.layout = ngDocker.insertLeaf($scope.config.layout, leftLeaf, 0.5);
+     */
     this.insertLeaf = function(root, leaf, ratio) {
         var that = this;
         if(leaf.gravity === undefined) {
@@ -228,6 +277,290 @@ angular.module('ngDocker', [])
             }
         }
         return root;
+    };
+
+    /**
+     * Removes the leaf with the specified ID from the layout. <b>Set your layout to the return value of this function</b>
+     *
+     * @memberof ngDocker
+     * @param {object} root The root node of the layout.
+     * @param {string} id The ID of the leaf node to remove.
+     * @returns {object} The new root node.
+     */
+    this.removeLeafWithId = function(root, id) {
+        var leaves = this.findLeaves(root);
+        for(var i = 0; i !== leaves.length; ++i) {
+            var leaf = leaves[i];
+            if(leaf.id === id) {
+                var p = this.findParent(root, leaf);
+                if(p === null) {
+                    // root panel removed
+                    root = null;
+                } else {
+                    root = this.removeSplitChild(root, p[0], p[1]);
+                }
+            }
+        }
+        return root;
+    };
+
+    /**
+     * Finds the parent of a node in a layout.
+     *
+     * @memberof ngDocker
+     * @param {object} root The root node of the layout.
+     * @param {object} node The node for which to find the parent.
+     * @returns {object} The parent of the node, or null if <code>node</code> is the root node and has no parent.
+     */
+    this.findParent = function(root, node) {
+        return ngDockerInternal.findParent(root, node);
+    };
+
+    /**
+     * Removes the child of a split. <b>Set your layout to the return value of this function.</b>
+     *
+     * @memberof ngDocker
+     * @param {object} root The root node of the layout.
+     * @param {object} node The split from which to remove the child.
+     * @param {Number} index The index of the child to remove.
+     * @returns {object} The new root node.
+     *
+     * @example
+     * $scope.config = {
+     *   layout: {
+     *     split: 'vertical',
+     *     ratio: 0.5,
+     *     children: [
+     *       {
+     *         id: 'panel-1',
+     *         panel: {
+     *           template: '<div>I am panel 1</div>'
+     *         }
+     *       },
+     *       {
+     *         id: 'panel-2',
+     *         panel: {
+     *           template: '<div>I am panel 2</div>'
+     *         }
+     *       }
+     *     ]
+     *   } 
+     * };
+     *
+     * // After this, $scope.config.layout will be
+     * // {
+     * //   id: 'panel-2',
+     * //   panel: {
+     * //     template: '<div>I am panel 2</div>'
+     * //   }
+     * // }
+     * $scope.config.layout = ngDocker.removeSplitChild($scope.config.layout, $scope.config.layout, 0);
+     */
+    this.removeSplitChild = function(root, node, index) {
+        if(node.split === undefined) {
+            throw new Error('removeSplitChild only valid on splits');
+        }
+        node.children.splice(index, 1);
+        if(node.split === 'tabs' && node.activeTabIndex >= node.children.length) {
+            --node.activeTabIndex;
+        }
+        if(node.children.length < 2) {
+            if(node.children.length === 1) {
+                var p = this.findParent(root, node);
+                if(p === null) {
+                    root = node.children[0];
+                } else {
+                    p[0].children[p[1]] = node.children[0];
+                }
+            } else {
+                ngDockerInternal.validationFail();
+            }
+        }
+        return root;
+    };
+
+    /**
+     * Removes a node from the layout. <b>Set your layout to the return value of this function.</b>
+     *
+     * @memberof ngDocker
+     * @param {object} root The root node of the layout.
+     * @param {object} node The node to remove 
+     * @returns {object} The new root node. 
+     */
+    this.removeNode = function(root, node) {
+        var p = this.findParent(root, node);
+        if(p === null) {
+            root = null;
+        } else {
+            root = this.removeSplitChild(root, p[0], p[1]);
+        }
+        return root;
+    };
+
+    /**
+     * Sets activeTabIndex on all the ancestors of the given node such that the node is visible. This is useful if you want to "focus" onto a panel that may be concealed behind tab splits.
+     *
+     * @memberof ngDocker
+     * @param {object} root The root node of the layout.
+     * @param {object} node The node to reveal.
+     */
+    this.revealNode = function(root, node) {
+        var p = this.findParent(root, node);
+        while(p !== null) {
+            if(p[0].split === 'tabs') {
+                p[0].activeTabIndex = p[1];
+            }
+            p = this.findParent(root, p[0]);
+        }
+    };
+
+    /**
+     * Creates a copy of a layout.
+     *
+     * @memberof ngDocker
+     * @param {object} root The node in the layout to clone.
+     * @returns {object} A copy of the layout.
+     */
+    this.cloneLayout = function(root) {
+        return ngDockerInternal.cloneLayout(root);
+    };
+
+    /**
+     * Tests if two layouts are equal.
+     *
+     * @memberof ngDocker
+     * @param {object} a The first layout.
+     * @param {object} b The second layout.
+     * @returns {boolean} Whether the two layouts are equal.
+     */
+    this.layoutsEqual = function(a, b) {
+        return ngDockerInternal.layoutsEqual(a, b);
+    };
+
+    /**
+     * Performs syntax validity checks on the layout (the validity of templates and templateUrls is not checked, however). ngDocker automatically call this function when processing the layout, normally you do not need to call it.
+     *
+     * @memberof ngDocker
+     * @param {object} root The node in the layout from which to perform validation.
+     * @throws {Error} Error describing the problem with the layout.
+     */
+    this.validateLayout = function(root) {
+        return ngDockerInternal.validateLayout(root);
+    };
+
+    /**
+     * Clones a config object.
+     *
+     * @memberof ngDocker
+     * @param {object} config The config to clone.
+     * @returns {object} A copy of the config object.
+     */
+    this.cloneConfig = function(config) {
+        return ngDockerInternal.cloneConfig(config);
+    };
+
+    /**
+     * Tests if two config objects are equal.
+     *
+     * @memberof ngDocker
+     * @param {object} a The first config object.
+     * @param {object} b The second config object.
+     * @returns {boolean} Whether the two config objects are equal.
+     */
+    this.configsEqual = function(a, b) {
+        return ngDockerInternal.configsEqual(a, b);
+    };
+
+    /**
+     * Creates a reference to a value in the config's <code>refs</code> property.
+     * This function is used to make the layout serializable (e.g. if your application needs to be able to store the panel state in a cookie or local storage). It is <i>not</i> required to use refs for general use (only if you want serializability).
+     *
+     * @example
+     * // Example of using a ref in a layout
+     * $scope.config = {
+     *   refs: {
+     *     SomePanelController: function($scope) {
+     *       $scope.something = 'Hello!';
+     *     }
+     *   },
+     *   layout: {
+     *     id: 'some-panel',
+     *     panel: {
+     *       template: '<div>{{something}}</div>',
+     *       controller: ngDocker.ref('SomePanelController')
+     *     }
+     *   }
+     * };
+     *
+     * @memberof ngDocker
+     * @param {string} name The name of the ref.
+     * @returns {string} A placeholder string that will be expanded by ngDocker to the value given in the config's <code>refs</code> property.
+     */
+    this.ref = function(name) {
+        return ngDockerInternal.ref(name);
+    };
+
+    /**
+     * Determines whether a value is a ref.
+     *
+     * @memberof ngDocker
+     * @param {*} x The value to check.
+     * @returns {boolean} Whether <code>x</code> is a ref.
+     *
+     * @example
+     * var x = ngDocker.ref('test');
+     * var y = 5;
+     * ngDocker.isRef(x); // returns true
+     * ngDocker.isRef(y); // returns false
+     */
+    this.isRef = function(x) {
+        return ngDockerInternal.isRef(x);
+    };
+
+    /**
+     * Expands a ref to the value it refers to in the config's <code>refs</code> property.
+     *
+     * @memberof ngDocker
+     * @param {*} x The value to dereference.
+     * @param {object} config The configuration object.
+     * @returns {string} If the value is a reference, the corresponding value in the config's <code>refs</code> property. Otherwise, just returns <code>x</code>.
+     *
+     * @example
+     * var config = {
+     *   refs: {
+     *     test: function x() {
+     *       console.log('Hello World!');
+     *     }
+     *   }
+     * };
+     * var ref = ngDocker.ref('test');
+     * var f = ngDocker.deref(ref, config);
+     * f(); // prints "Hello World!"
+     * var num = ngDocker.deref(5, config); // 5 is not a ref, so deref just returns it
+     */
+    this.deref = function(x, config) {
+        return ngDockerInternal.deref(x, config);
+    };
+
+    /**
+     * Deref all refs in a layout.
+     *
+     * @memberof ngDocker
+     * @param {object} root The node in the layout from which to deref.
+     * @param {object} config The config object.
+     */
+    this.derefLayout = function(root, config) {
+        return ngDockerInternal.derefLayout(root, config);
+    };
+
+    /**
+     * Derefs all refs in a config object.
+     *
+     * @memberof ngDocker
+     * @param {object} config The config to deref.
+     */
+    this.derefConfig = function(config) {
+        return ngDockerInternal.derefConfig(config);
     };
 }])
 .directive('ngDocker', ['$parse', '$compile', '$templateCache', '$templateRequest', '$q', '$exceptionHandler', '$controller', '$injector', 'ngDocker', 'ngDockerInternal', function($parse, $compile, $templateCache, $templateRequest, $q, $exceptionHandler, $controller, $injector, ngDocker, ngDockerInternal) {

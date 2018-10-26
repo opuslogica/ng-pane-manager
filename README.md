@@ -209,4 +209,4 @@ See [themes/black.css](themes/black.css) for an example of how to make an ngDock
 
 ## Layout
 
-## Utility Functions
+## Functions
