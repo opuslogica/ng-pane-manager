@@ -1365,13 +1365,25 @@ angular.module('ngDocker', [])
                     leaves.forEach(function(leaf) {
                         if(!panels[leaf.id]) {
                             var panelScope = newTemplateScope(leaf.panel);
+                            var panel = $compile(getTemplateTemplateString(leaf.panel))(panelScope);
                             panelScope.closeThisPanel = function() {
                                 removeLeafWithId(leaf.id);
                             };
-                            var panel = $compile(getTemplateTemplateString(leaf.panel))(panelScope);
-                            maybeLoadTemplateController(leaf.panel, panelScope, panel);
+                            panelScope.onPanelResize = function(listener) {
+                                var listeners = panel.data('ngDockerResizeListeners');
+                                listeners.push(listener);
+                            };
+                            panelScope.offPanelResize = function(listener) {
+                                var listeners = panel.data('ngDockerResizeListeners');
+                                var index = listeners.indexOf(listener);
+                                if(index >= 0) {
+                                    listeners.splice(index, 1);
+                                }
+                            };
                             panel.data('ngDockerNode', ngDocker.cloneLayout(leaf));
                             panel.data('ngDockerConfig', configCopy);
+                            panel.data('ngDockerResizeListeners', []);
+                            maybeLoadTemplateController(leaf.panel, panelScope, panel);
                             panels[leaf.id] = panel;
                         }
                         if(leaf.icon !== undefined && !icons[leaf.id]) {
@@ -1809,6 +1821,14 @@ angular.module('ngDocker', [])
                                 }
                             }
                         }
+                        // notify all panels of a resize
+                        Object.keys(panels).forEach(function(id) {
+                            var panel = panels[id];
+                            var listeners = panel.data('ngDockerResizeListeners');
+                            for(var i = 0; i !== listeners.length; ++i) {
+                                listeners[i]();
+                            }
+                        });
                     }
                 }).catch(function(e) {
                     templateResolver = null;
@@ -2624,7 +2644,7 @@ angular.module('ngDocker', [])
             if(typeof template.scope !== 'object') {
                 throw new Error('scope must be an object');
             } else {
-                ['closeThisPanel'].forEach(function(k) {
+                ['closeThisPanel', 'onPanelResize', 'offPanelResize',].forEach(function(k) {
                     if(template.scope[k]) {
                         throw new Error('\'' + k + '\' cannot be added to the panel\'s scope, it is reserved for ngDocker');
                     }
