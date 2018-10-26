@@ -2644,7 +2644,7 @@ angular.module('ngDocker', [])
             if(typeof template.scope !== 'object') {
                 throw new Error('scope must be an object');
             } else {
-                ['closeThisPanel', 'onPanelResize', 'offPanelResize',].forEach(function(k) {
+                ['closeThisPanel', 'onPanelResize', 'offPanelResize'].forEach(function(k) {
                     if(template.scope[k]) {
                         throw new Error('\'' + k + '\' cannot be added to the panel\'s scope, it is reserved for ngDocker');
                     }
