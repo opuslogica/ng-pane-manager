@@ -225,8 +225,8 @@ Leaves have no children and must have an `id` property. They have the following 
 - `id` (String): The ID of this leaf node. (required)
 - `title` (String): The title that should be displayed in this panel's window. (required)
 - `closeable` (Boolean): Whether the user should be able to close this panel's window.
-- `icon` (object): A [template](#templates) describing how the window's icon should be rendered. (optional)
-- `panel` (object): A [template](#templates) describing how this panel should be rendered. (required)
+- `icon` (Object): A [template](#templates) describing how the window's icon should be rendered. (optional)
+- `panel` (Object): A [template](#templates) describing how this panel should be rendered. (required)
 
 Splits have one or more children and must have a `split` property. They have the following properties:
 - `split` (String): Either "vertical", "horizontal", or "tabs"
@@ -237,10 +237,17 @@ Splits have one or more children and must have a `split` property. They have the
 All nodes also have the following properties:
 - `gravity` (String): The gravity of this panel (see `ngDocker.insertLeaf` in the [function reference](#functions)). (optional, only required if using insertLeaf)
 - `group` (String): The insert group of this panel (see `ngDocker.insertLeaf` in the [function reference](#functions)). (optional)
-- `data` (object): Arbitrary data to store along with this node. The object should be a plain key-value object, with the ID of the data as the key and your data as the value. (optional) 
+- `data` (Object): Arbitrary data to store along with this node. The object should be a plain key-value object, with the ID of the data as the key and your data as the value. (optional) 
 
 ## Templates
 <a name="templates"></a>
+
+Options that take templates (e.g. `closeButton`, `icon`, `panel`) take an object with the following properties:
+- `template` (String): The angular template as a string. (required unless `templateUrl` is defined)
+- `templateUrl` (String): The URL to the template. (required unless `template` is defined)
+- `controller` (String | Function | Array): If this is a string, then it is the name of the controller to use for the template. If this is a function or array, then it is the controller definition. (optional)
+- `resolve` (Object): An object where the key is the name to inject into the controller, and the value is a function that either returns a value or a `$q` promise that resolves to a value ([example](test/2.htm)). (optional)
+- `scope` (Object): An object where each key is added to the template's scope with the given value ([example](test/3.htm)). (optional)
 
 ## Controllers
 
