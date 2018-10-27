@@ -130,17 +130,12 @@ app.run(['ngDocker', '$rootScope', '$q', 'TestService', function(ngDocker, $root
                         },
                         panel: {
                             templateUrl: 'test.html',
-                            controller: ['$scope', 'transformName', function($scope, transformName) {
-                                $scope.name = transformName($scope.name);
+                            controller: ['$scope', 'name', function($scope, name) {
+                                $scope.name = name;
                             }],
-                            scope: {
-                                name: 'w'
-                            },
                             resolve: {
-                                transformName: function() {
-                                    return function(name) {
-                                        return name.toUpperCase();
-                                    };
+                                name: function() {
+                                    return 'W';
                                 }
                             }
                         }
