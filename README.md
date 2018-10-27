@@ -8,12 +8,13 @@ ngDocker is a docking panel system for AngularJS. It...
 * Supports serializing/deserializing panel layouts
 * Is easily themeable
 
-[Demo 1](https://sashavol.com/misc/ngDocker/test/2.htm) 
-[Demo 2](https://sashavol.com/misc/ngDocker/test/3.htm)
+[Demo](https://sashavol.com/misc/ngDocker/test/demo.htm)
 
 # Installation
 
 TODO
+
+# User Interaction
 
 # Developer Guide
 
@@ -130,6 +131,7 @@ app.controller('myController', function($scope) {
 ```
 
 ## Serialize/Deserialize
+<a name="ser-deser"></a>
 
 You may want your application to save the panel state (e.g. to cookies or local storage). The way to do this is to `JSON.stringify()` the `layout` property. There is one caveat: some options (e.g. `controller` or `resolve`) can accept functions, which cannot be serialized. If you need to use these options, you can use _refs_ to separate out the unserializable state.
 
@@ -199,14 +201,55 @@ All `ngDocker.ref()` calls will return a magic string that can be serialized. Wh
 
 ## Themes
 
-To use a theme, include the theme's stylesheet _after_ `ngDocker.css`.
-
 See [themes/black.css](themes/black.css) for an example of how to make an ngDocker theme. Some theming properties (e.g. `headerHeight`, `borderWidth`, `marginWidth`) are also available in the configuration object.
 
 # Reference
 
 ## Configuration
 
-## Layout
+The `ng-docker` directive accepts the following options:
+- `headerHeight` (Number): The height of the header of each window. (default 20px)
+- `borderWidth` (Number): The width of the borders of each window. (default: 2px)
+- `marginWidth` (Number): The width of the margins surrounding the layout. When the user is dragging a window, they can drag it into the margins to split an entire side of the layout instead of a particular window. (default: 20px)
+- `getterSetter` (Boolean): Whether the `layout` property is a getter/setter function. (default: false)
+- `closeButton`: The [template](#templates) describing how the windows' close buttons should be rendered. (default is an HTML template with a Unicode cross).
+- `refs`: An object describing the values to which ngDocker refs will be expanded (see [Serialize/Deserialize](#ser-deser) and `ngDocker.ref` in the [functions reference](#functions) for an explanation).
+- `layout`: The [object](#layout) describing the panel layout. If `getterSetter` is true, then this is a getter-setter function: if an argument is given, it should set the layout, otherwise it should return the layout.
 
-## Functions
+## Layout
+<a name="layout"></a>
+
+The `layout` property is a tree of nodes. Each node is either a _leaf_ or a _split_.
+
+Leaves have no children and must have an `id` property. They have the following properties:
+- `id` (String): The ID of this leaf node. (required)
+- `title` (String): The title that should be displayed in this panel's window. (required)
+- `closeable` (Boolean): Whether the user should be able to close this panel's window.
+- `icon` (object): A [template](#templates) describing how the window's icon should be rendered. (optional)
+- `panel` (object): A [template](#templates) describing how this panel should be rendered. (required)
+
+Splits have one or more children and must have a `split` property. They have the following properties:
+- `split` (String): Either "vertical", "horizontal", or "tabs"
+- `ratio` (Number): Number from 0 to 1 indicating the size ratio of the first panel to the second panel (required if vertical or horizontal split)
+- `activeTabIndex` (Number): Index of the tab that is currently active (required if tab split)
+- `children` (Array): Array of children. If the split is vertical or horizontal, there must be exactly 2 children. If the split is a tab split, there must be at least 2 children. (required)
+
+All nodes also have the following properties:
+- `gravity` (String): The gravity of this panel (see `ngDocker.insertLeaf` in the [function reference](#functions)). (optional, only required if using insertLeaf)
+- `group` (String): The insert group of this panel (see `ngDocker.insertLeaf` in the [function reference](#functions)). (optional)
+- `data` (object): Arbitrary data to store along with this node. The object should be a plain key-value object, with the ID of the data as the key and your data as the value. (optional) 
+
+## Templates
+<a name="templates"></a>
+
+## Controllers
+
+The controller of a panel has the following functions available in `$scope`:
+- `closeThisPanel()`: Removes the panel from the layout
+- `onPanelResize(listener)`: Adds a listener that gets fired whenever the panel resizes (or is initially constructed). This is useful when embedding content into panels that needs to be manually notified of its container resizing.
+- `offPanelResize(listener)`: Removes a panel resize listener.
+
+## Utility Functions
+<a name="functions"></a>
+
+[Utility functions reference](https://sashavol.com/misc/ngDockerDocs/index.html)

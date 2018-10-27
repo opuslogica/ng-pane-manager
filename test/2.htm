@@ -84,6 +84,9 @@ app.run(['ngDocker', '$rootScope', '$q', 'TestService', function(ngDocker, $root
                             scope: {
                                 name: ngDocker.ref('panel1Name')
                             }
+                        },
+                        data: {
+                            dataTest: 'something'
                         }
                     },
                     {
@@ -176,7 +179,7 @@ app.run(['ngDocker', '$rootScope', '$q', 'TestService', function(ngDocker, $root
 <body ng-app="test">
     <script type="text/ng-template" id="test.html">
         <div class="test-panel">
-            Hello {{name}}!
+            {{name}}
         </div>
     </script>
     <div ng-docker="config"></div>
