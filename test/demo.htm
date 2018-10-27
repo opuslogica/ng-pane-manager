@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/frappe-charts/1.1.0/frappe-charts.min.iife.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.6.5/ol-debug.js"></script>
+<script type="text/javascript" src="../ngDocker.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-charts/1.1.0/frappe-charts.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.6.5/ol.css">
+<link rel="stylesheet" href="https://cdn.materialdesignicons.com/3.0.39/css/materialdesignicons.min.css">
+<link rel="stylesheet" href="../ngDocker.css">
+<link rel="stylesheet" href="../theme/black.css">
+<style type="text/css">
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+
+    .docker {
+        width: 100%;
+        height: 100%;
+    }
+
+    .panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+</style>
+<script type="text/javascript">
+    var app = angular.module('demo', ['ngDocker']);
+    app.controller('BarGraph', ['$scope', '$element', function($scope, $element) {
+        var chart = new frappe.Chart($element[0], {
+            title: 'A Bar Graph',
+            data: {
+                labels: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+                datasets: [
+                    {
+                        name: 'Some bars',
+                        type: 'bar',
+                        values: [10, 20, 10, 50, 30, 60, 20, 10]
+                    }
+                ]
+            },
+            type: 'bar',
+            colors: ['#2b2b2b']
+        });
+        $scope.onPanelResize(function() {
+            chart.draw();
+        });
+    }]);
+    app.controller('LineGraph', ['$scope', '$element', function($scope, $element) {
+        var chart = new frappe.Chart($element[0], {
+            title: 'A Line Graph',
+            data: {
+                labels: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
+                datasets: [
+                    {
+                        name: 'A line',
+                        type: 'line',
+                        values: [10, 30, -20, -30, -10, 0, 10, 30, 50, 20]
+                    }
+                ]
+            },
+            type: 'line',
+            colors: ['#2b2b2b']
+        });
+        var fn = function() {
+            chart.draw();
+        };
+        $scope.onPanelResize(fn);
+        $scope.offPanelResize(fn); // test offPanelResize
+        $scope.onPanelResize(fn);
+    }]);
+    app.controller('Map', ['$scope', '$element', 'latlon', function($scope, $element, latlon) {
+        var map = new ol.Map({
+            target: $element[0],
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat(latlon),
+                zoom: 4
+            })
+        });
+        $scope.onPanelResize(function() {
+            map.updateSize();
+        });
+    }]);
+    app.run(['$rootScope', function($rootScope) {
+        $rootScope.config = {
+            headerHeight: 25,
+            layout: {
+                split: 'vertical',
+                ratio: 0.4,
+                children: [
+                    {
+                        split: 'horizontal',
+                        ratio: 0.5,
+                        children: [
+                            {
+                                id: 'bar-graph',
+                                title: 'Bar Graph',
+                                icon: {
+                                    templateUrl: 'bar-graph-icon.html'
+                                },
+                                panel: {
+                                    controller: 'BarGraph',
+                                    templateUrl: 'panel.html'
+                                }
+                            },
+                            {
+                                id: 'line-graph',
+                                title: 'Line Graph',
+                                icon: {
+                                    templateUrl: 'line-graph-icon.html'
+                                },
+                                panel: {
+                                    controller: 'LineGraph',
+                                    templateUrl: 'panel.html'
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        split: 'horizontal',
+                        ratio: 0.5,
+                        children: [
+                            {
+                                id: 'map-1',
+                                title: 'Map 1',
+                                icon: {
+                                    templateUrl: 'map-icon.html'
+                                },
+                                panel: {
+                                    controller: 'Map',
+                                    templateUrl: 'panel.html',
+                                    resolve: {
+                                        latlon: function() {
+                                            return [37.41, 8.82];
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                id: 'map-2',
+                                title: 'Map 2',
+                                icon: {
+                                    templateUrl: 'map-icon.html'
+                                },
+                                panel: {
+                                    controller: 'Map',
+                                    templateUrl: 'panel.html',
+                                    resolve: {
+                                        latlon: function() {
+                                            return [50, 50];
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+    }]);
+</script>
+</head>
+<body ng-app="demo">
+    <script type="text/ng-template" id="panel.html">
+        <div class="panel"></div>
+    </script>
+    <script type="text/ng-template" id="map-icon.html">
+        <span class="mdi mdi-map-outline"></span>
+    </script>
+    <script type="text/ng-template" id="bar-graph-icon.html">
+        <span class="mdi mdi-poll"></span>
+    </script>
+    <script type="text/ng-template" id="line-graph-icon.html">
+        <span class="mdi mdi-chart-line"></span>
+    </script>
+    <div class="docker" ng-docker="config"></div>
+</body>
+</html>
