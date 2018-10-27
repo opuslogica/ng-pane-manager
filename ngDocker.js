@@ -1,6 +1,22 @@
 angular.module('ngDocker', [])
 .service('ngDocker', ['ngDockerInternal', function(ngDockerInternal) {
     /**
+     * This is the contents of the <code>ngDocker</code> service, which contains various auxiliary functions for working with ngDocker layouts and configurations.
+     *
+     * @example <caption>Example of how to use the service:</caption>
+     * app.controller('SomePanelController', function($scope, ngDocker) {
+     *   $scope.config = {
+     *     layout: {
+     *       id: 'some-panel',
+     *       title: 'Some Panel',
+     *       panel: {
+     *         template: '<div>I am some panel!</div>'
+     *       }
+     *     }
+     *   };
+     *   $scope.config.layout = ngDocker.removeLeafWithId($scope.config.layout, 'some-panel');
+     * });
+     *
      * @namespace ngDocker
      */
 
@@ -391,7 +407,7 @@ angular.module('ngDocker', [])
      *
      * @memberof ngDocker
      * @param {object} root The root node of the layout.
-     * @param {object} node The node to remove 
+     * @param {object} node The node to remove.
      * @returns {object} The new root node. 
      */
     this.removeNode = function(root, node) {
