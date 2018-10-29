@@ -1,24 +1,43 @@
 # ngDocker
 
-TODO add a GIF of moving panels around
-
 ngDocker is a docking panel system for AngularJS. It...
 * Supports vertical splits, horizontal splits, and tab splits (configurable by both developer and user)
-* Has an easy-to-use API that takes advantage of AngularJS data binding
+* Has a straight-forward API that takes advantage of AngularJS data binding
 * Supports serializing/deserializing panel layouts
 * Is easily themeable
 
-[Demo](https://sashavol.com/misc/ngDocker/test/demo.htm)
+[Online Demo](https://sashavol.com/misc/ngDocker/test/demo.htm)
+
+<img src="demo.gif">
+
+# Table Of Contents
+
+- [Installation](#installation)
+- [Developer Guide](#dev-guide)
+    - [Hello World](#hello-world)
+    - [Vertical/Horizontal Splits](#vh-splits)
+    - [Tab Splits](#tab-splits)
+    - [Serialize/Deserialize](#ser-deser)
+    - [Themes](#themes)
+    - [Inserting Panels](#inserting-panels)
+    - [Other Features](#other-features)
+- [Reference](#reference)
+    - [Configuration](#configuration)
+    - [Layout](#layout)
+    - [Templates](#templates)
+    - [Panel Scope](#panel-scope)
+    - [ngDocker Service](#functions)
 
 # Installation
+<a name="installation"></a>
 
 TODO
 
-# User Interaction
-
 # Developer Guide
+<a name="dev-guide"></a>
 
 ## Hello World
+<a name="hello-world"></a>
 
 There is one directive: `ng-docker`.
 
@@ -45,6 +64,7 @@ app.controller('myController', function($scope) {
 ```
 
 ## Vertical/Horizontal Splits
+<a name="vh-splits"></a>
 
 You can display panels adjacently with a `vertical` or `horizontal` split:
 
@@ -79,6 +99,7 @@ app.controller('myController', function($scope) {
 ```
 
 ## Tab Splits
+<a name="tab-splits"></a>
 
 You can have 2+ panels appear as tabs:
 
@@ -197,15 +218,28 @@ app.controller('myController', function(ngDocker, $scope, $cookies) {
 });
 ```
 
-All `ngDocker.ref()` calls will return a magic string that can be serialized. When the config is evaluated by ngDocker, these strings will be expanded to the ref specified in the `refs` config property.
+All `ngDocker.ref()` calls (see the [ngDocker service reference](#functions)) will return a magic string that can be serialized. When the config is evaluated by ngDocker, these strings will be expanded to the ref specified in the `refs` config property.
 
 ## Themes
+<a name="themes"></a>
 
 See [themes/black.css](themes/black.css) for an example of how to make an ngDocker theme. Some theming properties (e.g. `headerHeight`, `borderWidth`, `marginWidth`) are also available in the configuration object.
 
+## Inserting Panels
+<a name="inserting-panels"></a>
+
+If you have a complex layout and want to insert another panel into it, `ngDocker.insertLeaf()` (see the [ngDocker service reference](#functions)) can automatically insert a panel into the layout given a gravity and (optional) grouping.
+
+## Other Features
+<a name="other-features"></a>
+
+There are other auxiliary features documented in the [reference section](#reference). Be sure to check out the [ngDocker service reference](#functions), which contains more examples and useful utility functions. 
+
 # Reference
+<a name="reference"></a>
 
 ## Configuration
+<a name="configuration"></a>
 
 The `ng-docker` directive accepts the following options:
 - `headerHeight` (Number): The height of the header of each window. (default 20px)
@@ -249,14 +283,17 @@ Options that take templates (e.g. `closeButton`, `icon`, `panel`) take an object
 - `resolve` (Object): An object where the key is the name to inject into the controller, and the value is a function that either returns a value or a `$q` promise that resolves to a value ([example](test/2.htm)). (optional)
 - `scope` (Object): An object where each key is added to the template's scope with the given value ([example](test/3.htm)). (optional)
 
-## Controllers
+## Panel Scope
+<a name="panel-scope"></a>
 
 The controller of a panel has the following functions available in `$scope`:
 - `closeThisPanel()`: Removes the panel from the layout
 - `onPanelResize(listener)`: Adds a listener that gets fired whenever the panel resizes (or is initially constructed). This is useful when embedding content into panels that needs to be manually notified of its container resizing.
 - `offPanelResize(listener)`: Removes a panel resize listener.
 
-## Utility Functions
+## ngDocker Service
 <a name="functions"></a>
 
-[Utility functions reference](https://sashavol.com/misc/ngDockerDocs/index.html)
+The `ngDocker` service contains many auxiliary functions that are helpful for working with your ngDocker layouts and configuration.
+
+[Online Reference](https://sashavol.com/misc/ngDockerDocs/index.html)
