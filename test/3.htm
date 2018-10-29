@@ -3,15 +3,15 @@
 <head>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular-cookies.js"></script>
-<script type="text/javascript" src="../ngDocker.js"></script>
-<link rel="stylesheet" href="../ngDocker.css">
+<script type="text/javascript" src="../ngPaneManager.js"></script>
+<link rel="stylesheet" href="../ngPaneManager.css">
 <style type="text/css">
     html, body {
         height: 100%;
         margin: 0;
     }
 
-    body, .docker {
+    body, .panes {
         background-color: rgb(227, 227, 227);
     }
 
@@ -21,7 +21,7 @@
         font-family: sans-serif;
     }
 
-    .docker {
+    .panes {
         flex: 1 1 75%;
     }
 
@@ -50,8 +50,8 @@
     }
 </style>
 <script type="text/javascript">
-    var app = angular.module('test', ['ngDocker', 'ngCookies']);
-    app.run(['ngDocker', '$rootScope', function(ngDocker, $rootScope) {
+    var app = angular.module('test', ['ngPaneManager', 'ngCookies']);
+    app.run(['ngPaneManager', '$rootScope', function(ngPaneManager, $rootScope) {
         window.rootScope = $rootScope;
         $rootScope.config = {
             layout: {
@@ -69,20 +69,20 @@
                 gravity: 'center'
             }
         };
-        Object.setPrototypeOf($rootScope.config, ngDocker.DEFAULT_CONFIG);
+        Object.setPrototypeOf($rootScope.config, ngPaneManager.DEFAULT_CONFIG);
 
         $rootScope.nextId = function() {
             var i = 1;
-            for(; ngDocker.findLeafWithId($rootScope.config.layout, i) !== null; ++i);
+            for(; ngPaneManager.findLeafWithId($rootScope.config.layout, i) !== null; ++i);
             return i.toString();
         };
     }]);
-    app.controller('Controls', ['ngDocker', '$rootScope', '$scope', '$cookies', function(ngDocker, $rootScope, $scope, $cookies) {
+    app.controller('Controls', ['ngPaneManager', '$rootScope', '$scope', '$cookies', function(ngPaneManager, $rootScope, $scope, $cookies) {
         $scope.newPanelText = '';
         $scope.panelGravity = 'left';
         $scope.addPanel = function() {
             var id = $rootScope.nextId();
-            $rootScope.config.layout = ngDocker.insertLeaf($rootScope.config.layout, {
+            $rootScope.config.layout = ngPaneManager.insertLeaf($rootScope.config.layout, {
                 id: id,
                 title: 'Panel ' + id,
                 icon: {
@@ -117,7 +117,7 @@
             {{panelText}}
         </div>
     </script>
-    <div class="docker" ng-docker="config"></div>
+    <div class="panes" ng-pane-manager="config"></div>
     <div class="controls" ng-controller="Controls">
         <fieldset>
             <legend>Config</legend>

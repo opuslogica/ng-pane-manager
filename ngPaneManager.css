@@ -1,13 +1,13 @@
-[ng-docker] {
+[ng-pane-manager] {
     position: relative;
     overflow: hidden;
     background-color: rgb(227, 227, 227);
 }
 
-.ng-docker-panel-container, 
-.ng-docker-vsplit, 
-.ng-docker-hsplit,
-.ng-docker-tabsplit {
+.ng-pane-manager-panel-container, 
+.ng-pane-manager-vsplit, 
+.ng-pane-manager-hsplit,
+.ng-pane-manager-tabsplit {
     position: absolute;
     top: 0;
     right: 0;
@@ -16,11 +16,11 @@
     box-sizing: border-box;
 }
 
-.ng-docker-container {
+.ng-pane-manager-container {
     position: absolute;
 }
 
-.ng-docker-floating-container {
+.ng-pane-manager-floating-container {
     position: absolute;
     opacity: 0.5;
     z-index: 3;
@@ -28,11 +28,11 @@
     height: 200px;
 }
 
-.ng-docker-hidden {
+.ng-pane-manager-hidden {
     display: none;
 }
 
-.ng-docker-header {
+.ng-pane-manager-header {
     display: flex;
     position: absolute;
     top: 0;
@@ -42,14 +42,14 @@
     align-content: center;
 }
 
-.ng-docker-header, .ng-docker-tab {
+.ng-pane-manager-header, .ng-pane-manager-tab {
     color: white;
     background-color: black;
     user-select: none;
     cursor: default;
 }
 
-.ng-docker-title {
+.ng-pane-manager-title {
     display: flex;
     padding: 4px;
     flex: 1 1 auto;
@@ -61,13 +61,13 @@
     min-width: 0;
 }
 
-.ng-docker-icon {
+.ng-pane-manager-icon {
     flex: 0 0 auto;
     vertical-align: top;
     padding-right: 4px;
 }
 
-.ng-docker-title-text {
+.ng-pane-manager-title-text {
     flex: 1 1 auto;
     min-width: 0;
     white-space: nowrap;
@@ -75,7 +75,7 @@
     overflow: hidden;
 }
 
-.ng-docker-close {
+.ng-pane-manager-close {
     display: flex;
     padding: 4px;
     flex: 0 0 auto;
@@ -84,7 +84,7 @@
     align-items: center;
 }
 
-.ng-docker-contents {
+.ng-pane-manager-contents {
     position: absolute;
     right: 0;
     bottom: 0;
@@ -93,60 +93,60 @@
     background-color: rgb(227, 227, 227);
 }
 
-.ng-docker-border {
+.ng-pane-manager-border {
     position: absolute;
     background-color: black;
     z-index: 1;
 }
 
-.ng-docker-border-invisible {
+.ng-pane-manager-border-invisible {
     position: absolute;
     opacity: 0;
     z-index: 1;
 }
 
-.ng-docker-vertical-border {
+.ng-pane-manager-vertical-border {
     bottom: 0px;
 }
 
-.ng-docker-horizontal-border {
+.ng-pane-manager-horizontal-border {
     left: 0px;
     right: 0px;
 }
 
-.ng-docker-separator.ng-docker-vertical-border {
+.ng-pane-manager-separator.ng-pane-manager-vertical-border {
     cursor: col-resize;
 }
 
-.ng-docker-separator.ng-docker-horizontal-border {
+.ng-pane-manager-separator.ng-pane-manager-horizontal-border {
     cursor: row-resize;
 }
 
-.ng-docker-left {
+.ng-pane-manager-left {
     position: absolute;
     left: 0;
     height: 100%;
 }
 
-.ng-docker-right {
+.ng-pane-manager-right {
     position: absolute;
     right: 0;
     height: 100%;
 }
 
-.ng-docker-top {
+.ng-pane-manager-top {
     position: absolute;
     top: 0;
     width: 100%;
 }
 
-.ng-docker-bottom {
+.ng-pane-manager-bottom {
     position: absolute;
     bottom: 0;
     width: 100%;
 }
 
-.ng-docker-tab-nav {
+.ng-pane-manager-tab-nav {
     position: absolute;
     display: flex;
     flex-direction: row;
@@ -156,7 +156,7 @@
     background-color: rgb(200, 200, 200);
 }
 
-.ng-docker-tab {
+.ng-pane-manager-tab {
     position: relative;
     display: inline-flex;
     background-color: gray;
@@ -164,11 +164,11 @@
     flex-direction: row;
 }
 
-.ng-docker-tab-active {
+.ng-pane-manager-tab-active {
     background-color: black;
 }
 
-.ng-docker-drop-visual {
+.ng-pane-manager-drop-visual {
     z-index: 2;
     background-color: rgba(0, 200, 255, 0.5);
     border-style: solid;
@@ -177,46 +177,46 @@
     box-sizing: border-box;
 }
 
-.ng-docker-abs-drop-visual {
+.ng-pane-manager-abs-drop-visual {
     position: absolute;
 }
 
-.ng-docker-drop-visual-top {
+.ng-pane-manager-drop-visual-top {
     top: 0;
     right: 0;
     left: 0;
 }
 
-.ng-docker-drop-visual-right {
+.ng-pane-manager-drop-visual-right {
     top: 0;
     bottom: 0;
     right: 0;
 }
 
-.ng-docker-drop-visual-bottom {
+.ng-pane-manager-drop-visual-bottom {
     right: 0;
     bottom: 0;
     left: 0;
 }
 
-.ng-docker-drop-visual-left {
+.ng-pane-manager-drop-visual-left {
     top: 0;
     bottom: 0;
     left: 0;
 }
 
-.ng-docker-drop-visual-whole {
+.ng-pane-manager-drop-visual-whole {
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
 }
 
-.ng-docker-drop-visual-tab {
+.ng-pane-manager-drop-visual-tab {
     display: inline-block;
     height: 100%;
 }
 
-.ng-docker-drop-visual-tab-on-panel {
+.ng-pane-manager-drop-visual-tab-on-panel {
     position: absolute;
 }

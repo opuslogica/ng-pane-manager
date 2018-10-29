@@ -1,10 +1,10 @@
-angular.module('ngDocker', [])
-.service('ngDocker', ['ngDockerInternal', function(ngDockerInternal) {
+angular.module('ngPaneManager', [])
+.service('ngPaneManager', ['ngPaneManagerInternal', function(ngPaneManagerInternal) {
     /**
-     * This is the contents of the <code>ngDocker</code> service, which contains various auxiliary functions for working with ngDocker layouts and configurations.
+     * This is the contents of the <code>ngPaneManager</code> service, which contains various auxiliary functions for working with ngPaneManager layouts and configurations.
      *
      * @example <caption>Example of how to use the service:</caption>
-     * app.controller('SomePanelController', function($scope, ngDocker) {
+     * app.controller('SomePanelController', function($scope, ngPaneManager) {
      *   $scope.config = {
      *     layout: {
      *       id: 'some-panel',
@@ -14,15 +14,15 @@ angular.module('ngDocker', [])
      *       }
      *     }
      *   };
-     *   $scope.config.layout = ngDocker.removeLeafWithId($scope.config.layout, 'some-panel');
+     *   $scope.config.layout = ngPaneManager.removeLeafWithId($scope.config.layout, 'some-panel');
      * });
      *
-     * @namespace ngDocker
+     * @namespace ngPaneManager
      */
 
     var that = this;
 
-    // NOTE: When you add configuration options here, be sure to update ngDockerInternal's cloneConfig, configsEqual, and derefConfig
+    // NOTE: When you add configuration options here, be sure to update ngPaneManagerInternal's cloneConfig, configsEqual, and derefConfig
     this.DEFAULT_CONFIG = {
         headerHeight: 20,
         borderWidth: 2,
@@ -38,7 +38,7 @@ angular.module('ngDocker', [])
     /**
      * Finds all the leaf nodes in a layout.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The node in the layout from which to find leaves.
      * @returns {Array} An array of leaf nodes from the given layout. 
      *
@@ -76,16 +76,16 @@ angular.module('ngDocker', [])
      *     }
      *   ]
      * };
-     * var leaves = ngDocker.findLeaves(layout); // leaves is an array containing nodes 'panel-1', 'panel-2', 'panel-3'
+     * var leaves = ngPaneManager.findLeaves(layout); // leaves is an array containing nodes 'panel-1', 'panel-2', 'panel-3'
      */
     this.findLeaves = function(root) {
-        return ngDockerInternal.findLeaves(root);
+        return ngPaneManagerInternal.findLeaves(root);
     };
 
     /**
      * Finds the leaf node in a layout with the given ID.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The root node of the layout.
      * @param {string} id The ID of the leaf to find.
      * @return {object} If found, the leaf node with the given ID, otherwise null.
@@ -124,11 +124,11 @@ angular.module('ngDocker', [])
      *     }
      *   ]
      * };
-     * var leaf = ngDocker.findLeafWithId(layout, 'panel-2'); // returns the second child of the horizontal split
-     * var notfound = ngDocker.findLeafWithId(layout, 'nope'); // returns null
+     * var leaf = ngPaneManager.findLeafWithId(layout, 'panel-2'); // returns the second child of the horizontal split
+     * var notfound = ngPaneManager.findLeafWithId(layout, 'nope'); // returns null
      */
     this.findLeafWithId = function(root, id) {
-        return ngDockerInternal.findLeafWithId(root, id);
+        return ngPaneManagerInternal.findLeafWithId(root, id);
     };
 
     /**
@@ -147,9 +147,9 @@ angular.module('ngDocker', [])
      * search the layout for other nodes with the same <code>group</code>: if it finds another node with the same group, it will form a tab 
      * split with that node instead of splitting by gravity.
      *
-     * See {@link https://sashavol.com/misc/ngDocker/test/3.htm the test page 3.htm} for an interactive demo of how insertLeaf works.
+     * See {@link https://sashavol.com/misc/ngPaneManager/test/3.htm the test page 3.htm} for an interactive demo of how insertLeaf works.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The root node of the layout.
      * @param {object} leaf The leaf to insert.
      * @param {Number} ratio The ratio of the leaf in its split (only used if a vertical split is created).
@@ -196,7 +196,7 @@ angular.module('ngDocker', [])
      * //     }
      * //   ]
      * // }
-     * $scope.config.layout = ngDocker.insertLeaf($scope.config.layout, leftLeaf, 0.5);
+     * $scope.config.layout = ngPaneManager.insertLeaf($scope.config.layout, leftLeaf, 0.5);
      */
     this.insertLeaf = function(root, leaf, ratio) {
         var that = this;
@@ -256,8 +256,8 @@ angular.module('ngDocker', [])
                 }
             }
             // split based on gravity
-            var r = ngDockerInternal.matchLayoutPattern(root);
-            var gravity = ngDockerInternal.computeLayoutGravity(leaf);
+            var r = ngPaneManagerInternal.matchLayoutPattern(root);
+            var gravity = ngPaneManagerInternal.computeLayoutGravity(leaf);
             var f = function(m, node) {
                 if(m === gravity) {
                     addAsTabSplitTo(node);
@@ -274,13 +274,12 @@ angular.module('ngDocker', [])
                 }
             };
             if(!f(r.match, r.node)) {
-                var insertStrategy = ngDockerInternal.findInsertStrategy(r.match, leaf);
-                var ratio = ngDockerInternal.computeInsertRatio(root, insertStrategy, r.node, ratio);
+                var insertStrategy = ngPaneManagerInternal.findInsertStrategy(r.match, leaf);
                 var layoutToSplit = insertStrategy.node(r.node);
                 var p = this.findParent(root, layoutToSplit);
                 var split = {
                     split: insertStrategy.split,
-                    ratio: ratio,
+                    ratio: ngPaneManagerInternal.computeInsertRatio(root, insertStrategy, r.node, ratio),
                     children: insertStrategy.index === 0 ? [
                         leaf,
                         layoutToSplit
@@ -302,7 +301,7 @@ angular.module('ngDocker', [])
     /**
      * Removes the leaf with the specified ID from the layout. <b>Set your layout to the return value of this function</b>
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The root node of the layout.
      * @param {string} id The ID of the leaf node to remove.
      * @returns {object} The new root node.
@@ -327,19 +326,19 @@ angular.module('ngDocker', [])
     /**
      * Finds the parent of a node in a layout.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The root node of the layout.
      * @param {object} node The node for which to find the parent.
      * @returns {object} The parent of the node, or null if <code>node</code> is the root node and has no parent.
      */
     this.findParent = function(root, node) {
-        return ngDockerInternal.findParent(root, node);
+        return ngPaneManagerInternal.findParent(root, node);
     };
 
     /**
      * Removes the child of a split. <b>Set your layout to the return value of this function.</b>
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The root node of the layout.
      * @param {object} node The split from which to remove the child.
      * @param {Number} index The index of the child to remove.
@@ -377,7 +376,7 @@ angular.module('ngDocker', [])
      * //     template: '<div>I am panel 2</div>'
      * //   }
      * // }
-     * $scope.config.layout = ngDocker.removeSplitChild($scope.config.layout, $scope.config.layout, 0);
+     * $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $scope.config.layout, 0);
      */
     this.removeSplitChild = function(root, node, index) {
         if(node.split === undefined) {
@@ -396,7 +395,7 @@ angular.module('ngDocker', [])
                     p[0].children[p[1]] = node.children[0];
                 }
             } else {
-                ngDockerInternal.validationFail();
+                ngPaneManagerInternal.validationFail();
             }
         }
         return root;
@@ -405,7 +404,7 @@ angular.module('ngDocker', [])
     /**
      * Removes a node from the layout. <b>Set your layout to the return value of this function.</b>
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The root node of the layout.
      * @param {object} node The node to remove.
      * @returns {object} The new root node. 
@@ -423,7 +422,7 @@ angular.module('ngDocker', [])
     /**
      * Sets activeTabIndex on all the ancestors of the given node such that the node is visible. This is useful if you want to "focus" onto a panel that may be concealed behind tab splits.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The root node of the layout.
      * @param {object} node The node to reveal.
      */
@@ -440,58 +439,58 @@ angular.module('ngDocker', [])
     /**
      * Creates a copy of a layout.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The node in the layout to clone.
      * @returns {object} A copy of the layout.
      */
     this.cloneLayout = function(root) {
-        return ngDockerInternal.cloneLayout(root);
+        return ngPaneManagerInternal.cloneLayout(root);
     };
 
     /**
      * Tests if two layouts are equal.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} a The first layout.
      * @param {object} b The second layout.
      * @returns {boolean} Whether the two layouts are equal.
      */
     this.layoutsEqual = function(a, b) {
-        return ngDockerInternal.layoutsEqual(a, b);
+        return ngPaneManagerInternal.layoutsEqual(a, b);
     };
 
     /**
-     * Performs syntax validity checks on the layout (the validity of templates and templateUrls is not checked, however). ngDocker automatically call this function when processing the layout, normally you do not need to call it.
+     * Performs syntax validity checks on the layout (the validity of templates and templateUrls is not checked, however). ngPaneManager automatically call this function when processing the layout, normally you do not need to call it.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The node in the layout from which to perform validation.
      * @throws {Error} Error describing the problem with the layout.
      */
     this.validateLayout = function(root) {
-        return ngDockerInternal.validateLayout(root);
+        return ngPaneManagerInternal.validateLayout(root);
     };
 
     /**
      * Clones a config object.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} config The config to clone.
      * @returns {object} A copy of the config object.
      */
     this.cloneConfig = function(config) {
-        return ngDockerInternal.cloneConfig(config);
+        return ngPaneManagerInternal.cloneConfig(config);
     };
 
     /**
      * Tests if two config objects are equal.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} a The first config object.
      * @param {object} b The second config object.
      * @returns {boolean} Whether the two config objects are equal.
      */
     this.configsEqual = function(a, b) {
-        return ngDockerInternal.configsEqual(a, b);
+        return ngPaneManagerInternal.configsEqual(a, b);
     };
 
     /**
@@ -511,40 +510,40 @@ angular.module('ngDocker', [])
      *     title: 'Some Panel',
      *     panel: {
      *       template: '<div>{{something}}</div>',
-     *       controller: ngDocker.ref('SomePanelController')
+     *       controller: ngPaneManager.ref('SomePanelController')
      *     }
      *   }
      * };
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {string} name The name of the ref.
-     * @returns {string} A placeholder string that will be expanded by ngDocker to the value given in the config's <code>refs</code> property.
+     * @returns {string} A placeholder string that will be expanded by ngPaneManager to the value given in the config's <code>refs</code> property.
      */
     this.ref = function(name) {
-        return ngDockerInternal.ref(name);
+        return ngPaneManagerInternal.ref(name);
     };
 
     /**
      * Determines whether a value is a ref.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {*} x The value to check.
      * @returns {boolean} Whether <code>x</code> is a ref.
      *
      * @example
-     * var x = ngDocker.ref('test');
+     * var x = ngPaneManager.ref('test');
      * var y = 5;
-     * ngDocker.isRef(x); // returns true
-     * ngDocker.isRef(y); // returns false
+     * ngPaneManager.isRef(x); // returns true
+     * ngPaneManager.isRef(y); // returns false
      */
     this.isRef = function(x) {
-        return ngDockerInternal.isRef(x);
+        return ngPaneManagerInternal.isRef(x);
     };
 
     /**
      * Expands a ref to the value it refers to in the config's <code>refs</code> property.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {*} x The value to dereference.
      * @param {object} config The configuration object.
      * @returns {string} If the value is a reference, the corresponding value in the config's <code>refs</code> property. Otherwise, just returns <code>x</code>.
@@ -557,37 +556,37 @@ angular.module('ngDocker', [])
      *     }
      *   }
      * };
-     * var ref = ngDocker.ref('test');
-     * var f = ngDocker.deref(ref, config);
+     * var ref = ngPaneManager.ref('test');
+     * var f = ngPaneManager.deref(ref, config);
      * f(); // prints "Hello World!"
-     * var num = ngDocker.deref(5, config); // 5 is not a ref, so deref just returns it
+     * var num = ngPaneManager.deref(5, config); // 5 is not a ref, so deref just returns it
      */
     this.deref = function(x, config) {
-        return ngDockerInternal.deref(x, config);
+        return ngPaneManagerInternal.deref(x, config);
     };
 
     /**
      * Deref all refs in a layout.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} root The node in the layout from which to deref.
      * @param {object} config The config object.
      */
     this.derefLayout = function(root, config) {
-        return ngDockerInternal.derefLayout(root, config);
+        return ngPaneManagerInternal.derefLayout(root, config);
     };
 
     /**
      * Derefs all refs in a config object.
      *
-     * @memberof ngDocker
+     * @memberof ngPaneManager
      * @param {object} config The config to deref.
      */
     this.derefConfig = function(config) {
-        return ngDockerInternal.derefConfig(config);
+        return ngPaneManagerInternal.derefConfig(config);
     };
 }])
-.directive('ngDocker', ['$parse', '$compile', '$templateCache', '$templateRequest', '$q', '$exceptionHandler', '$controller', '$injector', 'ngDocker', 'ngDockerInternal', function($parse, $compile, $templateCache, $templateRequest, $q, $exceptionHandler, $controller, $injector, ngDocker, ngDockerInternal) {
+.directive('ngPaneManager', ['$parse', '$compile', '$templateCache', '$templateRequest', '$q', '$exceptionHandler', '$controller', '$injector', 'ngPaneManager', 'ngPaneManagerInternal', function($parse, $compile, $templateCache, $templateRequest, $q, $exceptionHandler, $controller, $injector, ngPaneManager, ngPaneManagerInternal) {
     return {
         restrict: 'A',
         scope: true,
@@ -601,63 +600,63 @@ angular.module('ngDocker', [])
             var initialTabWidth = 200;
             var defaultDropSplitRatio = 0.3333333;
             var allContainerHTML =
-                '<div class="ng-docker-container"></div>';
+                '<div class="ng-pane-manager-container"></div>';
             var floatingContainerHTML =
-                '<div class="ng-docker-floating-container"></div>';
+                '<div class="ng-pane-manager-floating-container"></div>';
             var panelContainerHTML =
-                '<div class="ng-docker-panel-container">' +
-                '   <div class="ng-docker-header">' +
-                '       <div class="ng-docker-title">' +
-                '           <div class="ng-docker-icon"></div>' +
-                '           <div class="ng-docker-title-text"></div>' +
+                '<div class="ng-pane-manager-panel-container">' +
+                '   <div class="ng-pane-manager-header">' +
+                '       <div class="ng-pane-manager-title">' +
+                '           <div class="ng-pane-manager-icon"></div>' +
+                '           <div class="ng-pane-manager-title-text"></div>' +
                 '       </div>' +
-                '       <div class="ng-docker-close"></div>' +
+                '       <div class="ng-pane-manager-close"></div>' +
                 '   </div>' +
-                '   <div class="ng-docker-contents"></div>' +
+                '   <div class="ng-pane-manager-contents"></div>' +
                 '</div>';
             var vsplitHTML =
-                '<div class="ng-docker-vsplit">' +
-                '   <div class="ng-docker-left"></div>' +
-                '   <div class="ng-docker-separator ng-docker-border ng-docker-vertical-border"></div>' +
-                '   <div class="ng-docker-right"></div>' +
+                '<div class="ng-pane-manager-vsplit">' +
+                '   <div class="ng-pane-manager-left"></div>' +
+                '   <div class="ng-pane-manager-separator ng-pane-manager-border ng-pane-manager-vertical-border"></div>' +
+                '   <div class="ng-pane-manager-right"></div>' +
                 '</div>';
             var hsplitHTML =
-                '<div class="ng-docker-hsplit">' +
-                '   <div class="ng-docker-top"></div>' +
-                '   <div class="ng-docker-separator ng-docker-border-invisible ng-docker-horizontal-border"></div>' +
-                '   <div class="ng-docker-bottom"></div>' +
+                '<div class="ng-pane-manager-hsplit">' +
+                '   <div class="ng-pane-manager-top"></div>' +
+                '   <div class="ng-pane-manager-separator ng-pane-manager-border-invisible ng-pane-manager-horizontal-border"></div>' +
+                '   <div class="ng-pane-manager-bottom"></div>' +
                 '</div>';
             var tabsplitHTML =
-                '<div class="ng-docker-tabsplit">' +
-                '   <div class="ng-docker-tab-nav">' +
+                '<div class="ng-pane-manager-tabsplit">' +
+                '   <div class="ng-pane-manager-tab-nav">' +
                 '   </div>' +
-                '   <div class="ng-docker-contents"></div>' +
+                '   <div class="ng-pane-manager-contents"></div>' +
                 '</div>';
-            var tabNavBorderHTML = '<div class="ng-docker-border ng-docker-tab-nav-border"></div>';
+            var tabNavBorderHTML = '<div class="ng-pane-manager-border ng-pane-manager-tab-nav-border"></div>';
             var tabHTML =
-                '<div class="ng-docker-tab">' +
-                '   <div class="ng-docker-title">' +
-                '       <div class="ng-docker-icon"></div>' +
-                '       <div class="ng-docker-title-text"></div>' +
+                '<div class="ng-pane-manager-tab">' +
+                '   <div class="ng-pane-manager-title">' +
+                '       <div class="ng-pane-manager-icon"></div>' +
+                '       <div class="ng-pane-manager-title-text"></div>' +
                 '   </div>' +
-                '   <div class="ng-docker-close"></div>' +
+                '   <div class="ng-pane-manager-close"></div>' +
                 '</div>';
             var hiddenHTML =
-                '<div class="ng-docker-hidden"></div>';
+                '<div class="ng-pane-manager-hidden"></div>';
             var dropVisualTopHTML =
-                '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-top"></div>';
+                '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-top"></div>';
             var dropVisualRightHTML =
-                '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-right"></div>';
+                '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-right"></div>';
             var dropVisualBottomHTML =
-                '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-bottom"></div>';
+                '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-bottom"></div>';
             var dropVisualLeftHTML =
-                '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-left"></div>';
+                '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-left"></div>';
             var dropVisualWholeHTML =
-                '<div class="ng-docker-drop-visual ng-docker-abs-drop-visual ng-docker-drop-visual-whole"><div>';
+                '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-whole"><div>';
             var dropVisualTabHTML =
-                '<div class="ng-docker-drop-visual ng-docker-drop-visual-tab"></div>';
+                '<div class="ng-pane-manager-drop-visual ng-pane-manager-drop-visual-tab"></div>';
             var dropVisualTabOnPanelHTML =
-                '<div class="ng-docker-drop-visual ng-docker-drop-visual-tab-on-panel"></div>';
+                '<div class="ng-pane-manager-drop-visual ng-pane-manager-drop-visual-tab-on-panel"></div>';
             var icons = {};
             var panels = {};
             var templateResolver = null;
@@ -683,7 +682,7 @@ angular.module('ngDocker', [])
                     var that = this;
                     template._resolved = {};
                     Object.keys(template.resolve).forEach(function(k) {
-                        var val = ngDocker.deref(template.resolve[k], that._config);
+                        var val = ngPaneManager.deref(template.resolve[k], that._config);
                         if(typeof val === 'string') {
                             template._resolved[k] = $injector.get(k);
                         } else {
@@ -712,7 +711,7 @@ angular.module('ngDocker', [])
             };
 
             var validationFail = function() {
-                ngDockerInternal.validationFail();
+                ngPaneManagerInternal.validationFail();
             };
 
             var cloneFloatingState = function(floatingState) {
@@ -720,7 +719,7 @@ angular.module('ngDocker', [])
                     return null;
                 } else {
                     return {
-                        layout: ngDocker.cloneLayout(floatingState.layout),
+                        layout: ngPaneManager.cloneLayout(floatingState.layout),
                         cursorPosition: {
                             pageX: floatingState.cursorPosition.pageX,
                             pageY: floatingState.cursorPosition.pageY
@@ -733,7 +732,7 @@ angular.module('ngDocker', [])
                 if(a !== null && b === null || a === null && b !== null) {
                     return false;
                 } else if(a !== null && b !== null) {
-                    if(!ngDocker.layoutsEqual(a.layout, b.layout)) {
+                    if(!ngPaneManager.layoutsEqual(a.layout, b.layout)) {
                         return false;
                     }
                     if(a.cursorPosition.pageX !== b.cursorPosition.pageX
@@ -745,13 +744,13 @@ angular.module('ngDocker', [])
                 return true;
             };
 
-            var configGetRaw = $parse($attr.ngDocker);
+            var configGetRaw = $parse($attr.ngPaneManager);
             var configGet = function() {
                 var raw = configGetRaw($scope);
                 if(typeof raw !== 'object') {
-                    throw new Error('ng-docker must refer to an object');
+                    throw new Error('ng-pane-manager must refer to an object');
                 }
-                return angular.extend({}, ngDocker.DEFAULT_CONFIG, raw);
+                return angular.extend({}, ngPaneManager.DEFAULT_CONFIG, raw);
             };
 
             var layoutGet = function() {
@@ -773,7 +772,7 @@ angular.module('ngDocker', [])
             };
 
             var findParent = function(node) {
-                var p = ngDocker.findParent(layoutGet(), node);
+                var p = ngPaneManager.findParent(layoutGet(), node);
                 if(p === undefined) {
                     throw new Error('Failed to find node');
                 } else {
@@ -781,11 +780,11 @@ angular.module('ngDocker', [])
                 }
             };
 
-            // returns the DOM element whose ngDockerNode == layout, or null if no such element exists
+            // returns the DOM element whose ngPaneManagerNode == layout, or null if no such element exists
             var findElementWithNode = function(node) {
                 var f = function(element) {
-                    var elementNode = element.data('ngDockerNode');
-                    if(elementNode !== undefined && ngDocker.layoutsEqual(elementNode, node)) {
+                    var elementNode = element.data('ngPaneManagerNode');
+                    if(elementNode !== undefined && ngPaneManager.layoutsEqual(elementNode, node)) {
                         return element;
                     } else {
                         var children = element.children();
@@ -798,7 +797,7 @@ angular.module('ngDocker', [])
                         return null;
                     }
                 };
-                return f(ngDockerInternal.childrenWithClass($element, 'ng-docker-container'));
+                return f(ngPaneManagerInternal.childrenWithClass($element, 'ng-pane-manager-container'));
             };
 
             // returns the DOM element where the drop visual should be inserted into as a child
@@ -812,10 +811,10 @@ angular.module('ngDocker', [])
                     if(panel !== undefined && panel.parent().length > 0) {
                         var p = findParent(node);
                         if(p === null || p[0].split !== 'tabs') {
-                            // panel is wrapped in panelContainerHTML, provide .ng-docker-panel-container
+                            // panel is wrapped in panelContainerHTML, provide .ng-pane-manager-panel-container
                             return panel.parent().parent();
                         } else {
-                            // panel is wrapped inside a tabsplitHTML, provide .ng-docker-contents
+                            // panel is wrapped inside a tabsplitHTML, provide .ng-pane-manager-contents
                             return panel.parent();
                         }
                     } else {
@@ -835,22 +834,22 @@ angular.module('ngDocker', [])
                             {
                                 var element = findElementWithNode(node);
                                 if(element !== null) {
-                                    return ngDockerInternal.childrenWithClass(element, 'ng-docker-tab-nav');
+                                    return ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-tab-nav');
                                 } else {
                                     return null;
                                 }
                             }
                             break;
                         default:
-                            ngDockerInternal.validationFail();
+                            ngPaneManagerInternal.validationFail();
                     }
                 } else {
                     var panel = panels[node.id];
                     if(panel !== undefined && panel.parent().length > 0) {
                         var p = findParent(node);
                         if(p === null || p[0].split !== 'tabs') {
-                            // panel is wrapped in panelContainerHTML, provide .ng-docker-header
-                            return ngDockerInternal.childrenWithClass(panel.parent().parent(), 'ng-docker-header');
+                            // panel is wrapped in panelContainerHTML, provide .ng-pane-manager-header
+                            return ngPaneManagerInternal.childrenWithClass(panel.parent().parent(), 'ng-pane-manager-header');
                         } else {
                             // panel is wrapped inside a tabsplitHTML, it does not have its own header
                             return null;
@@ -872,15 +871,15 @@ angular.module('ngDocker', [])
             };
 
             var removeSplitChild = function(node, index) {
-                layoutSet(ngDocker.removeSplitChild(layoutGet(), node, index));
+                layoutSet(ngPaneManager.removeSplitChild(layoutGet(), node, index));
             };
 
             var removeLeafWithId = function(id) {
-                layoutSet(ngDocker.removeLeafWithId(layoutGet(), id));
+                layoutSet(ngPaneManager.removeLeafWithId(layoutGet(), id));
             };
 
             var removeNode = function(node) {
-                layoutSet(ngDocker.removeNode(layoutGet(), node));
+                layoutSet(ngPaneManager.removeNode(layoutGet(), node));
             };
 
             // get the angular template string from a template
@@ -893,7 +892,7 @@ angular.module('ngDocker', [])
                 if(template.scope !== undefined) {
                     var config = configGet();
                     Object.keys(template.scope).forEach(function(k) {
-                        scope[k] = ngDocker.deref(template.scope[k], config);
+                        scope[k] = ngPaneManager.deref(template.scope[k], config);
                     });
                 }
                 return scope;
@@ -912,17 +911,17 @@ angular.module('ngDocker', [])
                         });
                         delete template._resolved;
                     }
-                    var controller = ngDocker.deref(template.controller, config);
-                    element.data('$ngDockerPanelController', $controller(controller, locals));
+                    var controller = ngPaneManager.deref(template.controller, config);
+                    element.data('$ngPaneManagerPanelController', $controller(controller, locals));
                 }
             };
 
             var computeDropSplitWhere = function(element) {
-                var offs = ngDockerInternal.elementOffset(element);
+                var offs = ngPaneManagerInternal.elementOffset(element);
                 var x = floatingState.cursorPosition.pageX - offs.left;
                 var y = floatingState.cursorPosition.pageY - offs.top;
-                var w = ngDockerInternal.elementWidth(element);
-                var h = ngDockerInternal.elementHeight(element);
+                var w = ngPaneManagerInternal.elementWidth(element);
+                var h = ngPaneManagerInternal.elementHeight(element);
                 var y1 = h/w*x;
                 var y2 = -h/w*x + h;
                 var where;
@@ -951,20 +950,20 @@ angular.module('ngDocker', [])
                 } else {
                     // check panels (for vertical/horizontal split)
                     {
-                        var panelIds = ngDocker.findLeaves(root).map(function(l) {
+                        var panelIds = ngPaneManager.findLeaves(root).map(function(l) {
                             return l.id;
                         });
                         for(var i = 0; i !== panelIds.length; ++i) {
                             var panel = panels[panelIds[i]];
                             var container = panel.parent();
                             if(container.length > 0) {
-                                var containerOffs = ngDockerInternal.elementOffset(container);
-                                if(floatingState.cursorPosition.pageX >= containerOffs.left && floatingState.cursorPosition.pageX < containerOffs.left + ngDockerInternal.elementWidth(container)
-                                    && floatingState.cursorPosition.pageY >= containerOffs.top && floatingState.cursorPosition.pageY < containerOffs.top + ngDockerInternal.elementHeight(container))
+                                var containerOffs = ngPaneManagerInternal.elementOffset(container);
+                                if(floatingState.cursorPosition.pageX >= containerOffs.left && floatingState.cursorPosition.pageX < containerOffs.left + ngPaneManagerInternal.elementWidth(container)
+                                    && floatingState.cursorPosition.pageY >= containerOffs.top && floatingState.cursorPosition.pageY < containerOffs.top + ngPaneManagerInternal.elementHeight(container))
                                 {
                                     return {
                                         where: computeDropSplitWhere(container),
-                                        node: panel.data('ngDockerNode')
+                                        node: panel.data('ngPaneManagerNode')
                                     };
                                 }
                             }
@@ -976,19 +975,19 @@ angular.module('ngDocker', [])
                             var header = findNodeHeaderElement(node);
                             if(header !== null) {
                                 if(node.split === 'tabs') {
-                                    var headerOffs = ngDockerInternal.elementOffset(header);
-                                    if(floatingState.cursorPosition.pageX >= headerOffs.left && floatingState.cursorPosition.pageX < headerOffs.left + ngDockerInternal.elementWidth(header)
-                                        && floatingState.cursorPosition.pageY >= headerOffs.top && floatingState.cursorPosition.pageY < headerOffs.top + ngDockerInternal.elementHeight(header))
+                                    var headerOffs = ngPaneManagerInternal.elementOffset(header);
+                                    if(floatingState.cursorPosition.pageX >= headerOffs.left && floatingState.cursorPosition.pageX < headerOffs.left + ngPaneManagerInternal.elementWidth(header)
+                                        && floatingState.cursorPosition.pageY >= headerOffs.top && floatingState.cursorPosition.pageY < headerOffs.top + ngPaneManagerInternal.elementHeight(header))
                                     {
-                                        var tabs = ngDockerInternal.childrenWithClass(header, 'ng-docker-tab');
+                                        var tabs = ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-tab');
                                         for(var i = 0; i !== tabs.length; ++i) {
                                             var tab = angular.element(tabs[i]);
-                                            var tabOffs = ngDockerInternal.elementOffset(tab);
-                                            if(floatingState.cursorPosition.pageX >= tabOffs.left && floatingState.cursorPosition.pageX < tabOffs.left + ngDockerInternal.elementWidth(tab)
-                                                && floatingState.cursorPosition.pageY >= tabOffs.top && floatingState.cursorPosition.pageY < tabOffs.top + ngDockerInternal.elementHeight(tab))
+                                            var tabOffs = ngPaneManagerInternal.elementOffset(tab);
+                                            if(floatingState.cursorPosition.pageX >= tabOffs.left && floatingState.cursorPosition.pageX < tabOffs.left + ngPaneManagerInternal.elementWidth(tab)
+                                                && floatingState.cursorPosition.pageY >= tabOffs.top && floatingState.cursorPosition.pageY < tabOffs.top + ngPaneManagerInternal.elementHeight(tab))
                                             {
                                                 var tabIndex;
-                                                if(floatingState.cursorPosition.pageX < tabOffs.left + ngDockerInternal.elementWidth(tab)/2) {
+                                                if(floatingState.cursorPosition.pageX < tabOffs.left + ngPaneManagerInternal.elementWidth(tab)/2) {
                                                     tabIndex = i;
                                                 } else {
                                                     tabIndex = i+1;
@@ -1010,9 +1009,9 @@ angular.module('ngDocker', [])
                                     if(node.split !== undefined) {
                                         throw new Error('Unexpected header on a ' + node.split + ' split');
                                     }
-                                    var headerOffs = ngDockerInternal.elementOffset(header);
-                                    if(floatingState.cursorPosition.pageX >= headerOffs.left && floatingState.cursorPosition.pageX < headerOffs.left + ngDockerInternal.elementWidth(header)
-                                        && floatingState.cursorPosition.pageY >= headerOffs.top && floatingState.cursorPosition.pageY < headerOffs.top + ngDockerInternal.elementHeight(header))
+                                    var headerOffs = ngPaneManagerInternal.elementOffset(header);
+                                    if(floatingState.cursorPosition.pageX >= headerOffs.left && floatingState.cursorPosition.pageX < headerOffs.left + ngPaneManagerInternal.elementWidth(header)
+                                        && floatingState.cursorPosition.pageY >= headerOffs.top && floatingState.cursorPosition.pageY < headerOffs.top + ngPaneManagerInternal.elementHeight(header))
                                     {
                                         return {
                                             where: 'tab',
@@ -1138,23 +1137,23 @@ angular.module('ngDocker', [])
                 if(container.length === 0) {
                     return;
                 }
-                var tabsplits = angular.element(container[0].querySelectorAll('.ng-docker-tabsplit'));
+                var tabsplits = angular.element(container[0].querySelectorAll('.ng-pane-manager-tabsplit'));
                 for(var i = 0; i !== tabsplits.length; ++i) {
                     var tabsplit = angular.element(tabsplits[i]);
-                    var tabNav = ngDockerInternal.childrenWithClass(tabsplit, 'ng-docker-tab-nav');
-                    var node = tabsplit.data('ngDockerNode');
-                    var tabs = ngDockerInternal.childrenWithClass(tabNav, 'ng-docker-tab'); 
+                    var tabNav = ngPaneManagerInternal.childrenWithClass(tabsplit, 'ng-pane-manager-tab-nav');
+                    var node = tabsplit.data('ngPaneManagerNode');
+                    var tabs = ngPaneManagerInternal.childrenWithClass(tabNav, 'ng-pane-manager-tab'); 
                     for(var j = 0; j !== tabs.length; ++j) {
                         var tab = angular.element(tabs[j]);
-                        tab.css('width', computeTabWidth(node, ngDockerInternal.elementWidth(tabNav), j) + 'px');
+                        tab.css('width', computeTabWidth(node, ngPaneManagerInternal.elementWidth(tabNav), j) + 'px');
                     }
                 }
             };
 
             var clearDropTargetVisuals = function() {
-                angular.element($element[0].querySelectorAll('.ng-docker-drop-visual')).remove();
-                updateContainerTabWidths(angular.element($element[0].querySelectorAll('.ng-docker-container')));
-                updateContainerTabWidths(angular.element($element[0].querySelectorAll('.ng-docker-floating-container')));
+                angular.element($element[0].querySelectorAll('.ng-pane-manager-drop-visual')).remove();
+                updateContainerTabWidths(angular.element($element[0].querySelectorAll('.ng-pane-manager-container')));
+                updateContainerTabWidths(angular.element($element[0].querySelectorAll('.ng-pane-manager-floating-container')));
             };
 
             var beginFloating = function(info, node) {
@@ -1183,7 +1182,7 @@ angular.module('ngDocker', [])
                         dropSplitRatio = defaultDropSplitRatio;
                         break;
                     default:
-                        ngDockerInternal.validationFail();
+                        ngPaneManagerInternal.validationFail();
                 }
                 removeNode(node);
                 floatingState = {
@@ -1248,9 +1247,9 @@ angular.module('ngDocker', [])
                     for(var i = 0; i !== keys.length; ++i) {
                         var dl = dragListeners[keys[i]];
                         var el = dl.element;
-                        var elOffs = ngDockerInternal.elementOffset(el);
+                        var elOffs = ngPaneManagerInternal.elementOffset(el);
                         if(info.pageX >= elOffs.left && info.pageY >= elOffs.top
-                            && info.pageX < elOffs.left + ngDockerInternal.elementWidth(el) && info.pageY < elOffs.top + ngDockerInternal.elementHeight(el))
+                            && info.pageX < elOffs.left + ngPaneManagerInternal.elementWidth(el) && info.pageY < elOffs.top + ngPaneManagerInternal.elementHeight(el))
                         {
                             candidates.push(keys[i]);
                         }
@@ -1313,16 +1312,16 @@ angular.module('ngDocker', [])
 
                 var layout = layoutGet();
                 var config = configGet();
-                var configCopy = ngDocker.cloneConfig(config);
+                var configCopy = ngPaneManager.cloneConfig(config);
 
                 var leaves =  [];
                 if(layout !== null) {
-                    ngDocker.validateLayout(layout);
-                    Array.prototype.push.apply(leaves, ngDocker.findLeaves(layout));
+                    ngPaneManager.validateLayout(layout);
+                    Array.prototype.push.apply(leaves, ngPaneManager.findLeaves(layout));
                 }
                 if(floatingState !== null) {
-                    ngDocker.validateLayout(floatingState.layout);
-                    Array.prototype.push.apply(leaves, ngDocker.findLeaves(floatingState.layout));
+                    ngPaneManager.validateLayout(floatingState.layout);
+                    Array.prototype.push.apply(leaves, ngPaneManager.findLeaves(floatingState.layout));
                 }
 
                 // load any uncached templates before proceeding
@@ -1342,16 +1341,16 @@ angular.module('ngDocker', [])
                             var next = {};
                             Object.keys(m).forEach(function(k) {
                                 var el = m[k];
-                                var elNode = el.data('ngDockerNode');
-                                var elConfig = el.data('ngDockerConfig');
+                                var elNode = el.data('ngPaneManagerNode');
+                                var elConfig = el.data('ngPaneManagerConfig');
                                 var leaf = leavesById[elNode.id];
                                 var destroy = false;
                                 if(!leaf) {
                                     destroy = true;
                                 } else {
-                                    var before = ngDocker.derefLayout(ngDocker.cloneLayout(elNode), elConfig);
-                                    var after = ngDocker.derefLayout(ngDocker.cloneLayout(leaf), config);
-                                    if(!ngDocker.layoutsEqual(before, after)) {
+                                    var before = ngPaneManager.derefLayout(ngPaneManager.cloneLayout(elNode), elConfig);
+                                    var after = ngPaneManager.derefLayout(ngPaneManager.cloneLayout(leaf), config);
+                                    if(!ngPaneManager.layoutsEqual(before, after)) {
                                         destroy = true;
                                     }
                                 }
@@ -1386,27 +1385,27 @@ angular.module('ngDocker', [])
                                 removeLeafWithId(leaf.id);
                             };
                             panelScope.onPanelResize = function(listener) {
-                                var listeners = panel.data('ngDockerResizeListeners');
+                                var listeners = panel.data('ngPaneManagerResizeListeners');
                                 listeners.push(listener);
                             };
                             panelScope.offPanelResize = function(listener) {
-                                var listeners = panel.data('ngDockerResizeListeners');
+                                var listeners = panel.data('ngPaneManagerResizeListeners');
                                 var index = listeners.indexOf(listener);
                                 if(index >= 0) {
                                     listeners.splice(index, 1);
                                 }
                             };
-                            panel.data('ngDockerNode', ngDocker.cloneLayout(leaf));
-                            panel.data('ngDockerConfig', configCopy);
-                            panel.data('ngDockerResizeListeners', []);
+                            panel.data('ngPaneManagerNode', ngPaneManager.cloneLayout(leaf));
+                            panel.data('ngPaneManagerConfig', configCopy);
+                            panel.data('ngPaneManagerResizeListeners', []);
                             maybeLoadTemplateController(leaf.panel, panelScope, panel);
                             panels[leaf.id] = panel;
                         }
                         if(leaf.icon !== undefined && !icons[leaf.id]) {
                             var iconScope = newTemplateScope(leaf.icon);
                             var icon = $compile(getTemplateTemplateString(leaf.icon))(iconScope);
-                            icon.data('ngDockerNode', ngDocker.cloneLayout(leaf));
-                            icon.data('ngDockerConfig', configCopy);
+                            icon.data('ngPaneManagerNode', ngPaneManager.cloneLayout(leaf));
+                            icon.data('ngPaneManagerConfig', configCopy);
                             maybeLoadTemplateController(leaf.icon, iconScope, icon);
                             icons[leaf.id] = icon;
                         }
@@ -1416,9 +1415,9 @@ angular.module('ngDocker', [])
                     dragListeners = {};
 
                     // clear the constructed DOM
-                    ngDockerInternal.childrenWithClass($element, 'ng-docker-container').remove();
-                    ngDockerInternal.childrenWithClass($element, 'ng-docker-floating-container').remove();
-                    ngDockerInternal.childrenWithClass($element, 'ng-docker-drop-visual').remove();
+                    ngPaneManagerInternal.childrenWithClass($element, 'ng-pane-manager-container').remove();
+                    ngPaneManagerInternal.childrenWithClass($element, 'ng-pane-manager-floating-container').remove();
+                    ngPaneManagerInternal.childrenWithClass($element, 'ng-pane-manager-drop-visual').remove();
 
                     // construct the new DOM
                     {
@@ -1436,7 +1435,7 @@ angular.module('ngDocker', [])
                                             element = angular.element(vsplitHTML);
                                             var needsLeftBorder = (function() {
                                                 // if none of this vsplit's ancestors are the second child of a vsplit this vsplit needs a left border
-                                                for(var p = ngDocker.findParent(root, node); p !== null; p = ngDocker.findParent(root, p[0])) {
+                                                for(var p = ngPaneManager.findParent(root, node); p !== null; p = ngPaneManager.findParent(root, p[0])) {
                                                     if(p[0].split === 'vertical' && p[1] === 1) {
                                                         return false;
                                                     }
@@ -1445,7 +1444,7 @@ angular.module('ngDocker', [])
                                             });
                                             var needsRightBorder = (function() {
                                                 // if none of this vsplit's ancestors are the first child of a vsplit this vsplit needs a right border
-                                                for(var p = ngDocker.findParent(root, node); p !== null; p = ngDocker.findParent(root, p[0])) {
+                                                for(var p = ngPaneManager.findParent(root, node); p !== null; p = ngPaneManager.findParent(root, p[0])) {
                                                     if(p[0].split === 'vertical' && p[1] === 0) {
                                                         return false;
                                                     }
@@ -1453,22 +1452,22 @@ angular.module('ngDocker', [])
                                                 return true;
                                             });
                                             if(needsLeftBorder()) {
-                                                var borderLeft = angular.element('<div class="ng-docker-border ng-docker-vertical-border"></div>');
+                                                var borderLeft = angular.element('<div class="ng-pane-manager-border ng-pane-manager-vertical-border"></div>');
                                                 borderLeft.css('top', config.headerHeight + 'px');
                                                 borderLeft.css('width', config.borderWidth + 'px');
                                                 borderLeft.css('left', '0');
                                                 element.prepend(borderLeft);
                                             }
                                             if(needsRightBorder()) {
-                                                var borderRight = angular.element('<div class="ng-docker-border ng-docker-vertical-border"></div>');
+                                                var borderRight = angular.element('<div class="ng-pane-manager-border ng-pane-manager-vertical-border"></div>');
                                                 borderRight.css('top', config.headerHeight + 'px');
                                                 borderRight.css('width', config.borderWidth + 'px');
                                                 borderRight.css('right', '0');
                                                 element.append(borderRight);
                                             }
-                                            var left = ngDockerInternal.childrenWithClass(element, 'ng-docker-left');
-                                            var sep = ngDockerInternal.childrenWithClass(element, 'ng-docker-separator');
-                                            var right = ngDockerInternal.childrenWithClass(element, 'ng-docker-right');
+                                            var left = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-left');
+                                            var sep = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-separator');
+                                            var right = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-right');
                                             sep.css('top', config.headerHeight + 'px');
                                             construct(root, node.children[0], left, interactive);
                                             construct(root, node.children[1], right, interactive);
@@ -1477,11 +1476,11 @@ angular.module('ngDocker', [])
                                             sep.css('width', config.borderWidth + 'px');
                                             right.css('width', 100*(1 - node.ratio) + '%');
                                             if(interactive) {
-                                                ngDockerInternal.childrenWithClass(ngDockerInternal.childrenWithClass(left.children(), 'ng-docker-header'), 'ng-docker-close').on('click', function() {
+                                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(left.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
                                                     removeSplitChild(node, 0);
                                                     $scope.$digest();
                                                 });
-                                                ngDockerInternal.childrenWithClass(ngDockerInternal.childrenWithClass(right.children(), 'ng-docker-header'), 'ng-docker-close').on('click', function() {
+                                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(right.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
                                                     removeSplitChild(node, 1);
                                                     $scope.$digest();
                                                 });
@@ -1489,8 +1488,8 @@ angular.module('ngDocker', [])
                                                     element: sep,
                                                     priority: 1,
                                                     dragHandler: function(info) {
-                                                        var elOffs = ngDockerInternal.elementOffset(element);
-                                                        node.ratio = Math.max(0, Math.min(1, (info.pageX - elOffs.left)/ngDockerInternal.elementWidth(element)));
+                                                        var elOffs = ngPaneManagerInternal.elementOffset(element);
+                                                        node.ratio = Math.max(0, Math.min(1, (info.pageX - elOffs.left)/ngPaneManagerInternal.elementWidth(element)));
                                                         layoutSet(layoutGet());
                                                     }
                                                 };
@@ -1502,7 +1501,7 @@ angular.module('ngDocker', [])
                                             element = angular.element(hsplitHTML);
                                             var needsBottomBorder = (function() {
                                                 // if none of this hsplits's ancestors are the first child of an hsplit this hsplit needs a bottom border
-                                                for(var p = ngDocker.findParent(root, node); p !== null; p = ngDocker.findParent(root, p[0])) {
+                                                for(var p = ngPaneManager.findParent(root, node); p !== null; p = ngPaneManager.findParent(root, p[0])) {
                                                     if(p[0].split === 'horizontal' && p[1] === 0) {
                                                         return false;
                                                     }
@@ -1510,14 +1509,14 @@ angular.module('ngDocker', [])
                                                 return true;
                                             });
                                             if(needsBottomBorder()) {
-                                                var borderBottom = angular.element('<div class="ng-docker-border ng-docker-horizontal-border"></div>');
+                                                var borderBottom = angular.element('<div class="ng-pane-manager-border ng-pane-manager-horizontal-border"></div>');
                                                 borderBottom.css('height', config.borderWidth + 'px');
                                                 borderBottom.css('bottom', '0');
                                                 element.append(borderBottom);
                                             }
-                                            var top = ngDockerInternal.childrenWithClass(element, 'ng-docker-top'); 
-                                            var sep = ngDockerInternal.childrenWithClass(element, 'ng-docker-separator'); 
-                                            var bottom = ngDockerInternal.childrenWithClass(element, 'ng-docker-bottom');
+                                            var top = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-top'); 
+                                            var sep = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-separator'); 
+                                            var bottom = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-bottom');
                                             construct(root, node.children[0], top, interactive);
                                             construct(root, node.children[1], bottom, interactive);
                                             top.css('height', 100*node.ratio + '%');
@@ -1525,11 +1524,11 @@ angular.module('ngDocker', [])
                                             sep.css('height', config.borderWidth + 'px');
                                             bottom.css('height', 100*(1-node.ratio) + '%');
                                             if(interactive) {
-                                                ngDockerInternal.childrenWithClass(ngDockerInternal.childrenWithClass(top.children(), 'ng-docker-header'), 'ng-docker-close').on('click', function() {
+                                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(top.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
                                                     removeSplitChild(node, 0);
                                                     $scope.$digest();
                                                 });
-                                                ngDockerInternal.childrenWithClass(ngDockerInternal.childrenWithClass(bottom.children(), 'ng-docker-header'), 'ng-docker-close').on('click', function() {
+                                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(bottom.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
                                                     removeSplitChild(node, 1);
                                                     $scope.$digest();
                                                 });
@@ -1537,8 +1536,8 @@ angular.module('ngDocker', [])
                                                     element: sep,
                                                     priority: 2,
                                                     dragHandler: function(info) {
-                                                        var elOffs = ngDockerInternal.elementOffset(element);
-                                                        node.ratio = Math.max(0, Math.min(1, (info.pageY - elOffs.top)/ngDockerInternal.elementHeight(element)));
+                                                        var elOffs = ngPaneManagerInternal.elementOffset(element);
+                                                        node.ratio = Math.max(0, Math.min(1, (info.pageY - elOffs.top)/ngPaneManagerInternal.elementHeight(element)));
                                                         layoutSet(layoutGet());
                                                     }
                                                 };
@@ -1548,7 +1547,7 @@ angular.module('ngDocker', [])
                                     case 'tabs':
                                         {
                                             element = angular.element(tabsplitHTML);
-                                            var tabNav = ngDockerInternal.childrenWithClass(element, 'ng-docker-tab-nav');
+                                            var tabNav = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-tab-nav');
                                             var borderLeft = angular.element(tabNavBorderHTML);
                                             var borderRight = angular.element(tabNavBorderHTML);
                                             [borderLeft, borderRight].forEach(function(el) {
@@ -1568,20 +1567,20 @@ angular.module('ngDocker', [])
                                                     node.activeTabIndex = i;
                                                     $scope.$digest();
                                                 });
-                                                var title = ngDockerInternal.childrenWithClass(tab, 'ng-docker-title');
+                                                var title = ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-title');
                                                 if(tabNode.closeable === undefined || tabNode.closeable) {
-                                                    initCloseButton(ngDockerInternal.childrenWithClass(tab, 'ng-docker-close'));
+                                                    initCloseButton(ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-close'));
                                                 } else {
-                                                    ngDockerInternal.childrenWithClass(tab, 'ng-docker-close').remove();
+                                                    ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-close').remove();
                                                 }
-                                                ngDockerInternal.childrenWithClass(title, 'ng-docker-title-text').text(ngDockerInternal.computeLayoutTitle(tabNode));
+                                                ngPaneManagerInternal.childrenWithClass(title, 'ng-pane-manager-title-text').text(ngPaneManagerInternal.computeLayoutTitle(tabNode));
                                                 if(tabNode.split === undefined && tabNode.icon !== undefined) {
-                                                    ngDockerInternal.childrenWithClass(title, 'ng-docker-icon').append(icons[tabNode.id]);
+                                                    ngPaneManagerInternal.childrenWithClass(title, 'ng-pane-manager-icon').append(icons[tabNode.id]);
                                                 } else {
-                                                    ngDockerInternal.childrenWithClass(title, 'ng-docker-icon').remove();
+                                                    ngPaneManagerInternal.childrenWithClass(title, 'ng-pane-manager-icon').remove();
                                                 }
                                                 if(interactive) {
-                                                    ngDockerInternal.childrenWithClass(tab, 'ng-docker-close').on('click', function() {
+                                                    ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-close').on('click', function() {
                                                         removeSplitChild(node, i);
                                                         $scope.$digest();
                                                     });
@@ -1595,12 +1594,12 @@ angular.module('ngDocker', [])
                                                     };
                                                 }
                                                 if(i === node.activeTabIndex) {
-                                                    tab.addClass('ng-docker-tab-active');
+                                                    tab.addClass('ng-pane-manager-tab-active');
                                                 }
                                                 tabNav.append(tab);
                                             })(i);
                                             var needsSideBorders = function() {
-                                                for(var p = ngDocker.findParent(root, node); p !== null; p = ngDocker.findParent(root, p[0])) {
+                                                for(var p = ngPaneManager.findParent(root, node); p !== null; p = ngPaneManager.findParent(root, p[0])) {
                                                     if(p[0].split === 'vertical') {
                                                         return false;
                                                     }
@@ -1608,7 +1607,7 @@ angular.module('ngDocker', [])
                                                 return true;
                                             };
                                             var needsBottomBorder = function() {
-                                                for(var p = ngDocker.findParent(root, node); p !== null; p = ngDocker.findParent(root, p[0])) {
+                                                for(var p = ngPaneManager.findParent(root, node); p !== null; p = ngPaneManager.findParent(root, p[0])) {
                                                     if(p[0].split === 'horizontal') {
                                                         return false;
                                                     }
@@ -1616,8 +1615,8 @@ angular.module('ngDocker', [])
                                                 return true;
                                             };
                                             if(needsSideBorders()) {
-                                                var borderLeft = angular.element('<div class="ng-docker-border ng-docker-vertical-border"></div>');
-                                                var borderRight = angular.element('<div class="ng-docker-border ng-docker-vertical-border"></div>');
+                                                var borderLeft = angular.element('<div class="ng-pane-manager-border ng-pane-manager-vertical-border"></div>');
+                                                var borderRight = angular.element('<div class="ng-pane-manager-border ng-pane-manager-vertical-border"></div>');
                                                 borderLeft.css('top', config.headerHeight + 'px');
                                                 borderLeft.css('width', config.borderWidth + 'px');
                                                 borderLeft.css('left', '0');
@@ -1628,7 +1627,7 @@ angular.module('ngDocker', [])
                                                 element.append(borderRight);
                                             }
                                             if(needsBottomBorder()) {
-                                                var borderBottom = angular.element('<div class="ng-docker-border ng-docker-horizontal-border"></div>');
+                                                var borderBottom = angular.element('<div class="ng-pane-manager-border ng-pane-manager-horizontal-border"></div>');
                                                 borderBottom.css('height', config.borderWidth + 'px');
                                                 borderBottom.css('bottom', '0');
                                                 element.append(borderBottom);
@@ -1644,7 +1643,7 @@ angular.module('ngDocker', [])
                                                 };
                                             }
                                             var activeChild = node.children[node.activeTabIndex];
-                                            var contents = ngDockerInternal.childrenWithClass(element, 'ng-docker-contents');
+                                            var contents = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-contents');
                                             contents.css('top', config.headerHeight + 'px');
                                             if(activeChild.split !== undefined) {
                                                 construct(root, node.children[node.activeTabIndex], contents, interactive);
@@ -1654,33 +1653,33 @@ angular.module('ngDocker', [])
                                         }
                                         break;
                                     default:
-                                        ngDockerInternal.validationFail();
+                                        ngPaneManagerInternal.validationFail();
                                 }
-                                element.data('ngDockerNode', ngDocker.cloneLayout(node));
-                                element.data('ngDockerConfig', configCopy);
+                                element.data('ngPaneManagerNode', ngPaneManager.cloneLayout(node));
+                                element.data('ngPaneManagerConfig', configCopy);
                                 container.append(element);
                             } else {
                                 var panel = panels[node.id];
                                 var panelContainer = angular.element(panelContainerHTML);
-                                var header = ngDockerInternal.childrenWithClass(panelContainer, 'ng-docker-header');
-                                var contents = ngDockerInternal.childrenWithClass(panelContainer, 'ng-docker-contents');
-                                var title = ngDockerInternal.childrenWithClass(header, 'ng-docker-title'); 
+                                var header = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-header');
+                                var contents = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-contents');
+                                var title = ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-title'); 
                                 if(node.closeable === undefined || node.closeable) {
-                                    initCloseButton(ngDockerInternal.childrenWithClass(header, 'ng-docker-close'));
+                                    initCloseButton(ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-close'));
                                 } else {
-                                    ngDockerInternal.childrenWithClass(header, 'ng-docker-close').remove();
+                                    ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-close').remove();
                                 }
                                 header.css('height', config.headerHeight + 'px');
                                 contents.css('top', config.headerHeight + 'px');
-                                ngDockerInternal.childrenWithClass(title, 'ng-docker-title-text').text(ngDockerInternal.computeLayoutTitle(node));
+                                ngPaneManagerInternal.childrenWithClass(title, 'ng-pane-manager-title-text').text(ngPaneManagerInternal.computeLayoutTitle(node));
                                 if(node.icon !== undefined) {
-                                    ngDockerInternal.childrenWithClass(title, 'ng-docker-icon').append(icons[node.id]);
+                                    ngPaneManagerInternal.childrenWithClass(title, 'ng-pane-manager-icon').append(icons[node.id]);
                                 } else {
-                                    ngDockerInternal.childrenWithClass(title, 'ng-docker-icon').remove();
+                                    ngPaneManagerInternal.childrenWithClass(title, 'ng-pane-manager-icon').remove();
                                 }
                                 contents.append(panel);
                                 var needsSideBorders = function() {
-                                    for(var p = ngDocker.findParent(root, node); p !== null; p = ngDocker.findParent(root, p[0])) {
+                                    for(var p = ngPaneManager.findParent(root, node); p !== null; p = ngPaneManager.findParent(root, p[0])) {
                                         if(p[0].split === 'vertical') {
                                             return false;
                                         }
@@ -1688,7 +1687,7 @@ angular.module('ngDocker', [])
                                     return true;
                                 };
                                 var needsBottomBorder = function() {
-                                    for(var p = ngDocker.findParent(root, node); p !== null; p = ngDocker.findParent(root, p[0])) {
+                                    for(var p = ngPaneManager.findParent(root, node); p !== null; p = ngPaneManager.findParent(root, p[0])) {
                                         if(p[0].split === 'horizontal') {
                                             return false;
                                         }
@@ -1696,8 +1695,8 @@ angular.module('ngDocker', [])
                                     return true;
                                 };
                                 if(needsSideBorders()) {
-                                    var borderLeft = angular.element('<div class="ng-docker-border ng-docker-vertical-border"></div>');
-                                    var borderRight = angular.element('<div class="ng-docker-border ng-docker-vertical-border"></div>');
+                                    var borderLeft = angular.element('<div class="ng-pane-manager-border ng-pane-manager-vertical-border"></div>');
+                                    var borderRight = angular.element('<div class="ng-pane-manager-border ng-pane-manager-vertical-border"></div>');
                                     borderLeft.css('top', config.headerHeight + 'px');
                                     borderLeft.css('width', config.borderWidth + 'px');
                                     borderLeft.css('left', '0');
@@ -1708,7 +1707,7 @@ angular.module('ngDocker', [])
                                     container.append(borderRight);
                                 }
                                 if(needsBottomBorder()) {
-                                    var borderBottom = angular.element('<div class="ng-docker-border ng-docker-horizontal-border"></div>');
+                                    var borderBottom = angular.element('<div class="ng-pane-manager-border ng-pane-manager-horizontal-border"></div>');
                                     borderBottom.css('height', config.borderWidth + 'px');
                                     borderBottom.css('bottom', '0');
                                     container.append(borderBottom);
@@ -1738,7 +1737,7 @@ angular.module('ngDocker', [])
                             construct(layout, layout, allContainer, true);
                             if(layout.split === undefined) {
                                 // special case with one root panel
-                                ngDockerInternal.childrenWithClass(ngDockerInternal.childrenWithClass(allContainer.children(), 'ng-docker-header'), 'ng-docker-close').on('click', function() {
+                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(allContainer.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
                                     layoutSet(null);
                                     $scope.$digest();
                                 });
@@ -1751,7 +1750,7 @@ angular.module('ngDocker', [])
                             {
                                 var floatingContainer = angular.element(floatingContainerHTML)
                                 construct(floatingState.layout, floatingState.layout, floatingContainer, false);
-                                var elOffs = ngDockerInternal.elementOffset($element);
+                                var elOffs = ngPaneManagerInternal.elementOffset($element);
                                 floatingContainer.css({
                                     left: (floatingState.cursorPosition.pageX + floatingContainerCursorOffset.left - elOffs.left) + 'px',
                                     top: (floatingState.cursorPosition.pageY + floatingContainerCursorOffset.top - elOffs.top) + 'px'
@@ -1799,15 +1798,15 @@ angular.module('ngDocker', [])
                                                 if(target.tabIndex === 0) {
                                                     tabNav.prepend(tabVisual)
                                                 } else {
-                                                    angular.element(ngDockerInternal.childrenWithClass(tabNav, 'ng-docker-tab')[target.tabIndex-1]).after(tabVisual);
+                                                    angular.element(ngPaneManagerInternal.childrenWithClass(tabNav, 'ng-pane-manager-tab')[target.tabIndex-1]).after(tabVisual);
                                                 }
-                                                var futureLayout = ngDocker.cloneLayout(target.node);
+                                                var futureLayout = ngPaneManager.cloneLayout(target.node);
                                                 futureLayout.children.splice(target.tabIndex, 0, floatingState.layout);
                                                 var tabs = 
-                                                    angular.element(Array.prototype.slice.call(ngDockerInternal.childrenWithClass(tabNav, 'ng-docker-tab'))
-                                                        .concat(ngDockerInternal.childrenWithClass(tabNav, 'ng-docker-drop-visual-tab')));
+                                                    angular.element(Array.prototype.slice.call(ngPaneManagerInternal.childrenWithClass(tabNav, 'ng-pane-manager-tab'))
+                                                        .concat(ngPaneManagerInternal.childrenWithClass(tabNav, 'ng-pane-manager-drop-visual-tab')));
                                                 for(var index = 0; index !== tabs.length; ++index) {
-                                                    angular.element(tabs[index]).css('width', computeTabWidth(futureLayout, ngDockerInternal.elementWidth(tabNav), index) + 'px');
+                                                    angular.element(tabs[index]).css('width', computeTabWidth(futureLayout, ngPaneManagerInternal.elementWidth(tabNav), index) + 'px');
                                                 }
                                                 visual = null;
                                             } else {
@@ -1822,14 +1821,14 @@ angular.module('ngDocker', [])
                                                     ]
                                                 };
                                                 visual.css({
-                                                    left: computeTabWidth(futureLayout, ngDockerInternal.elementWidth(header), 0) + 'px',
-                                                    width: computeTabWidth(futureLayout, ngDockerInternal.elementWidth(header), 1) + 'px',
+                                                    left: computeTabWidth(futureLayout, ngPaneManagerInternal.elementWidth(header), 0) + 'px',
+                                                    width: computeTabWidth(futureLayout, ngPaneManagerInternal.elementWidth(header), 1) + 'px',
                                                     height: config.headerHeight + 'px'
                                                 });
                                             }
                                             break;
                                         default:
-                                            ngDockerInternal.validationFail();
+                                            ngPaneManagerInternal.validationFail();
                                     }
                                     if(visual !== null) {
                                         element.prepend(visual);
@@ -1840,7 +1839,7 @@ angular.module('ngDocker', [])
                         // notify all panels of a resize
                         Object.keys(panels).forEach(function(id) {
                             var panel = panels[id];
-                            var listeners = panel.data('ngDockerResizeListeners');
+                            var listeners = panel.data('ngPaneManagerResizeListeners');
                             for(var i = 0; i !== listeners.length; ++i) {
                                 listeners[i]();
                             }
@@ -1860,18 +1859,18 @@ angular.module('ngDocker', [])
             var lastFloatingState = undefined;
             var lastConfig = undefined;
             $scope.$watch(function() {
-                var layout = ngDocker.cloneLayout(layoutGet());
+                var layout = ngPaneManager.cloneLayout(layoutGet());
                 var flState = cloneFloatingState(floatingState);
-                var config = ngDocker.cloneConfig(configGet());
-                ngDocker.derefLayout(layout, config);
+                var config = ngPaneManager.cloneConfig(configGet());
+                ngPaneManager.derefLayout(layout, config);
                 if(flState !== null) {
-                    ngDocker.derefLayout(flState.layout, config);
+                    ngPaneManager.derefLayout(flState.layout, config);
                 }
-                ngDocker.derefConfig(config);
+                ngPaneManager.derefConfig(config);
                 var changed = 
-                       lastLayout !== undefined && !ngDocker.layoutsEqual(lastLayout, layout)
+                       lastLayout !== undefined && !ngPaneManager.layoutsEqual(lastLayout, layout)
                     || lastFloatingState !== undefined && !floatingStatesEqual(lastFloatingState, flState)
-                    || lastConfig !== undefined && !ngDocker.configsEqual(config, lastConfig);
+                    || lastConfig !== undefined && !ngPaneManager.configsEqual(config, lastConfig);
                 if(changed) {
                     flipflop = !flipflop;
                 }
@@ -1889,7 +1888,7 @@ angular.module('ngDocker', [])
         }
     };
 }])
-.service('ngDockerInternal', [function() {
+.service('ngPaneManagerInternal', [function() {
     // keep in order: most precise to least precise
     this.patterns = [
         {
@@ -2170,7 +2169,7 @@ angular.module('ngDocker', [])
         return f(match1, match2);
     };
 
-    this.REF_PREFIX = '$$ngDockerRef:';
+    this.REF_PREFIX = '$$ngPaneManagerRef:';
 
     this.ref = function(name) {
         return this.REF_PREFIX + name;
@@ -2357,7 +2356,7 @@ angular.module('ngDocker', [])
                         result.activeTabIndex = root.activeTabIndex;
                         break;
                     default:
-                        ngDockerInternal.validationFail();
+                        ngPaneManagerInternal.validationFail();
                 }
                 result.children = root.children.map(this.cloneLayout.bind(this));
             } else {
@@ -2589,8 +2588,8 @@ angular.module('ngDocker', [])
         }
     };
 
-    this.computeInsertRatio = function(root, insertStrategy, matchRoot, dockerRatio) {
-        var ratio = insertStrategy.index === 0 ? dockerRatio : 1 - dockerRatio;
+    this.computeInsertRatio = function(root, insertStrategy, matchRoot, insertRatio) {
+        var ratio = insertStrategy.index === 0 ? insertRatio : 1 - insertRatio;
         var node = insertStrategy.node(matchRoot);
         var p = this.findParent(root, node);
         while(p !== null) {
@@ -2662,7 +2661,7 @@ angular.module('ngDocker', [])
             } else {
                 ['closeThisPanel', 'onPanelResize', 'offPanelResize'].forEach(function(k) {
                     if(template.scope[k]) {
-                        throw new Error('\'' + k + '\' cannot be added to the panel\'s scope, it is reserved for ngDocker');
+                        throw new Error('\'' + k + '\' cannot be added to the panel\'s scope, it is reserved for ngPaneManager');
                     }
                 });
             }

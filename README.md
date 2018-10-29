@@ -1,12 +1,12 @@
-# ngDocker
+# ngPaneManager
 
-ngDocker is a docking panel system for AngularJS. It...
+ngPaneManager is a docking panel system for AngularJS. It...
 * Supports vertical splits, horizontal splits, and tab splits (configurable by both developer and user)
 * Has a straight-forward API that takes advantage of AngularJS data binding
 * Supports serializing/deserializing panel layouts
 * Is easily themeable
 
-[Online Demo](https://sashavol.com/misc/ngDocker/test/demo.htm)
+[Online Demo](https://sashavol.com/misc/ngPaneManager/test/demo.htm)
 
 <img src="demo.gif">
 
@@ -26,7 +26,7 @@ ngDocker is a docking panel system for AngularJS. It...
     - [Layout](#layout)
     - [Templates](#templates)
     - [Panel Scope](#panel-scope)
-    - [ngDocker Service](#functions)
+    - [ngPaneManager Service](#functions)
 
 # Installation
 <a name="installation"></a>
@@ -39,11 +39,11 @@ TODO
 ## Hello World
 <a name="hello-world"></a>
 
-There is one directive: `ng-docker`.
+There is one directive: `ng-pane-manager`.
 
 ``` HTML 
 <body ng-app="myApp">
-    <div ng-controller="myController" ng-docker="config"></div>
+    <div ng-controller="myController" ng-pane-manager="config"></div>
 </body>
 ```
 
@@ -182,7 +182,7 @@ app.controller('myController', function($scope) {
 ...you can write a save/load function like this:
 
 ``` JavaScript
-app.controller('myController', function(ngDocker, $scope, $cookies) {
+app.controller('myController', function(ngPaneManager, $scope, $cookies) {
     $scope.config = {
         refs: {
             panelController: function($scope, injectedThing) {
@@ -197,9 +197,9 @@ app.controller('myController', function(ngDocker, $scope, $cookies) {
             title: 'Test Panel',
             panel: {
                 template: '<div>Some {{thing}}!</div>',
-                controller: ngDocker.ref('panelController'),
+                controller: ngPaneManager.ref('panelController'),
                 resolve: {
-                    injectedThing: ngDocker.ref('injectedThing')
+                    injectedThing: ngPaneManager.ref('injectedThing')
                 }
             }
         }
@@ -218,22 +218,22 @@ app.controller('myController', function(ngDocker, $scope, $cookies) {
 });
 ```
 
-All `ngDocker.ref()` calls (see the [ngDocker service reference](#functions)) will return a magic string that can be serialized. When the config is evaluated by ngDocker, these strings will be expanded to the ref specified in the `refs` config property.
+All `ngPaneManager.ref()` calls (see the [ngPaneManager service reference](#functions)) will return a magic string that can be serialized. When the config is evaluated by ngPaneManager, these strings will be expanded to the ref specified in the `refs` config property.
 
 ## Themes
 <a name="themes"></a>
 
-See [themes/black.css](themes/black.css) for an example of how to make an ngDocker theme. Some theming properties (e.g. `headerHeight`, `borderWidth`, `marginWidth`) are also available in the configuration object.
+See [themes/black.css](themes/black.css) for an example of how to make an ngPaneManager theme. Some theming properties (e.g. `headerHeight`, `borderWidth`, `marginWidth`) are also available in the configuration object.
 
 ## Inserting Panels
 <a name="inserting-panels"></a>
 
-If you have a complex layout and want to insert another panel into it, `ngDocker.insertLeaf()` (see the [ngDocker service reference](#functions)) can automatically insert a panel into the layout given a gravity and (optional) grouping.
+If you have a complex layout and want to insert another panel into it, `ngPaneManager.insertLeaf()` (see the [ngPaneManager service reference](#functions)) can automatically insert a panel into the layout given a gravity and (optional) grouping.
 
 ## Other Features
 <a name="other-features"></a>
 
-There are other auxiliary features documented in the [reference section](#reference). Be sure to check out the [ngDocker service reference](#functions), which contains more examples and useful utility functions. 
+There are other auxiliary features documented in the [reference section](#reference). Be sure to check out the [ngPaneManager service reference](#functions), which contains more examples and useful utility functions. 
 
 # Reference
 <a name="reference"></a>
@@ -241,13 +241,13 @@ There are other auxiliary features documented in the [reference section](#refere
 ## Configuration
 <a name="configuration"></a>
 
-The `ng-docker` directive accepts the following options:
+The `ng-pane-manager` directive accepts the following options:
 - `headerHeight` (Number): The height of the header of each window. (default 20px)
 - `borderWidth` (Number): The width of the borders of each window. (default: 2px)
 - `marginWidth` (Number): The width of the margins surrounding the layout. When the user is dragging a window, they can drag it into the margins to split an entire side of the layout instead of a particular window. (default: 20px)
 - `getterSetter` (Boolean): Whether the `layout` property is a getter/setter function. (default: false)
 - `closeButton`: The [template](#templates) describing how the windows' close buttons should be rendered. (default is an HTML template with a Unicode cross).
-- `refs`: An object describing the values to which ngDocker refs will be expanded (see [Serialize/Deserialize](#ser-deser) and `ngDocker.ref` in the [functions reference](#functions) for an explanation).
+- `refs`: An object describing the values to which ngPaneManager refs will be expanded (see [Serialize/Deserialize](#ser-deser) and `ngPaneManager.ref` in the [functions reference](#functions) for an explanation).
 - `layout`: The [object](#layout) describing the panel layout. If `getterSetter` is true, then this is a getter-setter function: if an argument is given, it should set the layout, otherwise it should return the layout.
 
 ## Layout
@@ -269,8 +269,8 @@ Splits have one or more children and must have a `split` property. They have the
 - `children` (Array): Array of children. If the split is vertical or horizontal, there must be exactly 2 children. If the split is a tab split, there must be at least 2 children. (required)
 
 All nodes also have the following properties:
-- `gravity` (String): The gravity of this panel (see `ngDocker.insertLeaf` in the [function reference](#functions)). (optional, only required if using insertLeaf)
-- `group` (String): The insert group of this panel (see `ngDocker.insertLeaf` in the [function reference](#functions)). (optional)
+- `gravity` (String): The gravity of this panel (see `ngPaneManager.insertLeaf` in the [function reference](#functions)). (optional, only required if using insertLeaf)
+- `group` (String): The insert group of this panel (see `ngPaneManager.insertLeaf` in the [function reference](#functions)). (optional)
 - `data` (Object): Arbitrary data to store along with this node. The object should be a plain key-value object, with the ID of the data as the key and your data as the value. (optional) 
 
 ## Templates
@@ -291,9 +291,9 @@ The controller of a panel has the following functions available in `$scope`:
 - `onPanelResize(listener)`: Adds a listener that gets fired whenever the panel resizes (or is initially constructed). This is useful when embedding content into panels that needs to be manually notified of its container resizing.
 - `offPanelResize(listener)`: Removes a panel resize listener.
 
-## ngDocker Service
+## ngPaneManager Service
 <a name="functions"></a>
 
-The `ngDocker` service contains many auxiliary functions that are helpful for working with your ngDocker layouts and configuration.
+The `ngPaneManager` service contains many auxiliary functions that are helpful for working with your ngPaneManager layouts and configuration.
 
-[Online Reference](https://sashavol.com/misc/ngDockerDocs/index.html)
+[Online Reference](https://sashavol.com/misc/ngPaneManagerDocs/index.html)

@@ -4,11 +4,11 @@
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/frappe-charts/1.1.0/frappe-charts.min.iife.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.6.5/ol-debug.js"></script>
-<script type="text/javascript" src="../ngDocker.js"></script>
+<script type="text/javascript" src="../ngPaneManager.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-charts/1.1.0/frappe-charts.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.6.5/ol.css">
 <link rel="stylesheet" href="https://cdn.materialdesignicons.com/3.0.39/css/materialdesignicons.min.css">
-<link rel="stylesheet" href="../ngDocker.css">
+<link rel="stylesheet" href="../ngPaneManager.css">
 <link rel="stylesheet" href="../theme/black.css">
 <style type="text/css">
     html, body {
@@ -16,7 +16,7 @@
         margin: 0;
     }
 
-    .docker {
+    .panes {
         width: 100%;
         height: 100%;
     }
@@ -36,7 +36,7 @@
     }
 </style>
 <script type="text/javascript">
-    var app = angular.module('demo', ['ngDocker']);
+    var app = angular.module('demo', ['ngPaneManager']);
     app.controller('BarGraph', ['$scope', '$element', function($scope, $element) {
         var chart = new frappe.Chart($element[0], {
             title: 'A Bar Graph',
@@ -189,6 +189,6 @@
     <script type="text/ng-template" id="line-graph-icon.html">
         <span class="mdi mdi-chart-line"></span>
     </script>
-    <div class="docker" ng-docker="config"></div>
+    <div class="panes" ng-pane-manager="config"></div>
 </body>
 </html>

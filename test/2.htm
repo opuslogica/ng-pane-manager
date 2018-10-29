@@ -2,8 +2,8 @@
 <html>
 <head>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.min.js"></script>
-<script type="text/javascript" src="../ngDocker.js"></script>
-<link rel="stylesheet" href="../ngDocker.css">
+<script type="text/javascript" src="../ngPaneManager.js"></script>
+<link rel="stylesheet" href="../ngPaneManager.css">
 <link rel="stylesheet" href="../theme/black.css">
 <style type="text/css">
 html, body {
@@ -11,7 +11,7 @@ html, body {
     margin: 0;
 }
 
-[ng-docker] {
+[ng-pane-manager] {
     width: 100%;
     height: 100%;
 }
@@ -55,14 +55,14 @@ html, body {
 }
 </style>
 <script type="text/javascript">
-var app = angular.module('test', ['ngDocker']);
+var app = angular.module('test', ['ngPaneManager']);
 app.controller('TestPanel2', ['$scope', 'nameInPanel', function($scope, nameInPanel) {
     $scope.name = nameInPanel;
 }]);
 app.service('TestService', function() {
     this.panel2Name = 'Y';
 });
-app.run(['ngDocker', '$rootScope', '$q', 'TestService', function(ngDocker, $rootScope, $q, TestService) {
+app.run(['ngPaneManager', '$rootScope', '$q', 'TestService', function(ngPaneManager, $rootScope, $q, TestService) {
     var layout = {
         split: 'horizontal',
         ratio: 0.5,
@@ -77,12 +77,12 @@ app.run(['ngDocker', '$rootScope', '$q', 'TestService', function(ngDocker, $root
                         title: 'Test Panel 1',
                         icon: {
                             template: '<div></div>',
-                            controller: ngDocker.ref('panel1IconController')
+                            controller: ngPaneManager.ref('panel1IconController')
                         },
                         panel: {
                             templateUrl: 'test.html',
                             scope: {
-                                name: ngDocker.ref('panel1Name')
+                                name: ngPaneManager.ref('panel1Name')
                             }
                         },
                         data: {
@@ -99,7 +99,7 @@ app.run(['ngDocker', '$rootScope', '$q', 'TestService', function(ngDocker, $root
                             controller: 'TestPanel2',
                             templateUrl: 'test.html',
                             resolve: {
-                                nameInPanel: ngDocker.ref('panel2Resolve')
+                                nameInPanel: ngPaneManager.ref('panel2Resolve')
                             }
                         }
                     }
@@ -177,6 +177,6 @@ app.run(['ngDocker', '$rootScope', '$q', 'TestService', function(ngDocker, $root
             {{name}}
         </div>
     </script>
-    <div ng-docker="config"></div>
+    <div ng-pane-manager="config"></div>
 </body>
 </html>

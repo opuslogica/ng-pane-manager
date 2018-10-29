@@ -1,31 +1,31 @@
-[ng-docker]  {
+[ng-pane-manager]  {
     background-color: rgb(14, 14, 14);
 }
 
-.ng-docker-title {
+.ng-pane-manager-title {
     font-size: 16px;
 }
 
-.ng-docker-tab-nav {
+.ng-pane-manager-tab-nav {
     background-color: rgb(28, 28, 28);
 }
 
-.ng-docker-tab {
+.ng-pane-manager-tab {
     background-color: #272727;
 }
 
-.ng-docker-header {
+.ng-pane-manager-header {
     background: linear-gradient(#373737, #272727);
 }
 
-.ng-docker-tab-active {
+.ng-pane-manager-tab-active {
     background: linear-gradient(#273F5E, #262E38);
 }
 
-.ng-docker-contents {
+.ng-pane-manager-contents {
     background-color: rgb(12, 12, 12);
 }
 
-.ng-docker-border {
+.ng-pane-manager-border {
     background-color: #272727;
 }
