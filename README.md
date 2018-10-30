@@ -296,4 +296,4 @@ The controller of a panel has the following functions available in `$scope`:
 
 The `ngPaneManager` service contains many auxiliary functions that are helpful for working with your ngPaneManager layouts and configuration.
 
-[Online Reference](https://sashavol.com/misc/ngPaneManagerDocs/index.html)
+[Online Reference](https://opuslogica.github.io/ng-pane-manager/index.html)
