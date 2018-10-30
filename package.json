@@ -1,0 +1,8 @@
+{
+  "name": "ng-pane-manager",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opuslogica/ng-pane-manager"
+  }
+}
