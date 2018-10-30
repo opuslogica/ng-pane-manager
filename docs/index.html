@@ -1,0 +1,1837 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>  | Documentation</title>
+  <meta name='viewport' content='width=device-width,initial-scale=1'>
+  <link href='assets/bass.css' type='text/css' rel='stylesheet' />
+  <link href='assets/style.css' type='text/css' rel='stylesheet' />
+  <link href='assets/github.css' type='text/css' rel='stylesheet' />
+  <link href='assets/split.css' type='text/css' rel='stylesheet' />
+</head>
+<body class='documentation m0'>
+    <div class='flex'>
+      <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
+        <div class='py1 px2'>
+          <h3 class='mb0 no-anchor'></h3>
+          <div class='mb1'><code></code></div>
+          <input
+            placeholder='Filter'
+            id='filter-input'
+            class='col12 block input'
+            type='text' />
+          <div id='toc'>
+            <ul class='list-reset h5 py1-ul'>
+              
+                
+                <li><a
+                  href='#ngpanemanager'
+                  class=" toggle-sibling">
+                  ngPaneManager
+                  <span class='icon'>▸</span>
+                </a>
+                
+                <div class='toggle-target display-none'>
+                  
+                  <ul class='list-reset py1-ul pl1'>
+                    <li class='h5'><span>Static members</span></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerfindleaves'
+                        class='regular pre-open'>
+                        .findLeaves
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerfindleafwithid'
+                        class='regular pre-open'>
+                        .findLeafWithId
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerinsertleaf'
+                        class='regular pre-open'>
+                        .insertLeaf
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerremoveleafwithid'
+                        class='regular pre-open'>
+                        .removeLeafWithId
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerfindparent'
+                        class='regular pre-open'>
+                        .findParent
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerremovesplitchild'
+                        class='regular pre-open'>
+                        .removeSplitChild
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerremovenode'
+                        class='regular pre-open'>
+                        .removeNode
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerrevealnode'
+                        class='regular pre-open'>
+                        .revealNode
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerclonelayout'
+                        class='regular pre-open'>
+                        .cloneLayout
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerlayoutsequal'
+                        class='regular pre-open'>
+                        .layoutsEqual
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagervalidatelayout'
+                        class='regular pre-open'>
+                        .validateLayout
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagercloneconfig'
+                        class='regular pre-open'>
+                        .cloneConfig
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerconfigsequal'
+                        class='regular pre-open'>
+                        .configsEqual
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerref'
+                        class='regular pre-open'>
+                        .ref
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerisref'
+                        class='regular pre-open'>
+                        .isRef
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerderef'
+                        class='regular pre-open'>
+                        .deref
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerdereflayout'
+                        class='regular pre-open'>
+                        .derefLayout
+                      </a></li>
+                    
+                      <li><a
+                        href='#ngpanemanagerderefconfig'
+                        class='regular pre-open'>
+                        .derefConfig
+                      </a></li>
+                    
+                    </ul>
+                  
+                  
+                  
+                  
+                </div>
+                
+                </li>
+              
+            </ul>
+          </div>
+          <div class='mt1 h6 quiet'>
+            <a href='http://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
+          </div>
+        </div>
+      </div>
+      <div id='split-right' class='relative overflow-auto height-viewport-100'>
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='ngpanemanager'>
+      ngPaneManager
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>This is the contents of the <code>ngPaneManager</code> service, which contains various auxiliary functions for working with ngPaneManager layouts and configurations.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>ngPaneManager</div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      <p><p>Example of how to use the service:</p>
+</p>
+      <pre class='p1 overflow-auto round fill-light'>app.controller(<span class="hljs-string">'SomePanelController'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">$scope, ngPaneManager</span>) </span>{
+  $scope.config = {
+    <span class="hljs-attr">layout</span>: {
+      <span class="hljs-attr">id</span>: <span class="hljs-string">'some-panel'</span>,
+      <span class="hljs-attr">title</span>: <span class="hljs-string">'Some Panel'</span>,
+      <span class="hljs-attr">panel</span>: {
+        <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am some panel!&lt;/div&gt;'</span>
+      }
+    }
+  };
+  $scope.config.layout = ngPaneManager.removeLeafWithId($scope.config.layout, <span class="hljs-string">'some-panel'</span>);
+});</pre>
+    
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Static Members</div>
+    <div class="clearfix">
+  
+    <div class='border-bottom' id='ngpanemanagerfindleaves'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>findLeaves(root)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Finds all the leaf nodes in a layout.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>findLeaves(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The node in the layout from which to find leaves.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></code>:
+        An array of leaf nodes from the given layout.
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-keyword">var</span> layout = {
+  <span class="hljs-attr">split</span>: <span class="hljs-string">'vertical'</span>,
+  <span class="hljs-attr">ratio</span>: <span class="hljs-number">0.5</span>,
+  <span class="hljs-attr">children</span>: [
+    {
+      <span class="hljs-attr">split</span>: <span class="hljs-string">'horizontal'</span>,
+      <span class="hljs-attr">ratio</span>: <span class="hljs-number">0.5</span>,
+      <span class="hljs-attr">children</span>: [
+        {
+          <span class="hljs-attr">id</span>: <span class="hljs-string">'panel-1'</span>,
+          <span class="hljs-attr">title</span>: <span class="hljs-string">'Panel 1'</span>,
+          <span class="hljs-attr">panel</span>: {
+            <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am panel 1.&lt;/div&gt;'</span>
+          }
+        },
+        {
+          <span class="hljs-attr">id</span>: <span class="hljs-string">'panel-2'</span>,
+          <span class="hljs-attr">title</span>: <span class="hljs-string">'Panel 2'</span>,
+          <span class="hljs-attr">panel</span>: {
+            <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am panel 2.&lt;/div&gt;'</span>
+          }
+        }
+      ]
+    },
+    {
+      <span class="hljs-attr">id</span>: <span class="hljs-string">'panel-3'</span>,
+      <span class="hljs-attr">title</span>: <span class="hljs-string">'Panel 3'</span>,
+      <span class="hljs-attr">panel</span>: {
+        <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am panel 3.&lt;/div&gt;'</span>
+      }
+    }
+  ]
+};
+<span class="hljs-keyword">var</span> leaves = ngPaneManager.findLeaves(layout); <span class="hljs-comment">// leaves is an array containing nodes 'panel-1', 'panel-2', 'panel-3'</span></pre>
+    
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerfindleafwithid'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>findLeafWithId(root, id)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Finds the leaf node in a layout with the given ID.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>findLeafWithId(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The root node of the layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    The ID of the leaf to find.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        If found, the leaf node with the given ID, otherwise null.
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-keyword">var</span> layout = {
+  <span class="hljs-attr">split</span>: <span class="hljs-string">'vertical'</span>,
+  <span class="hljs-attr">ratio</span>: <span class="hljs-number">0.5</span>,
+  <span class="hljs-attr">children</span>: [
+    {
+      <span class="hljs-attr">split</span>: <span class="hljs-string">'horizontal'</span>,
+      <span class="hljs-attr">ratio</span>: <span class="hljs-number">0.5</span>,
+      <span class="hljs-attr">children</span>: [
+        {
+          <span class="hljs-attr">id</span>: <span class="hljs-string">'panel-1'</span>,
+          <span class="hljs-attr">title</span>: <span class="hljs-string">'Panel 1'</span>,
+          <span class="hljs-attr">panel</span>: {
+            <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am panel 1.&lt;/div&gt;'</span>
+          }
+        },
+        {
+          <span class="hljs-attr">id</span>: <span class="hljs-string">'panel-2'</span>,
+          <span class="hljs-attr">title</span>: <span class="hljs-string">'Panel 2'</span>,
+          <span class="hljs-attr">panel</span>: {
+            <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am panel 2.&lt;/div&gt;'</span>
+          }
+        }
+      ]
+    },
+    {
+      <span class="hljs-attr">id</span>: <span class="hljs-string">'panel-3'</span>,
+      <span class="hljs-attr">title</span>: <span class="hljs-string">'Panel 3'</span>,
+      <span class="hljs-attr">panel</span>: {
+        <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am panel 3.&lt;/div&gt;'</span>
+      }
+    }
+  ]
+};
+<span class="hljs-keyword">var</span> leaf = ngPaneManager.findLeafWithId(layout, <span class="hljs-string">'panel-2'</span>); <span class="hljs-comment">// returns the second child of the horizontal split</span>
+<span class="hljs-keyword">var</span> notfound = ngPaneManager.findLeafWithId(layout, <span class="hljs-string">'nope'</span>); <span class="hljs-comment">// returns null</span></pre>
+    
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerinsertleaf'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>insertLeaf(root, leaf, ratio)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Inserts a leaf node into the layout. <code>leaf</code> must have a <code>gravity</code> property on it, and all existing leaves
+in the given layout must have <code>gravity</code> defined as well. <b>Set your layout to the return value of this function</b>.</p>
+<p>Insertion currently supports three kinds of <code>gravity</code>: <code>left</code>, <code>center</code>, <code>right</code>.
+The algorithm tries to recognize where the "left", "center", and "right" parts of the layout are. If the panel has left
+gravity, then it is placed in the left region of the layout (either with a vertical split, if there is no left region, or
+with a tab split). For center gravity, the center region of the layout is identified, and the leaf is inserted either with a
+vertical split or a tab split. For right gravity, the right region of the layout is identified, and the leaf is inserted either with a
+vertical split or a tab split.</p>
+<p>If you want certain leaf nodes to always form a tab split (regardless of gravity), you can use the optional <code>group</code> property.
+When <code>insertLeaf</code> is called, it will first check if <code>leaf</code> has a <code>group</code> property. If it does, it will
+search the layout for other nodes with the same <code>group</code>: if it finds another node with the same group, it will form a tab
+split with that node instead of splitting by gravity.</p>
+<p>See <a href="https://sashavol.com/misc/ngPaneManager/test/3.htm">the test page 3.htm</a> for an interactive demo of how insertLeaf works.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>insertLeaf(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, leaf: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, ratio: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The root node of the layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>leaf</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The leaf to insert.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>ratio</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
+	    The ratio of the leaf in its split (only used if a vertical split is created).
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        The new root of the layout.
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      
+      <pre class='p1 overflow-auto round fill-light'>$scope.config = {
+  <span class="hljs-attr">layout</span>: {
+    <span class="hljs-attr">id</span>: <span class="hljs-string">'center-panel'</span>,
+    <span class="hljs-attr">title</span>: <span class="hljs-string">'Center Panel'</span>,
+    <span class="hljs-attr">panel</span>: {
+      <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I want to be in the center!&lt;/div&gt;'</span>
+    },
+    <span class="hljs-attr">gravity</span>: <span class="hljs-string">'center'</span>
+  }
+};
+<span class="hljs-keyword">var</span> leftLeaf = {
+  <span class="hljs-attr">id</span>: <span class="hljs-string">'left-panel'</span>,
+  <span class="hljs-attr">title</span>: <span class="hljs-string">'Left Panel'</span>,
+  <span class="hljs-attr">panel</span>: {
+    <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I want to be at the left!&lt;/div&gt;'</span>
+  },
+  <span class="hljs-attr">gravity</span>: <span class="hljs-string">'left'</span>
+};
+<span class="hljs-comment">// After this, $scope.config.layout will be</span>
+<span class="hljs-comment">// {</span>
+<span class="hljs-comment">//   split: 'vertical',</span>
+<span class="hljs-comment">//   ratio: 0.5,</span>
+<span class="hljs-comment">//   children: [</span>
+<span class="hljs-comment">//     {</span>
+<span class="hljs-comment">//       id: 'left-panel',</span>
+<span class="hljs-comment">//       title: 'Left Panel',</span>
+<span class="hljs-comment">//       panel: {</span>
+<span class="hljs-comment">//         template: '&lt;div&gt;I want to be at the left!&lt;/div&gt;'</span>
+<span class="hljs-comment">//       },</span>
+<span class="hljs-comment">//       gravity: 'left'</span>
+<span class="hljs-comment">//     },</span>
+<span class="hljs-comment">//     {</span>
+<span class="hljs-comment">//       id: 'center-panel',</span>
+<span class="hljs-comment">//       title: 'Center Panel',</span>
+<span class="hljs-comment">//       panel: {</span>
+<span class="hljs-comment">//         template: '&lt;div&gt;I want to be in the center!&lt;/div&gt;'</span>
+<span class="hljs-comment">//       }</span>
+<span class="hljs-comment">//     }</span>
+<span class="hljs-comment">//   ]</span>
+<span class="hljs-comment">// }</span>
+$scope.config.layout = ngPaneManager.insertLeaf($scope.config.layout, leftLeaf, <span class="hljs-number">0.5</span>);</pre>
+    
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerremoveleafwithid'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>removeLeafWithId(root, id)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Removes the leaf with the specified ID from the layout. <b>Set your layout to the return value of this function</b></p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>removeLeafWithId(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The root node of the layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>id</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    The ID of the leaf node to remove.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        The new root node.
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerfindparent'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>findParent(root, node)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Finds the parent of a node in a layout.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>findParent(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The root node of the layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>node</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The node for which to find the parent.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        The parent of the node, or null if 
+<code>
+node
+</code>
+ is the root node and has no parent.
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerremovesplitchild'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>removeSplitChild(root, node, index)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Removes the child of a split. <b>Set your layout to the return value of this function.</b></p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>removeSplitChild(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, index: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The root node of the layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>node</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The split from which to remove the child.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>index</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>)</code>
+	    The index of the child to remove.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        The new root node.
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      
+      <pre class='p1 overflow-auto round fill-light'>$scope.config = {
+  <span class="hljs-attr">layout</span>: {
+    <span class="hljs-attr">split</span>: <span class="hljs-string">'vertical'</span>,
+    <span class="hljs-attr">ratio</span>: <span class="hljs-number">0.5</span>,
+    <span class="hljs-attr">children</span>: [
+      {
+        <span class="hljs-attr">id</span>: <span class="hljs-string">'panel-1'</span>,
+        <span class="hljs-attr">title</span>: <span class="hljs-string">'Panel 1'</span>,
+        <span class="hljs-attr">panel</span>: {
+          <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am panel 1&lt;/div&gt;'</span>
+        }
+      },
+      {
+        <span class="hljs-attr">id</span>: <span class="hljs-string">'panel-2'</span>,
+        <span class="hljs-attr">title</span>: <span class="hljs-string">'Panel 2'</span>,
+        <span class="hljs-attr">panel</span>: {
+          <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;I am panel 2&lt;/div&gt;'</span>
+        }
+      }
+    ]
+  } 
+};
+
+<span class="hljs-comment">// After this, $scope.config.layout will be</span>
+<span class="hljs-comment">// {</span>
+<span class="hljs-comment">//   id: 'panel-2',</span>
+<span class="hljs-comment">//   title: 'Panel 2',</span>
+<span class="hljs-comment">//   panel: {</span>
+<span class="hljs-comment">//     template: '&lt;div&gt;I am panel 2&lt;/div&gt;'</span>
+<span class="hljs-comment">//   }</span>
+<span class="hljs-comment">// }</span>
+$scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $scope.config.layout, <span class="hljs-number">0</span>);</pre>
+    
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerremovenode'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>removeNode(root, node)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Removes a node from the layout. <b>Set your layout to the return value of this function.</b></p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>removeNode(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The root node of the layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>node</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The node to remove.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        The new root node.
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerrevealnode'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>revealNode(root, node)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Sets activeTabIndex on all the ancestors of the given node such that the node is visible. This is useful if you want to "focus" onto a panel that may be concealed behind tab splits.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>revealNode(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The root node of the layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>node</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The node to reveal.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerclonelayout'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>cloneLayout(root)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Creates a copy of a layout.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>cloneLayout(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The node in the layout to clone.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        A copy of the layout.
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerlayoutsequal'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>layoutsEqual(a, b)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Tests if two layouts are equal.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>layoutsEqual(a: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, b: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>a</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The first layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>b</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The second layout.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
+        Whether the two layouts are equal.
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagervalidatelayout'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>validateLayout(root)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Performs syntax validity checks on the layout (the validity of templates and templateUrls is not checked, however). ngPaneManager automatically call this function when processing the layout, normally you do not need to call it.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>validateLayout(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The node in the layout from which to perform validation.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Throws</div>
+    <ul>
+      
+        <li><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a>: Error describing the problem with the layout.
+</li>
+      
+    </ul>
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagercloneconfig'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>cloneConfig(config)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Clones a config object.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>cloneConfig(config: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>config</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The config to clone.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        A copy of the config object.
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerconfigsequal'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>configsEqual(a, b)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Tests if two config objects are equal.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>configsEqual(a: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, b: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>a</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The first config object.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>b</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The second config object.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
+        Whether the two config objects are equal.
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerref'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>ref(name)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Creates a reference to a value in the config's <code>refs</code> property.
+This function is used to make the layout serializable (e.g. if your application needs to be able to store the panel state in a cookie or local storage). It is <i>not</i> required to use refs for general use (only if you want serializability).</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>ref(name: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>name</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>)</code>
+	    The name of the ref.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
+        A placeholder string that will be expanded by ngPaneManager to the value given in the config's 
+<code>
+refs
+</code>
+ property.
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-comment">// Example of using a ref in a layout</span>
+$scope.config = {
+  <span class="hljs-attr">refs</span>: {
+    <span class="hljs-attr">SomePanelController</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">$scope</span>) </span>{
+      $scope.something = <span class="hljs-string">'Hello!'</span>;
+    }
+  },
+  <span class="hljs-attr">layout</span>: {
+    <span class="hljs-attr">id</span>: <span class="hljs-string">'some-panel'</span>,
+    <span class="hljs-attr">title</span>: <span class="hljs-string">'Some Panel'</span>,
+    <span class="hljs-attr">panel</span>: {
+      <span class="hljs-attr">template</span>: <span class="hljs-string">'&lt;div&gt;{{something}}&lt;/div&gt;'</span>,
+      <span class="hljs-attr">controller</span>: ngPaneManager.ref(<span class="hljs-string">'SomePanelController'</span>)
+    }
+  }
+};</pre>
+    
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerisref'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>isRef(x)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Determines whether a value is a ref.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>isRef(x: any): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>x</span> <code class='quiet'>(any)</code>
+	    The value to check.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code>:
+        Whether 
+<code>
+x
+</code>
+ is a ref.
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-keyword">var</span> x = ngPaneManager.ref(<span class="hljs-string">'test'</span>);
+<span class="hljs-keyword">var</span> y = <span class="hljs-number">5</span>;
+ngPaneManager.isRef(x); <span class="hljs-comment">// returns true</span>
+ngPaneManager.isRef(y); <span class="hljs-comment">// returns false</span></pre>
+    
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerderef'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>deref(x, config)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Expands a ref to the value it refers to in the config's <code>refs</code> property.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>deref(x: any, config: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>x</span> <code class='quiet'>(any)</code>
+	    The value to dereference.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>config</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The configuration object.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code>:
+        If the value is a reference, the corresponding value in the config's 
+<code>
+refs
+</code>
+ property. Otherwise, just returns 
+<code>
+x
+</code>
+.
+
+      
+    
+  
+
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Example</div>
+    
+      
+      <pre class='p1 overflow-auto round fill-light'><span class="hljs-keyword">var</span> config = {
+  <span class="hljs-attr">refs</span>: {
+    <span class="hljs-attr">test</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">x</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Hello World!'</span>);
+    }
+  }
+};
+<span class="hljs-keyword">var</span> ref = ngPaneManager.ref(<span class="hljs-string">'test'</span>);
+<span class="hljs-keyword">var</span> f = ngPaneManager.deref(ref, config);
+f(); <span class="hljs-comment">// prints "Hello World!"</span>
+<span class="hljs-keyword">var</span> num = ngPaneManager.deref(<span class="hljs-number">5</span>, config); <span class="hljs-comment">// 5 is not a ref, so deref just returns it</span></pre>
+    
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerdereflayout'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>derefLayout(root, config)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Deref all refs in a layout.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>derefLayout(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, config: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The node in the layout from which to deref.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>config</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The config object.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+    <div class='border-bottom' id='ngpanemanagerderefconfig'>
+      <div class="clearfix small pointer toggle-sibling">
+        <div class="py1 contain">
+            <a class='icon pin-right py1 dark-link caret-right'>▸</a>
+            <span class='code strong strong truncate'>derefConfig(config)</span>
+        </div>
+      </div>
+      <div class="clearfix display-none toggle-target">
+        <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+
+  <p>Derefs all refs in a config object.</p>
+
+ 
+  
+    <div class='pre p1 fill-light mt0'>derefConfig(config: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
+   
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>config</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The config to deref.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+      </div>
+    </div>
+  
+</div>
+
+  
+
+  
+
+  
+</section>
+
+        
+      </div>
+    </div>
+  <script src='assets/anchor.js'></script>
+  <script src='assets/split.js'></script>
+  <script src='assets/site.js'></script>
+</body>
+</html>
