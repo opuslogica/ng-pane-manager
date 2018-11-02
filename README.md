@@ -31,7 +31,7 @@ ngPaneManager is a docking panel system for AngularJS. It...
 # Installation
 <a name="installation"></a>
 
-TODO
+`npm install ng-pane-manager`
 
 # Developer Guide
 <a name="dev-guide"></a>
