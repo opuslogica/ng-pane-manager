@@ -6,7 +6,7 @@ ngPaneManager is a docking panel system for AngularJS. It...
 * Supports serializing/deserializing panel layouts
 * Is easily themeable
 
-[Online Demo](https://opuslogica.github.io/ng-pane-manager/test/demo.html)
+[Online Demo](https://opuslogica.github.io/ng-pane-manager/test/demo.htm)
 
 <img src="demo.gif">
 
