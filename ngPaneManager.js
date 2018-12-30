@@ -1352,22 +1352,26 @@ angular.module('ngPaneManager', [])
                 });
                 templateResolver.finalize().then(function() {
                     templateResolver = null;
+
                     // try to adapt any previously constructed icons and panels to the new leaves, discard those that cannot be adapted
                     {
-                        var tryAdapt = function(m, leavesById) {
+                        var tryAdapt = function(m, leavesById, adaptingIcons) {
                             var next = {};
                             Object.keys(m).forEach(function(k) {
                                 var el = m[k];
                                 var elNode = el.data('ngPaneManagerNode');
                                 var elConfig = el.data('ngPaneManagerConfig');
                                 var leaf = leavesById[elNode.id];
-                                var destroy = false;
+                                var destroy;
                                 if(!leaf) {
                                     destroy = true;
                                 } else {
-                                    var before = ngPaneManager.derefLayout(ngPaneManager.cloneLayout(elNode), elConfig);
-                                    var after = ngPaneManager.derefLayout(ngPaneManager.cloneLayout(leaf), config);
-                                    if(!ngPaneManager.layoutsEqual(before, after)) {
+                                    var nodeBefore = ngPaneManager.derefLayout(ngPaneManager.cloneLayout(elNode), elConfig);
+                                    var nodeAfter = ngPaneManager.derefLayout(ngPaneManager.cloneLayout(leaf), config);
+                                    var key = adaptingIcons ? 'icon' : 'panel';
+                                    if(nodeBefore[key] && nodeAfter[key]) {
+                                        destroy = !ngPaneManagerInternal.templatesEqual(nodeBefore[key], nodeAfter[key]);
+                                    } else {
                                         destroy = true;
                                     }
                                 }
@@ -1389,8 +1393,8 @@ angular.module('ngPaneManager', [])
                                 leavesWithIconById[leaf.id] = leaf;
                             }
                         });
-                        icons = tryAdapt(icons, leavesWithIconById);
-                        panels = tryAdapt(panels, leavesById);
+                        icons = tryAdapt(icons, leavesWithIconById, true);
+                        panels = tryAdapt(panels, leavesById, false);
                     }
 
                     // construct any missing icons and panels
