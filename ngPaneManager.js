@@ -1417,12 +1417,17 @@ angular.module('ngPaneManager', [])
                                     listeners.splice(index, 1);
                                 }
                             };
+                            panel.data('ngPaneManagerNode', ngPaneManager.cloneLayout(leaf));
+                            panel.data('ngPaneManagerConfig', configCopy);
+                            panel.data('ngPaneManagerResizeListeners', []);
                             maybeLoadTemplateController(leaf.panel, panelScope, panel);
                             panels[leaf.id] = panel;
                         }
                         if(leaf.icon !== undefined && !icons[leaf.id]) {
                             var iconScope = newTemplateScope(leaf.icon);
                             var icon = $compile(getTemplateTemplateString(leaf.icon))(iconScope);
+                            icon.data('ngPaneManagerNode', ngPaneManager.cloneLayout(leaf));
+                            icon.data('ngPaneManagerConfig', configCopy);
                             maybeLoadTemplateController(leaf.icon, iconScope, icon);
                             icons[leaf.id] = icon;
                         }
@@ -1440,7 +1445,6 @@ angular.module('ngPaneManager', [])
                         }
                         panel.data('ngPaneManagerNode', ngPaneManager.cloneLayout(leaf));
                         panel.data('ngPaneManagerConfig', configCopy);
-                        panel.data('ngPaneManagerResizeListeners', []);
                     });
 
                     // update icon element data
