@@ -297,7 +297,7 @@ angular.module('ngPaneManager', [])
                 var p = this.findParent(root, layoutToSplit);
                 var split = {
                     split: insertStrategy.split,
-                    ratio: ngPaneManagerInternal.computeInsertRatio(root, insertStrategy, r.node, ratio),
+                    ratio: insertStrategy.index === 0 ? insertRatio : 1 - insertRatio,
                     children: insertStrategy.index === 0 ? [
                         leaf,
                         layoutToSplit
@@ -2929,17 +2929,6 @@ angular.module('ngPaneManager', [])
     };
 
     this.computeInsertRatio = function(root, insertStrategy, matchRoot, insertRatio) {
-        var ratio = insertStrategy.index === 0 ? insertRatio : 1 - insertRatio;
-        var node = insertStrategy.node(matchRoot);
-        var p = this.findParent(root, node);
-        while(p !== null) {
-            if(p[0].split === insertStrategy.split) {
-                ratio = p[1] === 0 ? ratio/p[0].ratio : ratio/(1-p[0].ratio);
-            }
-            node = p[0];
-            p = this.findParent(root, node);
-        }
-        return ratio;
     };
 
     this.findInsertStrategy = function(match, nodeToInsert) {
