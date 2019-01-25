@@ -152,12 +152,13 @@ angular.module('ngPaneManager', [])
      * Inserts a leaf node into the layout. <code>leaf</code> must have a <code>gravity</code> property on it, and all existing leaves
      * in the given layout must have <code>gravity</code> defined as well. <b>Set your layout to the return value of this function</b>.
      *
-     * Insertion currently supports three kinds of <code>gravity</code>: <code>left</code>, <code>center</code>, <code>right</code>.
-     * The algorithm tries to recognize where the "left", "center", and "right" parts of the layout are. If the panel has left
+     * Insertion currently supports four kinds of <code>gravity</code>: <code>left</code>, <code>center</code>, <code>right</code>, <code>bottom</code>.
+     * The algorithm tries to recognize where the "left", "center", "right", and "bottom" parts of the layout are. If the panel has left
      * gravity, then it is placed in the left region of the layout (either with a vertical split, if there is no left region, or 
      * with a tab split). For center gravity, the center region of the layout is identified, and the leaf is inserted either with a 
      * vertical split or a tab split. For right gravity, the right region of the layout is identified, and the leaf is inserted either with a
-     * vertical split or a tab split.
+     * vertical split or a tab split. For bottom gravity, the bottom region of the layout is identified, and the leaf is inserted either with a
+     * horizontal split or a tab split.
      *
      * If you want certain leaf nodes to always form a tab split (regardless of gravity), you can use the optional <code>group</code> property. 
      * When <code>insertLeaf</code> is called, it will first check if <code>leaf</code> has a <code>group</code> property. If it does, it will 
@@ -1934,8 +1935,144 @@ angular.module('ngPaneManager', [])
     };
 }])
 .service('ngPaneManagerInternal', [function() {
+    /**
+     * Pattern matching (used for insertLeaf)
+     * 
+     * The way this works is first we try to match against 'patterns'. 
+     * Each pattern in 'patterns' is a tree, where each node is either 
+     * a split or a mapping from possible gravities to simpler gravity 
+     * (this will be defined shortly). If a match is found, each mapping 
+     * is used to convert the layouts' gravities into a simpler hierarchy.
+     * For example, if insertLeaf is given a layout that looks like this:
+     *
+     * |---|---|---|
+     * | 1 | 2 | 3 |
+     * |---|---|---|
+     *   L   L   R
+     *
+     * and has the following tree:
+     *
+     *   vsplit
+     *    /   \
+     *  1(L)    vsplit
+     *          /   \
+     *        2(L)  3(R)
+     *
+     * (L/R means left/right gravity, the number is the panel id).
+     * 
+     * This layout will match the pattern 
+     *
+     * {
+     *     split: 'vertical',
+     *     children: [
+     *         [['left', 'right'], 'left'],
+     *         {
+     *             split: 'vertical',
+     *             children: [
+     *                 [[null, 'left', 'right', 'center'], 'center'],
+     *                 [['left', 'right'], 'right']
+     *             ]
+     *         }
+     *     ]
+     * }
+     *
+     * and provide a simpler gravity hierarchy for this tree like this:
+     *
+     * |---|---|---|
+     * | 1 | 2 | 3 |
+     * |---|---|---|
+     *   L   C   R
+     *
+     * (C means center gravity).
+     *
+     * Next we consider the gravity of the panel being inserted. Say we want to insert a
+     * panel 4 with center gravity.
+     *
+     * We look at the simplified hierarchy. If we find a node with the same gravity as that
+     * of the panel being inserted, we will create a tab split with that node. In this case, 
+     * panel 4 will create a tab split with panel 2.
+     *
+     * It's possible that the simpler hierarchy won't have the gravity we're looking for. 
+     * For example, say we did the following transformation:
+     *
+     * |---|---|        |---|---|
+     * | 1 | 2 |   ->   | 1 | 2 |
+     * |---|---|        |---|---|
+     *   L   L            L   R
+     *
+     * If we want to insert a panel 3 with center gravity, we need something to figure out 
+     * how to perform this insertion, since there is no node we can do a tab split with.
+     *
+     * Now we look at the insert strategies for the gravity of the panel being inserted. For center,
+     * this is the array insertCenterStrategies.
+     *
+     * We find the strategy that matches the simplified hierarchy, in this case that would be:
+     * 
+     * {
+     *     from: {
+     *         split: 'vertical',
+     *         children: [
+     *             'left',
+     *             'right'
+     *         ]
+     *     },
+     *     split: 'vertical',
+     *     index: 1,
+     *     node: function(node) {
+     *         return node.children[0];
+     *     }
+     * }
+     *
+     * This strategy says to insert the panel by performing a vertical split with the left node and 
+     * having the center panel be the second item in the vertical split.
+     *
+     * In summary, pattern matching works like this:
+     * 1. Match 'patterns', simplify the gravity hierarchy using the match.
+     * 2. If the simplified hierarchy contains a panel with the same gravity as that of the
+     *    panel being inserted, create a tab split with that node, otherwise...
+     * 3. Find the appropriate insert strategy to insert the panel into the hierarchy.
+     */
+
     // keep in order: most precise to least precise
     this.patterns = [
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        {
+                            split: 'vertical',
+                            children: [
+                                [[null, 'left', 'right', 'center', 'bottom'], 'center'],
+                                [['left', 'right'], 'right']
+                            ]
+                        }
+                    ]
+                },
+                [[null, 'left', 'right', 'center', 'bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        {
+                            split: 'vertical',
+                            children: [
+                                [['left', 'right'], 'left'],
+                                [[null, 'left', 'right', 'center', 'bottom'], 'center']
+                            ]
+                        },
+                        [['left', 'right'], 'right']
+                    ]
+                },
+                [[null, 'left', 'right', 'center', 'bottom'], 'bottom']
+            ]
+        },
         {
             split: 'vertical',
             children: [
@@ -1943,7 +2080,7 @@ angular.module('ngPaneManager', [])
                 {
                     split: 'vertical',
                     children: [
-                        [[null, 'left', 'right', 'center'], 'center'],
+                        [[null, 'left', 'right', 'center', 'bottom'], 'center'],
                         [['left', 'right'], 'right']
                     ]
                 }
@@ -1956,10 +2093,49 @@ angular.module('ngPaneManager', [])
                     split: 'vertical',
                     children: [
                         [['left', 'right'], 'left'],
-                        [[null, 'left', 'right', 'center'], 'center']
+                        [[null, 'left', 'right', 'center', 'bottom'], 'center']
                     ]
                 },
                 [['left', 'right'], 'right']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        [[null, 'center'], 'center']
+                    ]
+                },
+                [[null, 'left', 'right', 'center', 'bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [[null, 'center'], 'center'],
+                        [['left', 'right'], 'right']
+                    ]
+                },
+                [[null, 'left', 'right', 'center', 'bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        [['left', 'right'], 'left'],
+                        [['left', 'right'], 'right']
+                    ]
+                },
+                [[null, 'left', 'right', 'center', 'bottom'], 'bottom']
             ]
         },
         {
@@ -1983,10 +2159,62 @@ angular.module('ngPaneManager', [])
                 [['left', 'right'], 'right']
             ]
         },
+        {
+            split: 'horizontal',
+            children: [
+                [[null, 'center'], 'center'],
+                [[null, 'left', 'right', 'center', 'bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                [['left'], 'left'],
+                [[null, 'left', 'right', 'center', 'bottom'], 'bottom']
+            ]
+        },
+        {
+            split: 'horizontal',
+            children: [
+                [['right'], 'right']
+                [[null, 'left', 'right', 'center', 'bottom'], 'bottom']
+            ]
+        },
         [[null, 'center'], 'center'],
         [['left'], 'left'],
-        [['right'], 'right']
+        [['right'], 'right'],
+        [['bottom'], 'bottom']
     ];
+
+    var addBottomStrategies = function(strategies) {
+        var result = [];
+        strategies.forEach(function(strat) {
+            result.push({
+                from: {
+                    split: 'horizontal',
+                    children: [
+                        strat.from,
+                        'bottom'
+                    ]
+                },
+                split: strat.split,
+                index: strat.index,
+                node: function(node) {
+                    return strat.node(node.children[0]);
+                }
+            });
+            result.push(strat);
+        });
+        result.push({
+            from: 'bottom',
+            split: 'horizontal',
+            index: 0,
+            node: function(node) {
+                return node;
+            }
+        });
+        return result;
+    };
 
     var insertCenterStrategies = [
         {
@@ -2000,7 +2228,7 @@ angular.module('ngPaneManager', [])
             split: 'vertical',
             index: 1,
             node: function(node) {
-                return node.children[0]
+                return node.children[0];
             }
         },
         {
@@ -2020,6 +2248,7 @@ angular.module('ngPaneManager', [])
             }
         }
     ];
+    insertCenterStrategies = addBottomStrategies(insertCenterStrategies);
 
     var insertLeftStrategies = [
         {
@@ -2053,6 +2282,7 @@ angular.module('ngPaneManager', [])
             }
         }
     ];
+    insertLeftStrategies = addBottomStrategies(insertLeftStrategies);
 
     var insertRightStrategies = [
         {
@@ -2086,11 +2316,75 @@ angular.module('ngPaneManager', [])
             }
         }
     ];
+    insertRightStrategies = addBottomStrategies(insertRightStrategies);
+
+    var insertBottomStrategies = [
+        {
+            split: 'vertical',
+            children: [
+                'left',
+                {
+                    split: 'vertical',
+                    children: [
+                        'center',
+                        'right'
+                    ]
+                }
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                {
+                    split: 'vertical',
+                    children: [
+                        'left',
+                        'center'
+                    ]
+                },
+                'right'
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                'left',
+                'center'
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                'center',
+                'right'
+            ]
+        },
+        {
+            split: 'vertical',
+            children: [
+                'left',
+                'right'
+            ]
+        },
+        'left',
+        'right',
+        'center'
+    ].map(function(from) {
+        return {
+            from: from,
+            split: 'horizontal',
+            index: 1,
+            node: function(node) {
+                return node;
+            }
+        };
+    });
 
     this.insertStrategies = {
         'center': insertCenterStrategies,
         'left': insertLeftStrategies,
-        'right': insertRightStrategies
+        'right': insertRightStrategies,
+        'bottom': insertBottomStrategies
     };
 
     this.computeMatchPrecision = function(match) {
@@ -2170,7 +2464,7 @@ angular.module('ngPaneManager', [])
         for(var i = 0; i !== series.length; ++i) {
             var match = matchLayout(series[i]);
             var score = this.computeMatchPrecision(match);
-            if(bestMatch === null || bestMatchPrecision > score) {
+            if(bestMatch === null || score > bestMatchPrecision) {
                 bestMatch = match;
                 bestMatchPrecision = score;
                 bestMatchIndex = i;
@@ -2347,9 +2641,10 @@ angular.module('ngPaneManager', [])
                 case 'left':
                 case 'center':
                 case 'right':
+                case 'bottom':
                     break;
                 default:
-                    throw new Error('gravity must be either left, center, or right');
+                    throw new Error('gravity must be either left, center, right, or bottom');
             }
         } 
         if(root.group !== undefined && typeof root.group !== 'string') {
@@ -2649,6 +2944,9 @@ angular.module('ngPaneManager', [])
 
     this.findInsertStrategy = function(match, nodeToInsert) {
         var gravity = this.computeLayoutGravity(nodeToInsert);
+        if(!(gravity in this.insertStrategies)) {
+            throw new Error('\'' + gravity + '\' is not a valid type of panel gravity');
+        }
         var strategies = this.insertStrategies[gravity];
         for(var i = 0; i !== strategies.length; ++i) {
             var strategy = strategies[i];
