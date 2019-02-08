@@ -1402,7 +1402,7 @@ angular.module('ngPaneManager', [])
                     leaves.forEach(function(leaf) {
                         if(!panels[leaf.id]) {
                             var panelScope = newTemplateScope(leaf.panel);
-                            var panel = $compile(getTemplateTemplateString(leaf.panel))(panelScope);
+                            var panel = $compile('<div class="ng-pane-manager-wrapper">' + getTemplateTemplateString(leaf.panel) + '</div>')(panelScope);
                             panelScope.closeThisPanel = function() {
                                 removeLeafWithId(leaf.id);
                             };
@@ -1425,6 +1425,7 @@ angular.module('ngPaneManager', [])
                         }
                         if(leaf.icon !== undefined && !icons[leaf.id]) {
                             var iconScope = newTemplateScope(leaf.icon);
+                            var icon = $compile('<div class="ng-pane-manager-wrapper">' + getTemplateTemplateString(leaf.panel) + '</div>')(iconScope);
                             var icon = $compile(getTemplateTemplateString(leaf.icon))(iconScope);
                             icon.data('ngPaneManagerNode', ngPaneManager.cloneLayout(leaf));
                             icon.data('ngPaneManagerConfig', configCopy);
