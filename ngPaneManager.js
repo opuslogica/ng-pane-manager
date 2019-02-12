@@ -1425,8 +1425,7 @@ angular.module('ngPaneManager', [])
                         }
                         if(leaf.icon !== undefined && !icons[leaf.id]) {
                             var iconScope = newTemplateScope(leaf.icon);
-                            var icon = $compile('<div class="ng-pane-manager-wrapper">' + getTemplateTemplateString(leaf.panel) + '</div>')(iconScope);
-                            var icon = $compile(getTemplateTemplateString(leaf.icon))(iconScope);
+                            var icon = $compile('<div class="ng-pane-manager-wrapper">' + getTemplateTemplateString(leaf.icon) + '</div>')(iconScope);
                             icon.data('ngPaneManagerNode', ngPaneManager.cloneLayout(leaf));
                             icon.data('ngPaneManagerConfig', configCopy);
                             maybeLoadTemplateController(leaf.icon, iconScope, icon);
