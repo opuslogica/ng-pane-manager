@@ -2541,6 +2541,9 @@ angular.module('ngPaneManager', [])
     };
 
     this.findLeaves = function(layout) {
+        if(layout === null) {
+            return [];
+        }
         var result = [];
         var f = function(layout) {
             if(layout.split) {
