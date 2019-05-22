@@ -2,19 +2,19 @@
 <html>
 <head>
   <meta charset='utf-8' />
-  <title>ng-pane-manager 1.0.8 | Documentation</title>
+  <title>ng-pane-manager 1.2.0 | Documentation</title>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
-  <link href='assets/bass.css' type='text/css' rel='stylesheet' />
-  <link href='assets/style.css' type='text/css' rel='stylesheet' />
-  <link href='assets/github.css' type='text/css' rel='stylesheet' />
-  <link href='assets/split.css' type='text/css' rel='stylesheet' />
+  <link href='assets/bass.css' rel='stylesheet' />
+  <link href='assets/style.css' rel='stylesheet' />
+  <link href='assets/github.css' rel='stylesheet' />
+  <link href='assets/split.css' rel='stylesheet' />
 </head>
 <body class='documentation m0'>
     <div class='flex'>
       <div id='split-left' class='overflow-auto fs0 height-viewport-100'>
         <div class='py1 px2'>
           <h3 class='mb0 no-anchor'>ng-pane-manager</h3>
-          <div class='mb1'><code>1.0.8</code></div>
+          <div class='mb1'><code>1.2.0</code></div>
           <input
             placeholder='Filter'
             id='filter-input'
@@ -155,6 +155,26 @@
               
                 
                 <li><a
+                  href='#getnodeatpath'
+                  class="">
+                  getNodeAtPath
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
+                  href='#computenodepath'
+                  class="">
+                  computeNodePath
+                  
+                </a>
+                
+                </li>
+              
+                
+                <li><a
                   href='#patterns'
                   class="">
                   patterns
@@ -166,7 +186,7 @@
             </ul>
           </div>
           <div class='mt1 h6 quiet'>
-            <a href='http://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
+            <a href='https://documentation.js.org/reading-documentation.html'>Need help reading this?</a>
           </div>
         </div>
       </div>
@@ -188,10 +208,7 @@
 
   <p>This is the contents of the <code>ngPaneManager</code> service, which contains various auxiliary functions for working with ngPaneManager layouts and configurations.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>ngPaneManager</div>
-   
   
   
 
@@ -248,10 +265,7 @@
 
   <p>Finds all the leaf nodes in a layout.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>findLeaves(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a></div>
-   
   
   
 
@@ -338,6 +352,8 @@
   
 
   
+
+  
 </section>
 
       </div>
@@ -357,10 +373,7 @@
 
   <p>Finds the leaf node in a layout with the given ID.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>findLeafWithId(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-   
   
   
 
@@ -457,6 +470,8 @@
   
 
   
+
+  
 </section>
 
       </div>
@@ -489,10 +504,7 @@ search the layout for other nodes with the same <code>group</code>: if it finds 
 split with that node instead of splitting by gravity.</p>
 <p>See <a href="https://sashavol.com/misc/ngPaneManager/test/3.htm">the test page 3.htm</a> for an interactive demo of how insertLeaf works.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>insertLeaf(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, leaf: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, ratio: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-   
   
   
 
@@ -604,6 +616,8 @@ $scope.config.layout = ngPaneManager.insertLeaf($scope.config.layout, leftLeaf, 
   
 
   
+
+  
 </section>
 
       </div>
@@ -623,10 +637,7 @@ $scope.config.layout = ngPaneManager.insertLeaf($scope.config.layout, leftLeaf, 
 
   <p>Removes the leaf with the specified ID from the layout. <b>Set your layout to the return value of this function</b></p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>removeLeafWithId(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, id: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-   
   
   
 
@@ -683,6 +694,8 @@ $scope.config.layout = ngPaneManager.insertLeaf($scope.config.layout, leftLeaf, 
   
 
   
+
+  
 </section>
 
       </div>
@@ -702,10 +715,7 @@ $scope.config.layout = ngPaneManager.insertLeaf($scope.config.layout, leftLeaf, 
 
   <p>Finds the parent of a node in a layout.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>findParent(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-   
   
   
 
@@ -766,6 +776,8 @@ node
   
 
   
+
+  
 </section>
 
       </div>
@@ -785,10 +797,7 @@ node
 
   <p>Removes the child of a split. <b>Set your layout to the return value of this function.</b></p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>removeSplitChild(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, index: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-   
   
   
 
@@ -891,6 +900,8 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   
 
   
+
+  
 </section>
 
       </div>
@@ -910,10 +921,7 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
 
   <p>Removes a node from the layout. <b>Set your layout to the return value of this function.</b></p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>removeNode(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-   
   
   
 
@@ -970,6 +978,8 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   
 
   
+
+  
 </section>
 
       </div>
@@ -989,10 +999,7 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
 
   <p>Sets activeTabIndex on all the ancestors of the given node such that the node is visible. This is useful if you want to "focus" onto a panel that may be concealed behind tab splits.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>revealNode(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
-   
   
   
 
@@ -1041,6 +1048,8 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   
 
   
+
+  
 </section>
 
       </div>
@@ -1060,10 +1069,7 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
 
   <p>Creates a copy of a layout.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>cloneLayout(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-   
   
   
 
@@ -1111,6 +1117,8 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   
 
   
+
+  
 </section>
 
       </div>
@@ -1130,10 +1138,7 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
 
   <p>Tests if two layouts are equal.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>layoutsEqual(a: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, b: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
-   
   
   
 
@@ -1190,6 +1195,8 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   
 
   
+
+  
 </section>
 
       </div>
@@ -1209,10 +1216,7 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
 
   <p>Performs syntax validity checks on the layout (the validity of templates and templateUrls is not checked, however). ngPaneManager automatically call this function when processing the layout, normally you do not need to call it.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>validateLayout(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
-   
   
   
 
@@ -1260,6 +1264,8 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   
 
   
+
+  
 </section>
 
       </div>
@@ -1279,10 +1285,7 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
 
   <p>Clones a config object.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>cloneConfig(config: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
-   
   
   
 
@@ -1330,6 +1333,8 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   
 
   
+
+  
 </section>
 
       </div>
@@ -1349,10 +1354,7 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
 
   <p>Tests if two config objects are equal.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>configsEqual(a: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, b: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
-   
   
   
 
@@ -1409,6 +1411,8 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   
 
   
+
+  
 </section>
 
       </div>
@@ -1429,10 +1433,7 @@ $scope.config.layout = ngPaneManager.removeSplitChild($scope.config.layout, $sco
   <p>Creates a reference to a value in the config's <code>refs</code> property.
 This function is used to make the layout serializable (e.g. if your application needs to be able to store the panel state in a cookie or local storage). It is <i>not</i> required to use refs for general use (only if you want serializability).</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>ref(name: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></div>
-   
   
   
 
@@ -1505,6 +1506,8 @@ $scope.config = {
   
 
   
+
+  
 </section>
 
       </div>
@@ -1524,10 +1527,7 @@ $scope.config = {
 
   <p>Determines whether a value is a ref.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>isRef(x: any): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></div>
-   
   
   
 
@@ -1588,6 +1588,8 @@ ngPaneManager.isRef(y); <span class="hljs-comment">// returns false</span></pre>
   
 
   
+
+  
 </section>
 
       </div>
@@ -1607,10 +1609,7 @@ ngPaneManager.isRef(y); <span class="hljs-comment">// returns false</span></pre>
 
   <p>Expands a ref to the value it refers to in the config's <code>refs</code> property.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>deref(x: any, config: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></div>
-   
   
   
 
@@ -1691,6 +1690,8 @@ f(); <span class="hljs-comment">// prints "Hello World!"</span>
   
 
   
+
+  
 </section>
 
       </div>
@@ -1710,10 +1711,7 @@ f(); <span class="hljs-comment">// prints "Hello World!"</span>
 
   <p>Deref all refs in a layout.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>derefLayout(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, config: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
-   
   
   
 
@@ -1762,6 +1760,8 @@ f(); <span class="hljs-comment">// prints "Hello World!"</span>
   
 
   
+
+  
 </section>
 
       </div>
@@ -1781,10 +1781,7 @@ f(); <span class="hljs-comment">// prints "Hello World!"</span>
 
   <p>Derefs all refs in a config object.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>derefConfig(config: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</div>
-   
   
   
 
@@ -1824,6 +1821,8 @@ f(); <span class="hljs-comment">// prints "Hello World!"</span>
   
 
   
+
+  
 </section>
 
       </div>
@@ -1836,8 +1835,175 @@ f(); <span class="hljs-comment">// prints "Hello World!"</span>
   
 
   
+
+  
 </section>
 
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='getnodeatpath'>
+      getNodeAtPath
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>Gets the node at the given path.</p>
+
+    <div class='pre p1 fill-light mt0'>getNodeAtPath(root: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>, path: any, node: <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The root node of the layout.
+
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>path</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>node</span> <code class='quiet'>(<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a>)</code>
+	    The node to compute the path for.
+
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object">object</a></code>:
+        The node at the given path.
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
+        
+          
+          <section class='p2 mb2 clearfix bg-white minishadow'>
+
+  
+  <div class='clearfix'>
+    
+    <h3 class='fl m0' id='computenodepath'>
+      computeNodePath
+    </h3>
+    
+    
+  </div>
+  
+
+  <p>Computes the path to the node.</p>
+
+    <div class='pre p1 fill-light mt0'>computeNodePath(root: any, node: any): <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>></div>
+  
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+    <div class='py1 quiet mt1 prose-big'>Parameters</div>
+    <div class='prose'>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>root</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+        <div class='space-bottom0'>
+          <div>
+            <span class='code bold'>node</span> <code class='quiet'>(any)</code>
+	    
+          </div>
+          
+        </div>
+      
+    </div>
+  
+
+  
+
+  
+    
+      <div class='py1 quiet mt1 prose-big'>Returns</div>
+      <code><a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>&#x3C;<a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number">Number</a>></code>:
+        Path to the node, or null if the node cannot be found
+
+      
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</section>
+
+          
         
           
           <section class='p2 mb2 clearfix bg-white minishadow'>
@@ -1929,10 +2095,7 @@ having the center panel be the second item in the vertical split.</p>
 panel being inserted, create a tab split with that node, otherwise...
 3. Find the appropriate insert strategy to insert the panel into the hierarchy.</p>
 
- 
-  
     <div class='pre p1 fill-light mt0'>patterns</div>
-   
   
   
 
@@ -1941,6 +2104,8 @@ panel being inserted, create a tab split with that node, otherwise...
   
   
   
+  
+
   
 
   
@@ -1960,6 +2125,7 @@ panel being inserted, create a tab split with that node, otherwise...
   
 </section>
 
+          
         
       </div>
     </div>

@@ -354,6 +354,48 @@ angular.module('ngPaneManager', [])
     };
 
     /**
+     * Gets the node at the given path.
+     *
+     * @param {object} root The root node of the layout.
+     * @param {object} node The node to compute the path for.
+     * @returns {object} The node at the given path.
+     */
+    this.getNodeAtPath = function(root, path) {
+        var node = root;
+        for(var i = 0; i !== path.length; ++i) {
+            node = node.children[path[i]];
+            if(node === undefined) {
+                throw new Error('invalid path');
+            }
+        }
+        return node;
+    };
+
+    /**
+     * Computes the path to the node.
+     *
+     * @return {Array<Number>} Path to the node, or null if the node cannot be found
+     */
+    this.computeNodePath = function(root, node) {
+        var f = function(currentNode, path) {
+            if(currentNode === node) {
+                return path;
+            } else if(currentNode.split !== undefined) {
+                for(var i = 0; i !== currentNode.children.length; ++i) {
+                    var r = f(currentNode.children[i], path.concat([i]));
+                    if(r !== null) {
+                        return r;
+                    }
+                }
+                return null;
+            } else {
+                return null;
+            }
+        };
+        return f(root, []);
+    };
+
+    /**
      * Removes the child of a split. <b>Set your layout to the return value of this function.</b>
      *
      * @memberof ngPaneManager
@@ -1526,11 +1568,14 @@ angular.module('ngPaneManager', [])
                                             sep.css('width', config.borderWidth + 'px');
                                             right.css('width', 100*(1 - node.ratio) + '%');
                                             if(interactive) {
+                                                var nodePath = ngPaneManager.computeNodePath(root, node);
                                                 ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(left.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
+                                                    var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                     removeSplitChild(node, 0);
                                                     $scope.$digest();
                                                 });
                                                 ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(right.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
+                                                    var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                     removeSplitChild(node, 1);
                                                     $scope.$digest();
                                                 });
@@ -1538,9 +1583,9 @@ angular.module('ngPaneManager', [])
                                                     element: sep,
                                                     priority: 1,
                                                     dragHandler: function(info) {
+                                                        var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                         var elOffs = ngPaneManagerInternal.elementOffset(element);
                                                         node.ratio = Math.max(0, Math.min(1, (info.pageX - elOffs.left)/ngPaneManagerInternal.elementWidth(element)));
-                                                        layoutSet(layoutGet());
                                                     }
                                                 };
                                             }
@@ -1574,11 +1619,14 @@ angular.module('ngPaneManager', [])
                                             sep.css('height', config.borderWidth + 'px');
                                             bottom.css('height', 100*(1-node.ratio) + '%');
                                             if(interactive) {
+                                                var nodePath = ngPaneManager.computeNodePath(root, node);
                                                 ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(top.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
+                                                    var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                     removeSplitChild(node, 0);
                                                     $scope.$digest();
                                                 });
                                                 ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(bottom.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
+                                                    var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                     removeSplitChild(node, 1);
                                                     $scope.$digest();
                                                 });
@@ -1586,9 +1634,9 @@ angular.module('ngPaneManager', [])
                                                     element: sep,
                                                     priority: 2,
                                                     dragHandler: function(info) {
+                                                        var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                         var elOffs = ngPaneManagerInternal.elementOffset(element);
                                                         node.ratio = Math.max(0, Math.min(1, (info.pageY - elOffs.top)/ngPaneManagerInternal.elementHeight(element)));
-                                                        layoutSet(layoutGet());
                                                     }
                                                 };
                                             }
@@ -1630,7 +1678,9 @@ angular.module('ngPaneManager', [])
                                                     ngPaneManagerInternal.childrenWithClass(title, 'ng-pane-manager-icon').remove();
                                                 }
                                                 if(interactive) {
+                                                    var nodePath = ngPaneManager.computeNodePath(root, node);
                                                     ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-close').on('click', function() {
+                                                        var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                         removeSplitChild(node, i);
                                                         $scope.$digest();
                                                     });
@@ -1639,6 +1689,7 @@ angular.module('ngPaneManager', [])
                                                         priority: 1,
                                                         threshold: headerDragThreshold,
                                                         dragHandler: function(info) {
+                                                            var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                             beginFloating(info, node.children[i]);
                                                         }
                                                     };
@@ -1683,11 +1734,13 @@ angular.module('ngPaneManager', [])
                                                 element.append(borderBottom);
                                             }
                                             if(interactive) {
+                                                var nodePath = ngPaneManager.computeNodePath(root, node);
                                                 dragListeners[dragId++] = {
                                                     element: tabNav,
                                                     priority: 0,
                                                     threshold: headerDragThreshold,
                                                     dragHandler: function(e) {
+                                                        var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                                         beginFloating(e, node);
                                                     }
                                                 };
@@ -1763,11 +1816,13 @@ angular.module('ngPaneManager', [])
                                     container.append(borderBottom);
                                 }
                                 if(interactive) {
+                                    var nodePath = ngPaneManager.computeNodePath(root, node);
                                     dragListeners[dragId++] = {
                                         element: header,
                                         priority: 0,
                                         threshold: headerDragThreshold,
                                         dragHandler: function(e) {
+                                            var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
                                             beginFloating(e, node);
                                         }
                                     };
