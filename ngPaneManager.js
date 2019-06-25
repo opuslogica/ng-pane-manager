@@ -657,12 +657,16 @@ angular.module('ngPaneManager', [])
                 left: -10,
                 top: -10
             };
+
             var initialTabWidth = 200;
             var defaultDropSplitRatio = 0.3333333;
+
             var allContainerHTML =
                 '<div class="ng-pane-manager-container"></div>';
+
             var floatingContainerHTML =
                 '<div class="ng-pane-manager-floating-container"></div>';
+
             var panelContainerHTML =
                 '<div class="ng-pane-manager-panel-container">' +
                 '   <div class="ng-pane-manager-header">' +
@@ -674,25 +678,46 @@ angular.module('ngPaneManager', [])
                 '   </div>' +
                 '   <div class="ng-pane-manager-contents"></div>' +
                 '</div>';
+
+            // simulates the appearance of a tab split for when the panel has alwaysTab set 
+            // but is not currently in a tab split
+            var panelContainerPseudoTabHTML =
+                '<div class="ng-pane-manager-panel-container">' +
+                '   <div class="ng-pane-manager-tab-nav">' +
+                '       <div class="ng-pane-manager-tab ng-pane-manager-tab-active">' +
+                '           <div class="ng-pane-manager-title">' +
+                '               <div class="ng-pane-manager-icon"></div>' +
+                '               <div class="ng-pane-manager-title-text"></div>' +
+                '           </div>' +
+                '           <div class="ng-pane-manager-close"></div>' +
+                '       </div>' +
+                '   </div>' +
+                '   <div class="ng-pane-manager-contents"></div>' +
+                '</div>';
+
             var vsplitHTML =
                 '<div class="ng-pane-manager-vsplit">' +
                 '   <div class="ng-pane-manager-left"></div>' +
                 '   <div class="ng-pane-manager-separator ng-pane-manager-border ng-pane-manager-vertical-border"></div>' +
                 '   <div class="ng-pane-manager-right"></div>' +
                 '</div>';
+
             var hsplitHTML =
                 '<div class="ng-pane-manager-hsplit">' +
                 '   <div class="ng-pane-manager-top"></div>' +
                 '   <div class="ng-pane-manager-separator ng-pane-manager-border-invisible ng-pane-manager-horizontal-border"></div>' +
                 '   <div class="ng-pane-manager-bottom"></div>' +
                 '</div>';
+
             var tabsplitHTML =
                 '<div class="ng-pane-manager-tabsplit">' +
                 '   <div class="ng-pane-manager-tab-nav">' +
                 '   </div>' +
                 '   <div class="ng-pane-manager-contents"></div>' +
                 '</div>';
+
             var tabNavBorderHTML = '<div class="ng-pane-manager-border ng-pane-manager-tab-nav-border"></div>';
+
             var tabHTML =
                 '<div class="ng-pane-manager-tab">' +
                 '   <div class="ng-pane-manager-title">' +
@@ -701,22 +726,31 @@ angular.module('ngPaneManager', [])
                 '   </div>' +
                 '   <div class="ng-pane-manager-close"></div>' +
                 '</div>';
+
             var hiddenHTML =
                 '<div class="ng-pane-manager-hidden"></div>';
+
             var dropVisualTopHTML =
                 '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-top"></div>';
+
             var dropVisualRightHTML =
                 '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-right"></div>';
+
             var dropVisualBottomHTML =
                 '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-bottom"></div>';
+
             var dropVisualLeftHTML =
                 '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-left"></div>';
+
             var dropVisualWholeHTML =
                 '<div class="ng-pane-manager-drop-visual ng-pane-manager-abs-drop-visual ng-pane-manager-drop-visual-whole"><div>';
+
             var dropVisualTabHTML =
                 '<div class="ng-pane-manager-drop-visual ng-pane-manager-drop-visual-tab"></div>';
+
             var dropVisualTabOnPanelHTML =
                 '<div class="ng-pane-manager-drop-visual ng-pane-manager-drop-visual-tab-on-panel"></div>';
+
             var icons = {};
             var panels = {};
             var templateResolver = null;
@@ -908,8 +942,13 @@ angular.module('ngPaneManager', [])
                     if(panel !== undefined && panel.parent().length > 0) {
                         var p = findParent(node);
                         if(p === null || p[0].split !== 'tabs') {
-                            // panel is wrapped in panelContainerHTML, provide .ng-pane-manager-header
-                            return ngPaneManagerInternal.childrenWithClass(panel.parent().parent(), 'ng-pane-manager-header');
+                            if(node.alwaysTab) {
+                                // panel is wrapped in panelContainerPseudoTabHTML, provide .ng-pane-manager-tab-nav.
+                                return ngPaneManagerInternal.childrenWithClass(panel.parent().parent(), 'ng-pane-manager-tab-nav');
+                            } else {
+                                // panel is wrapped in panelContainerHTML, provide .ng-pane-manager-header
+                                return ngPaneManagerInternal.childrenWithClass(panel.parent().parent(), 'ng-pane-manager-header');
+                            }
                         } else {
                             // panel is wrapped inside a tabsplitHTML, it does not have its own header
                             return null;
@@ -1197,6 +1236,8 @@ angular.module('ngPaneManager', [])
                 if(container.length === 0) {
                     return;
                 }
+
+                // update widths for all tab splits
                 var tabsplits = angular.element(container[0].querySelectorAll('.ng-pane-manager-tabsplit'));
                 for(var i = 0; i !== tabsplits.length; ++i) {
                     var tabsplit = angular.element(tabsplits[i]);
@@ -1207,6 +1248,16 @@ angular.module('ngPaneManager', [])
                         var tab = angular.element(tabs[j]);
                         tab.css('width', computeTabWidth(node, ngPaneManagerInternal.elementWidth(tabNav), j) + 'px');
                     }
+                }
+
+                // update widths for fake tab splits
+                var fakeNavs = angular.element(container[0].querySelectorAll('.ng-pane-manager-panel-container > .ng-pane-manager-tab-nav'));
+                for(var i = 0; i !== fakeNavs.length; ++i) {
+                    var tabNav = angular.element(fakeNavs[i]);
+                    var headerWidth = ngPaneManagerInternal.elementWidth(tabNav);
+                    var tab = ngPaneManagerInternal.childrenWithClass(tabNav, 'ng-pane-manager-tab');
+                    var w = headerWidth - tabNavRightPadding;
+                    tab.css('width', Math.min(Math.min(initialTabWidth, w), headerWidth - tabNavRightPadding));
                 }
             };
 
@@ -1763,14 +1814,28 @@ angular.module('ngPaneManager', [])
                                 container.append(element);
                             } else {
                                 var panel = panels[node.id];
-                                var panelContainer = angular.element(panelContainerHTML);
-                                var header = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-header');
-                                var contents = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-contents');
-                                var title = ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-title'); 
-                                if(node.closeable === undefined || node.closeable) {
-                                    initCloseButton(ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-close'));
+                                var panelContainer, header, contents, title, close;
+                                if(node.alwaysTab) {
+                                    // if the node always wants to be in a tab, but is not currently in a tab split, create a fake tab split
+                                    panelContainer = angular.element(panelContainerPseudoTabHTML);
+                                    header = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-tab-nav');
+                                    contents = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-contents');
+
+                                    // note: the width of the tab will be calculated after the DOM is built in updateContainerTabWidths
+                                    var tab = ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-tab');
+                                    title = ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-title');
+                                    close = ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-close');
                                 } else {
-                                    ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-close').remove();
+                                    panelContainer = angular.element(panelContainerHTML);
+                                    header = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-header');
+                                    contents = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-contents');
+                                    title = ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-title');
+                                    close = ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-close');
+                                }
+                                if(node.closeable === undefined || node.closeable) {
+                                    initCloseButton(close);
+                                } else {
+                                    close.remove();
                                 }
                                 header.css('height', config.headerHeight + 'px');
                                 contents.css('top', config.headerHeight + 'px');
@@ -2681,6 +2746,9 @@ angular.module('ngPaneManager', [])
             if(root.closeable !== undefined && typeof root.closeable !== 'boolean') {
                 throw new Error('closeable must be a boolean');
             }
+            if(root.alwaysTab !== undefined && typeof root.alwaysTab !== 'boolean') {
+                throw new Error('alwaysTab must be a boolean');
+            }
             if(root.icon !== undefined) {
                 if(typeof root.icon !== 'object') {
                     throw new Error('icon must be an object');
@@ -2766,6 +2834,9 @@ angular.module('ngPaneManager', [])
                 result.title = root.title;
                 if(root.closeable !== undefined) {
                     result.closeable = root.closeable;
+                }
+                if(root.alwaysTab !== undefined) {
+                    result.alwaysTab = root.alwaysTab;
                 }
                 result.panel = this.cloneTemplate(root.panel);
                 if(root.icon !== undefined) {

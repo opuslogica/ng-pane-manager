@@ -259,6 +259,7 @@ Leaves have no children and must have an `id` property. They have the following 
 - `id` (String): The ID of this leaf node. (required)
 - `title` (String): The title that should be displayed in this panel's window. (required)
 - `closeable` (Boolean): Whether the user should be able to close this panel's window.
+- `alwaysTab` (Boolean): Whether this panel should always be contained in a tab instead of having its own header (optional)
 - `icon` (Object): A [template](#templates) describing how the window's icon should be rendered. (optional)
 - `panel` (Object): A [template](#templates) describing how this panel should be rendered. (required)
 
