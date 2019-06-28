@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.min.js"></script>
+<script type="text/javascript" src="../ngPaneManager.js"></script>
+<link rel="stylesheet" href="../ngPaneManager.css">
+<link rel="stylesheet" href="../theme/black.css">
+<style type="text/css">
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+[ng-pane-manager] {
+    width: 100%;
+    height: 100%;
+}
+
+.test-panel {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    color: white;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-family: sans-serif;
+}
+
+</style>
+<script type="text/javascript">
+var app = angular.module('test', ['ngPaneManager']);
+app.run(['ngPaneManager', '$rootScope', function(ngPaneManager, $rootScope) {
+    var config = {
+        tabNavAddButtonEnabled: true,
+        tabNavAddButtonHandler: function() {
+            return makeLeaf();
+        },
+        layout: null
+    };
+
+    var makeLeaf = function() {
+        var leaves = ngPaneManager.findLeaves(config.layout);
+        var num = 0;
+        leaves.forEach(function(leaf) {
+            num = Math.max(leaf.data.num, num);
+        });
+        num += 1;
+        return {
+            id: 'panel-' + num,
+            title: 'Test Panel ' + num,
+            alwaysTab: true,
+            panel: {
+                template: '<div class="test-panel">I am panel {{num}}.</div>',
+                scope: {
+                    num: num
+                }
+            },
+            data: {
+                num: num
+            }
+        };
+    };
+
+    (function() {
+        var leaf = makeLeaf();
+        leaf.closeable = false;
+        config.layout = leaf;
+    })();
+
+    $rootScope.config = config;
+}]);
+</script>
+</head>
+<body ng-app="test">
+    <script type="text/ng-template" id="test.html">
+        <div class="test-panel">
+            {{name}}
+        </div>
+    </script>
+    <div ng-pane-manager="config"></div>
+</body>
+</html>

@@ -48,6 +48,14 @@ angular.module('ngPaneManager', [])
         closeButton: {
             template: '<span style="position: relative; font-size: 16px;">&#x2A09;</span>'
         },
+        tabNavAddButtonEnabled: false,
+        tabNavAddButtonHandler: function(node) {
+            // do nothing by default
+            return null;
+        },
+        tabNavAddButton: {
+            template: '<span style="position: relative; font-size: 16px;">&#xFF0B;</span>',
+        },
         refs: {},
         layout: null
     };
@@ -1257,7 +1265,7 @@ angular.module('ngPaneManager', [])
                     var headerWidth = ngPaneManagerInternal.elementWidth(tabNav);
                     var tab = ngPaneManagerInternal.childrenWithClass(tabNav, 'ng-pane-manager-tab');
                     var w = headerWidth - tabNavRightPadding;
-                    tab.css('width', Math.min(Math.min(initialTabWidth, w), headerWidth - tabNavRightPadding));
+                    tab.css('width', Math.min(Math.min(initialTabWidth, w), headerWidth - tabNavRightPadding) + 'px');
                 }
             };
 
@@ -1569,6 +1577,38 @@ angular.module('ngPaneManager', [])
                             var scope = newTemplateScope(config.closeButton);
                             closeElem.append($compile(getTemplateTemplateString(config.closeButton))(scope));
                         };
+                        var initTabNavAddElement = function(node, tabNav) {
+                            var config = configGet();
+                            if(!config.tabNavAddButtonEnabled) {
+                                return;
+                            }
+                            var scope = newTemplateScope(config.tabNavAddButton);
+                            var container = document.createElement('div');
+                            container.classList.add('ng-pane-manager-tab-nav-add');
+                            var elem = $compile(getTemplateTemplateString(config.tabNavAddButton))(scope);
+                            elem.on('click', function() {
+                                var newTabNode = config.tabNavAddButtonHandler(node);
+                                if(newTabNode === null) {
+                                    return;
+                                }
+                                if(node.split === 'tabs') {
+                                    node.children.push(newTabNode);
+                                    node.activeTabIndex = node.children.length - 1;
+                                } else {
+                                    replaceNode(node, {
+                                        split: 'tabs',
+                                        activeTabIndex: 1,
+                                        children: [
+                                            node,
+                                            newTabNode
+                                        ]
+                                    });
+                                }
+                                $scope.$digest();
+                            });
+                            angular.element(container).append(elem);
+                            tabNav.append(container);
+                        };
                         var construct = function(root, node, container, interactive) {
                             if(node.split !== undefined) {
                                 var element;
@@ -1608,28 +1648,45 @@ angular.module('ngPaneManager', [])
                                                 borderRight.css('right', '0');
                                                 element.append(borderRight);
                                             }
+                                            var leftNode = node.children[0];
+                                            var rightNode = node.children[1];
                                             var left = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-left');
                                             var sep = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-separator');
                                             var right = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-right');
                                             sep.css('top', config.headerHeight + 'px');
-                                            construct(root, node.children[0], left, interactive);
-                                            construct(root, node.children[1], right, interactive);
+                                            construct(root, leftNode, left, interactive);
+                                            construct(root, rightNode, right, interactive);
                                             left.css('width', 100*node.ratio + '%');
                                             sep.css('left', 'calc(' + 100*node.ratio + '% - ' + config.borderWidth/2 + 'px)');
                                             sep.css('width', config.borderWidth + 'px');
                                             right.css('width', 100*(1 - node.ratio) + '%');
                                             if(interactive) {
+                                                var close;
                                                 var nodePath = ngPaneManager.computeNodePath(root, node);
-                                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(left.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
-                                                    var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
-                                                    removeSplitChild(node, 0);
-                                                    $scope.$digest();
-                                                });
-                                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(right.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
-                                                    var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
-                                                    removeSplitChild(node, 1);
-                                                    $scope.$digest();
-                                                });
+                                                if(leftNode.split === undefined) {
+                                                    if(leftNode.alwaysTab) {
+                                                        close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(left.children(), 'ng-pane-manager-tab-nav'), 'ng-pane-manager-tab'), 'ng-pane-manager-close');
+                                                    } else {
+                                                        close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(left.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close');
+                                                    }
+                                                    close.on('click', function() {
+                                                        var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
+                                                        removeSplitChild(node, 0);
+                                                        $scope.$digest();
+                                                    });
+                                                }
+                                                if(rightNode.split === undefined) {
+                                                    if(rightNode.alwaysTab) {
+                                                        close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(right.children(), 'ng-pane-manager-tab-nav'), 'ng-pane-manager-tab'), 'ng-pane-manager-close');
+                                                    } else {
+                                                        close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(right.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close');
+                                                    }
+                                                    close.on('click', function() {
+                                                        var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
+                                                        removeSplitChild(node, 1);
+                                                        $scope.$digest();
+                                                    });
+                                                }
                                                 dragListeners[dragId++] = {
                                                     element: sep,
                                                     priority: 1,
@@ -1660,27 +1717,44 @@ angular.module('ngPaneManager', [])
                                                 borderBottom.css('bottom', '0');
                                                 element.append(borderBottom);
                                             }
+                                            var topNode = node.children[0];
+                                            var bottomNode = node.children[1];
                                             var top = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-top'); 
                                             var sep = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-separator'); 
                                             var bottom = ngPaneManagerInternal.childrenWithClass(element, 'ng-pane-manager-bottom');
-                                            construct(root, node.children[0], top, interactive);
-                                            construct(root, node.children[1], bottom, interactive);
+                                            construct(root, topNode, top, interactive);
+                                            construct(root, bottomNode, bottom, interactive);
                                             top.css('height', 100*node.ratio + '%');
                                             sep.css('top', 'calc(' + 100*node.ratio + '% - ' + config.borderWidth/2 + 'px)');
                                             sep.css('height', config.borderWidth + 'px');
                                             bottom.css('height', 100*(1-node.ratio) + '%');
                                             if(interactive) {
+                                                var close;
                                                 var nodePath = ngPaneManager.computeNodePath(root, node);
-                                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(top.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
-                                                    var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
-                                                    removeSplitChild(node, 0);
-                                                    $scope.$digest();
-                                                });
-                                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(bottom.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
-                                                    var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
-                                                    removeSplitChild(node, 1);
-                                                    $scope.$digest();
-                                                });
+                                                if(topNode.split === undefined) {
+                                                    if(topNode.alwaysTab) {
+                                                        close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(top.children(), 'ng-pane-manager-tab-nav'), 'ng-pane-manager-tab'), 'ng-pane-manager-close');
+                                                    } else {
+                                                        close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(top.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close');
+                                                    }
+                                                    close.on('click', function() {
+                                                        var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
+                                                        removeSplitChild(node, 0);
+                                                        $scope.$digest();
+                                                    });
+                                                }
+                                                if(bottomNode.split === undefined) {
+                                                    if(bottomNode.alwaysTab) {
+                                                        close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(bottom.children(), 'ng-pane-manager-tab-nav'), 'ng-pane-manager-tab'), 'ng-pane-manager-close');
+                                                    } else {
+                                                        close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(bottom.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close');
+                                                    }
+                                                    close.on('click', function() {
+                                                        var node = ngPaneManager.getNodeAtPath(layoutGet(), nodePath);
+                                                        removeSplitChild(node, 1);
+                                                        $scope.$digest();
+                                                    });
+                                                }
                                                 dragListeners[dragId++] = {
                                                     element: sep,
                                                     priority: 2,
@@ -1750,6 +1824,7 @@ angular.module('ngPaneManager', [])
                                                 }
                                                 tabNav.append(tab);
                                             })(i);
+                                            initTabNavAddElement(node, tabNav);
                                             var needsSideBorders = function() {
                                                 for(var p = ngPaneManager.findParent(root, node); p !== null; p = ngPaneManager.findParent(root, p[0])) {
                                                     if(p[0].split === 'vertical') {
@@ -1825,6 +1900,8 @@ angular.module('ngPaneManager', [])
                                     var tab = ngPaneManagerInternal.childrenWithClass(header, 'ng-pane-manager-tab');
                                     title = ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-title');
                                     close = ngPaneManagerInternal.childrenWithClass(tab, 'ng-pane-manager-close');
+
+                                    initTabNavAddElement(node, header);
                                 } else {
                                     panelContainer = angular.element(panelContainerHTML);
                                     header = ngPaneManagerInternal.childrenWithClass(panelContainer, 'ng-pane-manager-header');
@@ -1906,8 +1983,14 @@ angular.module('ngPaneManager', [])
                             });
                             construct(layout, layout, allContainer, true);
                             if(layout.split === undefined) {
+                                var close;
+                                if(layout.alwaysTab) {
+                                    close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(allContainer.children(), 'ng-pane-manager-tab-nav'), 'ng-pane-manager-tab'), 'ng-pane-manager-close');
+                                } else {
+                                    close = ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(allContainer.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close');
+                                }
                                 // special case with one root panel
-                                ngPaneManagerInternal.childrenWithClass(ngPaneManagerInternal.childrenWithClass(allContainer.children(), 'ng-pane-manager-header'), 'ng-pane-manager-close').on('click', function() {
+                                close.on('click', function() {
                                     layoutSet(null);
                                     $scope.$digest();
                                 });
@@ -2970,6 +3053,9 @@ angular.module('ngPaneManager', [])
             marginWidth: config.marginWidth,
             getterSetter: config.getterSetter,
             closeButton: this.cloneTemplate(config.closeButton),
+            tabNavAddButtonEnabled: config.tabNavAddButtonEnabled,
+            tabNavAddButtonHandler: config.tabNavAddButtonHandler,
+            tabNavAddButton: this.cloneTemplate(config.tabNavAddButton),
             refs: this.cloneRefs(config.refs),
             layout: config.getterSetter ? config.layout : this.cloneLayout(config.layout)
         };
@@ -2989,6 +3075,15 @@ angular.module('ngPaneManager', [])
             return false;
         }
         if(!this.templatesEqual(a.closeButton, b.closeButton)) {
+            return false;
+        }
+        if(a.tabNavAddButtonEnabled !== b.tabNavAddButtonEnabled) {
+            return false;
+        }
+        if(a.tabNavAddButtonHandler !== b.tabNavAddButtonHandler) {
+            return false;
+        }
+        if(!this.templatesEqual(a.tabNavAddButton, b.tabNavAddButton)) {
             return false;
         }
         if(!this.refsEqual(a.refs, b.refs)) {

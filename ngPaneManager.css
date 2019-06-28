@@ -64,7 +64,7 @@
     align-content: center;
 }
 
-.ng-pane-manager-header, .ng-pane-manager-tab {
+.ng-pane-manager-header, .ng-pane-manager-tab, .ng-pane-manager-tab-nav {
     color: white;
     background-color: black;
     user-select: none;
@@ -97,13 +97,14 @@
     overflow: hidden;
 }
 
-.ng-pane-manager-close {
+.ng-pane-manager-close, .ng-pane-manager-tab-nav-add {
     display: flex;
     padding: 4px;
     flex: 0 0 auto;
     overflow: hidden;
     flex-direction: row;
     align-items: center;
+    user-select: none;
 }
 
 .ng-pane-manager-contents {
