@@ -247,7 +247,7 @@ The `ng-pane-manager` directive accepts the following options:
 - `marginWidth` (Number): The width of the margins surrounding the layout. When the user is dragging a window, they can drag it into the margins to split an entire side of the layout instead of a particular window. (default: 20px)
 - `getterSetter` (Boolean): Whether the `layout` property is a getter/setter function. (default: false)
 - `closeButton`: The [template](#templates) describing how the windows' close buttons should be rendered. (default is an HTML template with a Unicode cross).
-- `tabNavAddButtonEnabled` (Boolean): If true, a button described by `tabNavAddButton` will be placed at the end of each tab bar
+- `tabNavAddButtonEnabled` (Boolean): If true, a button described by `tabNavAddButton` will be placed at the end of each tab bar. See [test 5](https://opuslogica.github.io/ng-pane-manager/test/5.htm) for an example.
 - `tabNavAddButtonHandler` (Function): A single-argument function taking the node from which the add button was pressed that returns a [node](#layout) to be added to the tab split, or `null` not to add a new node.
 - `tabNavAddButton`: The [template](#templates) describing how to render the add button at the end of each tab bar
 - `refs`: An object describing the values to which ngPaneManager refs will be expanded (see [Serialize/Deserialize](#ser-deser) and `ngPaneManager.ref` in the [functions reference](#functions) for an explanation).
